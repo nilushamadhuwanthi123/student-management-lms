@@ -1,0 +1,31 @@
+# Environment
+.env
+*.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads (keep structure, ignore files)
+public/uploads/profiles/*
+!public/uploads/profiles/.gitkeep
+
+# Storage
+storage/logs/*
+!storage/logs/.gitkeep
+storage/cache/*
+!storage/cache/.gitkeep
+
+# Dependencies
+vendor/
+node_modules/
+
+# Compiled
+*.map
+"student-lms-project.tar.gz"  

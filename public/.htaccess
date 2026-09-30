@@ -1,0 +1,21 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirect to public directory if accessing from root
+    RewriteBase /
+
+    # Serve existing files and directories directly
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Route everything else through index.php
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# Deny access to hidden files
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Prevent directory listing
+Options -Indexes

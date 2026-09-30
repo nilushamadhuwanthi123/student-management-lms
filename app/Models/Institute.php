@@ -1,0 +1,67 @@
+<?php
+/**
+ * Institute Model
+ */
+
+require_once __DIR__ . '/BaseModel.php';
+
+class Institute extends BaseModel
+{
+    protected string $table = 'institutes';
+    protected string $primaryKey = 'id';
+    protected array $fillable = [
+        'name', 'code', 'address', 'phone', 'email',
+        'coordinator_id', 'status', 'created_at', 'updated_at',
+    ];
+
+    // ─── Relations ───────────────────────────────────────────────────
+
+    /**
+     * Get institute with its coordinator's details joined.
+     */
+    public function getWithCoordinator(int $id): ?array
+    {
+        $sql = "SELECT i.*,
+                       u.first_name AS coordinator_first_name,
+                       u.last_name  AS coordinator_last_name,
+                       u.email      AS coordinator_email,
+                       u.phone      AS coordinator_phone,
+                       u.user_id    AS coordinator_user_id
+                FROM {$this->table} i
+                LEFT JOIN users u ON i.coordinator_id = u.id
+                WHERE i.id = :id
+                LIMIT 1";
+        $row = $this->query($sql, [':id' => $id])->fetch();
+        return $row ?: null;
+    }
+
+    // ─── Filtered queries ────────────────────────────────────────────
+
+    /**
+     * All institutes with status = 'active'.
+     */
+    public function getActiveInstitutes(): array
+    {
+        return $this->where(['status' => 'active'], 'name ASC');
+    }
+
+    // ─── Aggregate helpers ───────────────────────────────────────────
+
+    /**
+     * Number of classes belonging to an institute.
+     */
+    public function getClassCount(int $instituteId): int
+    {
+        $sql = "SELECT COUNT(*) AS cnt FROM classes WHERE institute_id = :iid";
+        return (int) $this->query($sql, [':iid' => $instituteId])->fetch()['cnt'];
+    }
+
+    /**
+     * Number of students belonging to an institute.
+     */
+    public function getStudentCount(int $instituteId): int
+    {
+        $sql = "SELECT COUNT(*) AS cnt FROM students WHERE institute_id = :iid";
+        return (int) $this->query($sql, [':iid' => $instituteId])->fetch()['cnt'];
+    }
+}
