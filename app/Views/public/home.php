@@ -187,7 +187,7 @@
             </div>
 
             <!-- Attendance System -->
-            <div class="card-premium reveal rounded-2xl p-6 border cursor-pointer group"
+            <div class="card-premium reveal rounded-2xl p-6 border cursor-pointer group" onclick="window.location.href='/features'"
                  style="background: var(--surface); border-color: var(--border);">
                 <div class="card-icon-wrap w-12 h-12 rounded-xl flex items-center justify-center mb-4"
                      style="background: var(--primary-light); color: var(--primary);">
@@ -198,15 +198,14 @@
                         <path d="M9 16l2 2 4-4"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-base mb-2" style="color: var(--text);">Attendance System</h3>
+                <h3 class="font-semibold text-base mb-2" style="color: var(--text);">QR Attendance Terminal</h3>
                 <p class="text-sm leading-relaxed" style="color: var(--text-secondary);">
-                    QR-based attendance marking with real-time tracking, detailed reports,
-                    and automated notifications for absences.
+                    High-speed QR camera scanning with automated 5-second acoustic security alerts for deactivated or non-compliant accounts.
                 </p>
             </div>
 
             <!-- Role-Based Access -->
-            <div class="card-premium reveal rounded-2xl p-6 border cursor-pointer group"
+            <div class="card-premium reveal rounded-2xl p-6 border cursor-pointer group" onclick="window.location.href='/features'"
                  style="background: var(--surface); border-color: var(--border);">
                 <div class="card-icon-wrap w-12 h-12 rounded-xl flex items-center justify-center mb-4"
                      style="background: var(--secondary-light); color: var(--secondary);">
@@ -216,15 +215,14 @@
                         <circle cx="12" cy="16" r="1"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-base mb-2" style="color: var(--text);">Role-Based Access</h3>
+                <h3 class="font-semibold text-base mb-2" style="color: var(--text);">Role-Based Security</h3>
                 <p class="text-sm leading-relaxed" style="color: var(--text-secondary);">
-                    Seven distinct user roles with granular permission levels ensuring
-                    secure access control across your entire organization.
+                    Dedicated access controls for Super Admins, Coordinators, Staff, and Teachers with branded ID generation and audit logs.
                 </p>
             </div>
 
             <!-- Automated Workflows -->
-            <div class="card-premium reveal rounded-2xl p-6 border cursor-pointer group"
+            <div class="card-premium reveal rounded-2xl p-6 border cursor-pointer group" onclick="window.location.href='/features'"
                  style="background: var(--surface); border-color: var(--border);">
                 <div class="card-icon-wrap w-12 h-12 rounded-xl flex items-center justify-center mb-4"
                      style="background: var(--primary-light); color: var(--primary);">
@@ -235,13 +233,12 @@
                 </div>
                 <h3 class="font-semibold text-base mb-2" style="color: var(--text);">Automated Workflows</h3>
                 <p class="text-sm leading-relaxed" style="color: var(--text-secondary);">
-                    Smart deactivation, scheduled deletion, and multi-level approval
-                    workflows to keep your data clean and compliant.
+                    Smart deactivation, scheduled deletion, and multi-level approval workflows to keep your data clean and compliant.
                 </p>
             </div>
 
             <!-- Analytics & Reports -->
-            <div class="card-premium reveal rounded-2xl p-6 border cursor-pointer group"
+            <div class="card-premium reveal rounded-2xl p-6 border cursor-pointer group" onclick="window.location.href='/features'"
                  style="background: var(--surface); border-color: var(--border);">
                 <div class="card-icon-wrap w-12 h-12 rounded-xl flex items-center justify-center mb-4"
                      style="background: var(--secondary-light); color: var(--secondary);">
@@ -249,10 +246,9 @@
                         <path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-base mb-2" style="color: var(--text);">Analytics &amp; Reports</h3>
+                <h3 class="font-semibold text-base mb-2" style="color: var(--text);">16 KPI Widgets &amp; 5 Reports</h3>
                 <p class="text-sm leading-relaxed" style="color: var(--text-secondary);">
-                    Real-time dashboard with key metrics, comprehensive audit logs,
-                    and exportable reports for informed decision-making.
+                    Super Admin dashboard with 16 configurable widgets, CSV data exports, and comprehensive revenue split reporting.
                 </p>
             </div>
         </div>

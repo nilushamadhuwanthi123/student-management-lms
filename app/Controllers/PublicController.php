@@ -56,6 +56,7 @@ class PublicController extends BaseController
         $data = [
             'name'    => trim($_POST['name'] ?? ''),
             'email'   => trim($_POST['email'] ?? ''),
+            'phone'   => trim($_POST['phone'] ?? ''),
             'subject' => trim($_POST['subject'] ?? ''),
             'message' => trim($_POST['message'] ?? ''),
         ];
@@ -63,6 +64,7 @@ class PublicController extends BaseController
         $errors = $this->validate($data, [
             'name'    => 'required|max:255',
             'email'   => 'required|email|max:255',
+            'phone'   => 'max:50',
             'subject' => 'required|max:255',
             'message' => 'required|max:5000',
         ]);
@@ -74,15 +76,16 @@ class PublicController extends BaseController
 
         // Store the contact message (using the database if available)
         if ($this->db) {
-            $sql = "INSERT INTO contact_messages (name, email, subject, message, created_at)
-                    VALUES (:name, :email, :subject, :message, NOW())";
+            $sql = "INSERT INTO contact_messages (full_name, email, phone, subject, message, created_at)
+                    VALUES (:full_name, :email, :phone, :subject, :message, NOW())";
             try {
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute([
-                    ':name'    => $data['name'],
-                    ':email'   => $data['email'],
-                    ':subject' => $data['subject'],
-                    ':message' => $data['message'],
+                    ':full_name' => $data['name'],
+                    ':email'     => $data['email'],
+                    ':phone'     => $data['phone'] !== '' ? $data['phone'] : null,
+                    ':subject'   => $data['subject'],
+                    ':message'   => $data['message'],
                 ]);
             } catch (\PDOException $e) {
                 // Table may not exist yet — log and continue
