@@ -20,7 +20,15 @@ spl_autoload_register(function (string $class): void {
 
         if (file_exists($filePath)) {
             require_once $filePath;
+            return;
         }
+    }
+
+    // Support global models in app/Models/
+    $modelFile = BASE_PATH . '/app/Models/' . $class . '.php';
+    if (file_exists($modelFile)) {
+        require_once $modelFile;
+        return;
     }
 });
 

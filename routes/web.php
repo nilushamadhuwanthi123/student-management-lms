@@ -179,6 +179,35 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     // Dashboard
     $router->get('/dashboard', ['App\Controllers\DashboardController', 'index']);
 
+    // User & Role Management (Admins, Coordinators, Staff, Teachers)
+    $router->get('/users', ['App\Controllers\UserController', 'index']);
+    $router->get('/users/create', ['App\Controllers\UserController', 'create']);
+    $router->post('/users/create', ['App\Controllers\UserController', 'store']);
+    $router->get('/users/{id}/edit', ['App\Controllers\UserController', 'edit']);
+    $router->post('/users/{id}/edit', ['App\Controllers\UserController', 'update']);
+    $router->post('/users/{id}/toggle-status', ['App\Controllers\UserController', 'toggleStatus']);
+    $router->post('/users/{id}/delete', ['App\Controllers\UserController', 'delete']);
+    $router->post('/users/{id}/reset-password', ['App\Controllers\UserController', 'resetPassword']);
+    $router->get('/users/{id}/id-card', ['App\Controllers\UserController', 'idCard']);
+
+    // Institutes Management
+    $router->get('/institutes', ['App\Controllers\InstituteController', 'index']);
+    $router->get('/institutes/create', ['App\Controllers\InstituteController', 'create']);
+    $router->post('/institutes/create', ['App\Controllers\InstituteController', 'store']);
+    $router->get('/institutes/{id}/edit', ['App\Controllers\InstituteController', 'edit']);
+    $router->post('/institutes/{id}/edit', ['App\Controllers\InstituteController', 'update']);
+    $router->post('/institutes/{id}/toggle-status', ['App\Controllers\InstituteController', 'toggleStatus']);
+    $router->post('/institutes/{id}/delete', ['App\Controllers\InstituteController', 'delete']);
+
+    // Classes Management
+    $router->get('/classes', ['App\Controllers\ClassController', 'index']);
+    $router->get('/classes/create', ['App\Controllers\ClassController', 'create']);
+    $router->post('/classes/create', ['App\Controllers\ClassController', 'store']);
+    $router->get('/classes/{id}/edit', ['App\Controllers\ClassController', 'edit']);
+    $router->post('/classes/{id}/edit', ['App\Controllers\ClassController', 'update']);
+    $router->post('/classes/{id}/toggle-status', ['App\Controllers\ClassController', 'toggleStatus']);
+    $router->post('/classes/{id}/delete', ['App\Controllers\ClassController', 'delete']);
+
     // Students
     $router->get('/students', ['App\Controllers\StudentController', 'index']);
     $router->get('/students/create', ['App\Controllers\StudentController', 'create']);

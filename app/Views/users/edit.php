@@ -1,0 +1,198 @@
+<?php
+/**
+ * 1.1 Edit User View — Admins, Coordinators, Staff, Teachers
+ */
+
+$user            = $user ?? [];
+$institutes      = $institutes ?? [];
+$classes         = $classes ?? [];
+$assignedClasses = $assignedClasses ?? [];
+$roles           = $roles ?? [];
+$roleColors      = $roleColors ?? \User::ROLE_COLORS;
+?>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-header__title">Edit User - <?= htmlspecialchars($user['full_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></h1>
+        <p class="text-sm text-muted">User ID: <strong><?= htmlspecialchars($user['user_id_display'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong> &bull; Role: <strong><?= ucfirst($user['role'] ?? '') ?></strong></p>
+    </div>
+    <div class="page-header__actions">
+        <a href="/users" class="btn btn--ghost">
+            &larr; Back to Users
+        </a>
+    </div>
+</div>
+
+<form method="POST" action="/users/<?= (int) $user['id'] ?>/edit" enctype="multipart/form-data">
+    <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
+
+    <!-- 1. Profile Photo -->
+    <div class="card mb-3">
+        <h3 class="mb-2">1. Profile Photo</h3>
+        <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
+            <div style="width:90px; height:90px; border-radius:50%; border:2px solid var(--border); overflow:hidden; background:var(--surface-sunken);">
+                <?php if (!empty($user['profile_photo'])): ?>
+                    <img id="editPhotoPreview" src="<?= htmlspecialchars($user['profile_photo'], ENT_QUOTES, 'UTF-8') ?>" alt="" style="width:100%; height:100%; object-fit:cover;">
+                <?php else: ?>
+                    <div id="editPhotoPreviewPlaceholder" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700; color:var(--primary);">
+                        <?= strtoupper(mb_substr($user['full_name'] ?? 'U', 0, 1)) ?>
+                    </div>
+                    <img id="editPhotoPreview" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover;">
+                <?php endif; ?>
+            </div>
+            <div style="flex:1; min-width:240px;">
+                <label class="form-label" for="profile_photo">Change Photo</label>
+                <input type="file" id="profile_photo" name="profile_photo" class="form-control" accept="image/jpeg,image/png,image/webp" onchange="previewEditPhoto(this)">
+                <div class="form-hint text-xs">Leave empty to keep existing photo.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Personal Details -->
+    <div class="card mb-3">
+        <h3 class="mb-2">2. Personal Details</h3>
+        
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1rem;">
+            <!-- Full Name -->
+            <div class="form-group">
+                <label class="form-label" for="full_name">Full Name <span class="required" style="color:var(--danger);">*</span></label>
+                <input type="text" id="full_name" name="full_name" class="form-control" value="<?= htmlspecialchars($user['full_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="form-group">
+                <label class="form-label" for="date_of_birth">Date of Birth</label>
+                <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" value="<?= htmlspecialchars($user['date_of_birth'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            </div>
+
+            <!-- Status -->
+            <div class="form-group">
+                <label class="form-label" for="status">Account Status</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="active" <?= ($user['status'] ?? '') === 'active' ? 'selected' : '' ?>>Active</option>
+                    <option value="pending_first_login" <?= ($user['status'] ?? '') === 'pending_first_login' ? 'selected' : '' ?>>Pending first login</option>
+                    <option value="inactive" <?= ($user['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                </select>
+            </div>
+
+            <!-- Province -->
+            <div class="form-group">
+                <label class="form-label" for="province">Province</label>
+                <input type="text" id="province" name="province" class="form-control" value="<?= htmlspecialchars($user['province'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            </div>
+
+            <!-- District -->
+            <div class="form-group">
+                <label class="form-label" for="district">District</label>
+                <input type="text" id="district" name="district" class="form-control" value="<?= htmlspecialchars($user['district'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            </div>
+        </div>
+
+        <!-- Address -->
+        <div class="form-group mt-2">
+            <label class="form-label" for="address">Address</label>
+            <input type="text" id="address" name="address" class="form-control" value="<?= htmlspecialchars($user['address'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group mt-2">
+            <label class="form-label" for="notes">Notes</label>
+            <textarea id="notes" name="notes" class="form-control" rows="2"><?= htmlspecialchars($user['notes'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+        </div>
+    </div>
+
+    <!-- 3. Contact Details -->
+    <div class="card mb-3">
+        <h3 class="mb-2">3. Contact Details</h3>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1rem;">
+            <!-- Email -->
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" value="<?= htmlspecialchars($user['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            </div>
+
+            <!-- Personal Number 1 -->
+            <div class="form-group">
+                <label class="form-label" for="phone1">Personal Number 1 <span class="required" style="color:var(--danger);">*</span></label>
+                <input type="tel" id="phone1" name="phone1" class="form-control" value="<?= htmlspecialchars($user['phone1'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
+            </div>
+
+            <!-- Personal Number 2 -->
+            <div class="form-group">
+                <label class="form-label" for="phone2">Personal Number 2 (optional)</label>
+                <input type="tel" id="phone2" name="phone2" class="form-control" value="<?= htmlspecialchars($user['phone2'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            </div>
+
+            <!-- WhatsApp Number -->
+            <div class="form-group">
+                <label class="form-label" for="whatsapp">WhatsApp Number <span class="required" style="color:var(--danger);">*</span></label>
+                <input type="tel" id="whatsapp" name="whatsapp" class="form-control" value="<?= htmlspecialchars($user['whatsapp'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
+            </div>
+
+            <!-- Home Number -->
+            <div class="form-group">
+                <label class="form-label" for="home_number">Home Number (Emergency Contact)</label>
+                <input type="tel" id="home_number" name="home_number" class="form-control" value="<?= htmlspecialchars($user['home_number'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Academic Details (Attached Classes) -->
+    <div class="card mb-3">
+        <h3 class="mb-2">4. Attached Classes</h3>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:0.75rem; padding:1rem; background:var(--surface-sunken); border:1px solid var(--border); border-radius:var(--radius);">
+            <?php if (!empty($classes)): ?>
+                <?php foreach ($classes as $cls): 
+                    $isAssigned = in_array((int) $cls['id'], array_map('intval', $assignedClasses), true);
+                ?>
+                    <div style="background:var(--surface); padding:0.75rem; border:1px solid var(--border); border-radius:var(--radius-sm);">
+                        <label style="display:flex; align-items:flex-start; gap:0.6rem; cursor:pointer; margin:0;">
+                            <input type="checkbox" name="classes[]" value="<?= (int) $cls['id'] ?>" <?= $isAssigned ? 'checked' : '' ?> style="margin-top:0.25rem;">
+                            <div>
+                                <div style="font-weight:600; font-size:0.875rem;">
+                                    <?= htmlspecialchars($cls['class_name'] ?? $cls['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                                </div>
+                                <div class="text-xs text-muted">
+                                    <?= htmlspecialchars($cls['subject'] ?? '', ENT_QUOTES, 'UTF-8') ?> &bull; <?= htmlspecialchars($cls['grade'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="text-sm text-muted">No classes available.</div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Submit Buttons -->
+    <div class="d-flex justify-between items-center mb-4">
+        <a href="/users/<?= (int) $user['id'] ?>/id-card" target="_blank" class="btn btn--secondary">
+            Print ID Card
+        </a>
+        <div class="d-flex gap-1">
+            <a href="/users" class="btn btn--ghost">Cancel</a>
+            <button type="submit" class="btn btn--primary">
+                Save Changes
+            </button>
+        </div>
+    </div>
+</form>
+
+<script>
+function previewEditPhoto(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.getElementById('editPhotoPreview');
+            var ph = document.getElementById('editPhotoPreviewPlaceholder');
+            img.src = e.target.result;
+            img.style.display = 'block';
+            if (ph) ph.style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>

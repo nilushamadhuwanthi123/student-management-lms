@@ -13,11 +13,29 @@ class Setting extends BaseModel
         'setting_key', 'setting_value', 'updated_by', 'updated_at',
     ];
 
+    // All 16 Dashboard Items / Widgets specified in Document 1 Page 1
+    public const DASHBOARD_WIDGETS = [
+        'active_students'            => 'Active Students',
+        'today_attendance'           => "Today's Attendance",
+        'active_classes'             => 'Active Classes',
+        'today_revenue'              => "Today's Revenue",
+        'monthly_revenue'            => 'Monthly Revenue',
+        'pending_payments'           => 'Pending Payments',
+        'today_attendance_overview'  => "Today's Attendance Overview",
+        'active_teachers'            => 'Active Teachers',
+        'attendance_trend_7d'        => 'Attendance Trend (7 Days) [Daily present vs total]',
+        'students_by_class'          => 'Students by Class [Active student distribution]',
+        'all_active_classes'         => 'All Active Classes',
+        'today_classes'              => 'Today Classes',
+        'today_new_students'         => 'Today New Students',
+        'this_month_new_students'    => 'This Month New Students',
+        'upcoming_classes'           => 'Upcoming Classes',
+        'recent_messages_approvals'  => 'Recent Messages / Workflow Approvals',
+        'this_month_income'          => 'This Month Income (Institutes & Teachers)',
+    ];
+
     // ─── Key-value access ────────────────────────────────────────────
 
-    /**
-     * Get a setting value by key, with optional default.
-     */
     public function get(string $key, mixed $default = null): mixed
     {
         $sql = "SELECT setting_value FROM {$this->table} WHERE setting_key = :key LIMIT 1";
@@ -25,10 +43,7 @@ class Setting extends BaseModel
         return $row ? $row['setting_value'] : $default;
     }
 
-    /**
-     * Set (upsert) a setting value.
-     */
-    public function set(string $key, mixed $value, int $updatedBy): bool
+    public function set(string $key, mixed $value, int $updatedBy = 1): bool
     {
         $existing = $this->findBy('setting_key', $key);
 
@@ -36,12 +51,12 @@ class Setting extends BaseModel
             $sql = "UPDATE {$this->table}
                     SET setting_value = :val, updated_by = :ub, updated_at = NOW()
                     WHERE setting_key = :key";
-            $this->query($sql, [':val' => $value, ':ub' => $updatedBy, ':key' => $key]);
+            $this->query($sql, [':val' => (string) $value, ':ub' => $updatedBy, ':key' => $key]);
         } else {
             $sql = "INSERT INTO {$this->table}
                     (setting_key, setting_value, updated_by, updated_at)
                     VALUES (:key, :val, :ub, NOW())";
-            $this->query($sql, [':key' => $key, ':val' => $value, ':ub' => $updatedBy]);
+            $this->query($sql, [':key' => $key, ':val' => (string) $value, ':ub' => $updatedBy]);
         }
 
         return true;
@@ -49,126 +64,118 @@ class Setting extends BaseModel
 
     // ─── Deactivation settings ───────────────────────────────────────
 
-    /**
-     * Get all deactivation-related settings from the deactivation_settings table.
-     */
     public function getDeactivationSettings(): array
     {
-        $sql = "SELECT * FROM deactivation_settings ORDER BY id ASC";
-        return $this->query($sql)->fetchAll();
+        try {
+            $sql = "SELECT * FROM deactivation_settings ORDER BY id ASC";
+            return $this->query($sql)->fetchAll();
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
-    /**
-     * Update deactivation settings.
-     *
-     * @param  array $data       Associative array of column => value to update
-     * @param  int   $updatedBy  User who made the change
-     */
-    public function updateDeactivationSettings(array $data, int $updatedBy): bool
+    public function updateDeactivationSettings(array $data, int $updatedBy = 1): bool
     {
-        $setParts = [];
-        $params = [':ub' => $updatedBy];
-        $i = 0;
-        foreach ($data as $col => $val) {
-            $col = $this->sanitizeColumn($col);
-            $placeholder = ":ds{$i}";
-            $setParts[] = "{$col} = {$placeholder}";
-            $params[$placeholder] = $val;
-            $i++;
+        foreach ($data as $key => $val) {
+            $sql = "INSERT INTO deactivation_settings (setting_key, setting_value, updated_by, updated_at)
+                    VALUES (:k, :v, :ub, NOW())
+                    ON DUPLICATE KEY UPDATE setting_value = :v2, updated_by = :ub2, updated_at = NOW()";
+            $this->query($sql, [
+                ':k' => $key,
+                ':v' => (string) $val,
+                ':ub' => $updatedBy,
+                ':v2' => (string) $val,
+                ':ub2' => $updatedBy,
+            ]);
         }
-
-        if (empty($setParts)) {
-            return false;
-        }
-
-        $sql = "UPDATE deactivation_settings
-                SET " . implode(', ', $setParts) . ", updated_by = :ub, updated_at = NOW()";
-        $this->query($sql, $params);
         return true;
     }
 
     // ─── Deletion settings ───────────────────────────────────────────
 
-    /**
-     * Get all deletion-related settings.
-     */
     public function getDeletionSettings(): array
     {
-        $sql = "SELECT * FROM deletion_settings ORDER BY id ASC";
-        return $this->query($sql)->fetchAll();
+        try {
+            $sql = "SELECT * FROM deletion_settings ORDER BY id ASC LIMIT 1";
+            $row = $this->query($sql)->fetch();
+            return $row ?: ['teacher_deletion_option' => 'option1'];
+        } catch (\Throwable $e) {
+            return ['teacher_deletion_option' => 'option1'];
+        }
     }
 
-    /**
-     * Update deletion settings.
-     */
-    public function updateDeletionSettings(array $data, int $updatedBy): bool
+    public function updateDeletionSettings(array $data, int $updatedBy = 1): bool
     {
-        $setParts = [];
-        $params = [':ub' => $updatedBy];
-        $i = 0;
-        foreach ($data as $col => $val) {
-            $col = $this->sanitizeColumn($col);
-            $placeholder = ":dl{$i}";
-            $setParts[] = "{$col} = {$placeholder}";
-            $params[$placeholder] = $val;
-            $i++;
-        }
-
-        if (empty($setParts)) {
-            return false;
-        }
-
-        $sql = "UPDATE deletion_settings
-                SET " . implode(', ', $setParts) . ", updated_by = :ub, updated_at = NOW()";
-        $this->query($sql, $params);
+        $opt = $data['teacher_deletion_option'] ?? 'option1';
+        $sql = "INSERT INTO deletion_settings (id, teacher_deletion_option, updated_by, updated_at)
+                VALUES (1, :opt, :ub, NOW())
+                ON DUPLICATE KEY UPDATE teacher_deletion_option = :opt2, updated_by = :ub2, updated_at = NOW()";
+        $this->query($sql, [
+            ':opt' => $opt,
+            ':ub' => $updatedBy,
+            ':opt2' => $opt,
+            ':ub2' => $updatedBy,
+        ]);
         return true;
     }
 
-    // ─── Dashboard widgets ───────────────────────────────────────────
+    // ─── Dashboard widgets (16 items) per role ───────────────────────
 
     /**
-     * Get dashboard widget visibility for a role.
+     * Get dashboard widget visibility map for a role.
+     * Returns array<widget_key => is_visible (bool)>
      */
     public function getDashboardWidgets(string $role): array
     {
-        $sql = "SELECT * FROM dashboard_widgets
-                WHERE role = :role
-                ORDER BY widget_key ASC";
-        return $this->query($sql, [':role' => $role])->fetchAll();
+        $result = [];
+        // Default: all widgets visible
+        foreach (self::DASHBOARD_WIDGETS as $key => $label) {
+            $result[$key] = true;
+        }
+
+        try {
+            $sql = "SELECT widget_key, is_visible FROM dashboard_settings WHERE role = :role";
+            $rows = $this->query($sql, [':role' => $role])->fetchAll();
+            foreach ($rows as $row) {
+                $result[$row['widget_key']] = (bool) $row['is_visible'];
+            }
+        } catch (\Throwable $e) {
+            // Table might not exist or error, fallback to defaults
+        }
+
+        return $result;
     }
 
     /**
-     * Toggle a dashboard widget's visibility for a role.
+     * Check if a specific widget is visible for a role.
+     */
+    public function isWidgetVisible(string $role, string $widgetKey): bool
+    {
+        $widgets = $this->getDashboardWidgets($role);
+        return $widgets[$widgetKey] ?? true;
+    }
+
+    /**
+     * Set dashboard widget visibility for a role.
      */
     public function updateDashboardWidget(
         string $role,
         string $widgetKey,
         bool $isVisible,
-        int $updatedBy
+        int $updatedBy = 1
     ): bool {
-        // Try update first
-        $sql = "UPDATE dashboard_widgets
-                SET is_visible = :vis, updated_by = :ub, updated_at = NOW()
-                WHERE role = :role AND widget_key = :wk";
-        $stmt = $this->query($sql, [
-            ':vis'  => $isVisible ? 1 : 0,
-            ':ub'   => $updatedBy,
+        $sql = "INSERT INTO dashboard_settings (role, widget_key, is_visible, updated_by, updated_at)
+                VALUES (:role, :wk, :vis, :ub, NOW())
+                ON DUPLICATE KEY UPDATE is_visible = :vis2, updated_by = :ub2, updated_at = NOW()";
+
+        $this->query($sql, [
             ':role' => $role,
             ':wk'   => $widgetKey,
+            ':vis'  => $isVisible ? 1 : 0,
+            ':ub'   => $updatedBy,
+            ':vis2' => $isVisible ? 1 : 0,
+            ':ub2'  => $updatedBy,
         ]);
-
-        if ($stmt->rowCount() === 0) {
-            // Insert if it doesn't exist
-            $sql = "INSERT INTO dashboard_widgets
-                    (role, widget_key, is_visible, updated_by, updated_at)
-                    VALUES (:role, :wk, :vis, :ub, NOW())";
-            $this->query($sql, [
-                ':role' => $role,
-                ':wk'   => $widgetKey,
-                ':vis'  => $isVisible ? 1 : 0,
-                ':ub'   => $updatedBy,
-            ]);
-        }
 
         return true;
     }

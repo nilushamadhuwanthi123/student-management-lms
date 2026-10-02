@@ -248,6 +248,30 @@ $notificationCount = $notificationCount ?? 0;
                 Dashboard
             </a>
 
+            <?php if (in_array($userRole, ['super_admin', 'admin'])): ?>
+            <!-- All Users (Admins, Coordinators, Staff, Teachers) -->
+            <a href="/users" class="sidebar__link <?= $activePage === 'users' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                All Users
+            </a>
+            <?php endif; ?>
+
+            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator'])): ?>
+            <!-- Institutes -->
+            <a href="/institutes" class="sidebar__link <?= $activePage === 'institutes' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+                Institutes
+            </a>
+            <?php endif; ?>
+
+            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>
+            <!-- Classes -->
+            <a href="/classes" class="sidebar__link <?= $activePage === 'classes' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                Classes
+            </a>
+            <?php endif; ?>
+
             <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>
             <!-- Students -->
             <div class="sidebar__nav-group">
