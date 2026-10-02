@@ -227,6 +227,26 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/workflows/{id}/approve', ['App\Controllers\WorkflowController', 'approve']);
     $router->post('/workflows/{id}/reject', ['App\Controllers\WorkflowController', 'reject']);
 
+    // Attendance & QR Terminal
+    $router->get('/attendance', ['App\Controllers\AttendanceController', 'index']);
+    $router->get('/attendance/qr', ['App\Controllers\AttendanceController', 'terminal']);
+    $router->post('/attendance/scan', ['App\Controllers\AttendanceController', 'scan']);
+    $router->post('/attendance/mark-manual', ['App\Controllers\AttendanceController', 'markManual']);
+
+    // In-app Messages & Notifications
+    $router->get('/messages', ['App\Controllers\MessageController', 'index']);
+    $router->post('/messages/{id}/read', ['App\Controllers\MessageController', 'markRead']);
+    $router->post('/messages/mark-all-read', ['App\Controllers\MessageController', 'markAllRead']);
+    $router->post('/messages/send', ['App\Controllers\MessageController', 'send']);
+
+    // Reports Hub & Exports
+    $router->get('/reports', ['App\Controllers\ReportController', 'index']);
+    $router->get('/reports/attendance', ['App\Controllers\ReportController', 'attendance']);
+    $router->get('/reports/classes', ['App\Controllers\ReportController', 'classes']);
+    $router->get('/reports/users', ['App\Controllers\ReportController', 'users']);
+    $router->get('/reports/payments', ['App\Controllers\ReportController', 'payments']);
+    $router->get('/reports/students', ['App\Controllers\ReportController', 'students']);
+
     // Audit & History
     $router->get('/audit-log', ['App\Controllers\AuditController', 'index']);
     $router->get('/workflow-history', ['App\Controllers\AuditController', 'workflowHistory']);

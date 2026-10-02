@@ -399,6 +399,49 @@ CREATE TABLE IF NOT EXISTS `user_classes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
+-- 19. attendance
+-- Document 1 & 2 requirements: QR scan, Present/Absent, Red flag on deactivation
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `attendance` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `student_id` INT UNSIGNED NOT NULL,
+    `class_id` INT UNSIGNED DEFAULT NULL,
+    `date` DATE NOT NULL,
+    `check_in_time` TIME NOT NULL,
+    `status` ENUM('present','late','absent','red_flag') NOT NULL DEFAULT 'present',
+    `flagged_reason` VARCHAR(500) DEFAULT NULL,
+    `scan_method` ENUM('qr_scan','manual','barcode') NOT NULL DEFAULT 'qr_scan',
+    `marked_by` INT UNSIGNED DEFAULT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    INDEX `idx_att_student` (`student_id`),
+    INDEX `idx_att_class` (`class_id`),
+    INDEX `idx_att_date` (`date`),
+    INDEX `idx_att_status` (`status`),
+    INDEX `idx_att_student_date` (`student_id`, `date`, `class_id`),
+    CONSTRAINT `fk_att_student` FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_att_class` FOREIGN KEY (`class_id`) REFERENCES `classes`(`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- 20. contact_messages
+-- Public contact inquiries
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS `contact_messages` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `full_name` VARCHAR(255) NOT NULL,
+    `email` VARCHAR(255) NOT NULL,
+    `phone` VARCHAR(50) DEFAULT NULL,
+    `subject` VARCHAR(255) NOT NULL,
+    `message` TEXT NOT NULL,
+    `status` ENUM('new','read','responded') NOT NULL DEFAULT 'new',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    INDEX `idx_msg_status` (`status`),
+    INDEX `idx_msg_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
 -- Default Super Admin Record
 -- NOTE: The password_hash below is a PLACEHOLDER.
 -- In production, generate the real hash using PHP:

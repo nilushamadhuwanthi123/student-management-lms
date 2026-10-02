@@ -1,0 +1,234 @@
+<?php
+/**
+ * System Message Inbox View
+ * Document 1 & Kavindu Role Guide Specification:
+ * - Read/unread status
+ * - Filters by role/date/type
+ * - Notification details modal view
+ * - Broadcast composer for Super Admin / Admin
+ */
+
+$notifications = $notifications ?? [];
+$unreadCount   = $unreadCount ?? 0;
+$filters       = $filters ?? [];
+$currentUser   = $currentUser ?? [];
+$role          = $currentUser['role'] ?? 'user';
+?>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-header__title">System Message Inbox</h1>
+        <p class="text-sm text-muted">Internal system notifications, workflow alerts, and administrative broadcasts</p>
+    </div>
+    <div class="page-header__actions">
+        <?php if ($unreadCount > 0): ?>
+            <form method="POST" action="/messages/mark-all-read" style="margin:0;">
+                <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
+                <button type="submit" class="btn btn--secondary btn--sm">
+                    Mark All as Read (<?= $unreadCount ?>)
+                </button>
+            </form>
+        <?php endif; ?>
+
+        <?php if (in_array($role, ['super_admin', 'admin'])): ?>
+            <button type="button" class="btn btn--primary btn--sm" onclick="openBroadcastModal()">
+                + Compose Broadcast
+            </button>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- Type Filter Tabs -->
+<div class="card mb-3" style="padding:0.75rem 1rem;">
+    <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+        <span class="text-xs text-muted" style="margin-right:0.5rem; font-weight:700;">FILTER BY TYPE:</span>
+        <?php 
+        $types = [
+            ''             => 'All',
+            'info'         => 'Info',
+            'warning'      => 'Warnings',
+            'deactivation' => 'Deactivations',
+            'deletion'     => 'Deletions',
+            'payment'      => 'Payments',
+            'system'       => 'System',
+        ];
+        foreach ($types as $tKey => $tLabel): 
+            $isActive = ($filters['type'] ?? '') === $tKey;
+        ?>
+            <a href="/messages?type=<?= $tKey ?>" class="btn <?= $isActive ? 'btn--primary' : 'btn--ghost' ?> btn--xs" style="border-radius:20px;">
+                <?= $tLabel ?>
+            </a>
+        <?php endforeach; ?>
+
+        <div style="margin-left:auto; display:flex; gap:0.5rem; align-items:center;">
+            <a href="/messages?status=unread" class="btn <?= ($filters['is_read'] === 0) ? 'btn--secondary' : 'btn--ghost' ?> btn--xs">
+                Unread Only
+            </a>
+            <?php if (!empty($filters['type']) || $filters['is_read'] !== ''): ?>
+                <a href="/messages" class="btn btn--ghost btn--xs" style="color:var(--danger);">Clear Filters</a>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<!-- Message List -->
+<div class="card">
+    <?php if (!empty($notifications)): ?>
+        <div style="display:flex; flex-direction:column; gap:0.6rem;">
+            <?php foreach ($notifications as $n): 
+                $isRead = (bool) $n['is_read'];
+                $type = $n['notification_type'] ?? 'info';
+                $badgeStyle = match ($type) {
+                    'deactivation' => 'background:#fee2e2; color:#991b1b; border:1px solid #fecaca;',
+                    'deletion'     => 'background:#fef2f2; color:#b91c1c; border:1px solid #f87171;',
+                    'warning'      => 'background:#fffbeb; color:#b45309; border:1px solid #fde68a;',
+                    'payment'      => 'background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;',
+                    'system'       => 'background:#f5f3ff; color:#6d28d9; border:1px solid #ddd6fe;',
+                    default        => 'background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;',
+                };
+            ?>
+                <div 
+                    class="notification-item" 
+                    style="padding:1rem; border-radius:10px; border:1px solid var(--border); background:<?= $isRead ? 'var(--surface)' : 'var(--surface-sunken)' ?>; border-left:4px solid <?= $isRead ? 'var(--border)' : 'var(--primary)' ?>; display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; cursor:pointer; transition:background 0.2s;"
+                    onclick="viewNotification(<?= (int) $n['id'] ?>, '<?= htmlspecialchars(addslashes($n['title']), ENT_QUOTES, 'UTF-8') ?>', '<?= htmlspecialchars(addslashes($n['body'] ?? ''), ENT_QUOTES, 'UTF-8') ?>', '<?= htmlspecialchars($n['created_at'], ENT_QUOTES, 'UTF-8') ?>', '<?= $type ?>', <?= $isRead ? 'true' : 'false' ?>)"
+                >
+                    <div style="flex:1;">
+                        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                            <span class="badge" style="<?= $badgeStyle ?> font-size:0.7rem; text-transform:uppercase;">
+                                <?= $type ?>
+                            </span>
+                            <?php if (!$isRead): ?>
+                                <span class="badge badge--primary" style="font-size:0.65rem; padding:1px 6px;">NEW</span>
+                            <?php endif; ?>
+                            <strong style="color:var(--text); font-size:0.95rem; font-weight:<?= $isRead ? '600' : '700' ?>;">
+                                <?= htmlspecialchars($n['title'], ENT_QUOTES, 'UTF-8') ?>
+                            </strong>
+                        </div>
+                        <div class="text-sm text-muted" style="line-height:1.4;">
+                            <?= htmlspecialchars(mb_strimwidth($n['body'] ?? '', 0, 140, '...'), ENT_QUOTES, 'UTF-8') ?>
+                        </div>
+                    </div>
+
+                    <div style="text-align:right; flex-shrink:0;">
+                        <span class="text-xs text-muted" style="display:block;"><?= date('d M Y, g:i A', strtotime($n['created_at'])) ?></span>
+                        <?php if (!$isRead): ?>
+                            <form method="POST" action="/messages/<?= (int) $n['id'] ?>/read" style="margin-top:0.35rem;" onclick="event.stopPropagation();">
+                                <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
+                                <button type="submit" class="btn btn--ghost btn--xs text-xs" style="color:var(--primary);">
+                                    Mark Read
+                                </button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <div class="empty-state">
+            <div class="empty-state__icon">&#128236;</div>
+            <div class="empty-state__title">Your inbox is clear</div>
+            <div class="empty-state__text">No messages match the current filter.</div>
+        </div>
+    <?php endif; ?>
+</div>
+
+<!-- Notification Detail Modal -->
+<div id="msgDetailModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
+    <div class="card" style="width:100%; max-width:540px; margin:1rem;">
+        <div class="d-flex justify-between items-center mb-2 pb-2" style="border-bottom:1px solid var(--border);">
+            <div class="d-flex items-center gap-1">
+                <span id="msgModalBadge" class="badge">Type</span>
+                <span class="text-xs text-muted" id="msgModalDate">Date</span>
+            </div>
+            <button type="button" class="btn btn--ghost btn--xs" onclick="closeMsgModal()">&#10005;</button>
+        </div>
+
+        <h3 id="msgModalTitle" style="margin-bottom:0.75rem; font-size:1.15rem;">Title</h3>
+        <div id="msgModalBody" style="font-size:0.925rem; color:var(--text); line-height:1.6; white-space:pre-wrap; background:var(--surface-sunken); padding:1rem; border-radius:8px; border:1px solid var(--border); margin-bottom:1.25rem;">
+            Body
+        </div>
+
+        <div class="d-flex justify-end gap-1">
+            <button type="button" class="btn btn--primary btn--sm" onclick="closeMsgModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Compose Broadcast Modal -->
+<div id="broadcastModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
+    <div class="card" style="width:100%; max-width:540px; margin:1rem;">
+        <h3 style="margin-bottom:0.75rem;">Compose System Broadcast</h3>
+        <p class="text-xs text-muted mb-2">Send an internal notification to user inboxes (in-app routing, no SMS/email)</p>
+
+        <form method="POST" action="/messages/send">
+            <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
+
+            <div class="form-group mb-2">
+                <label class="form-label" for="targetRole">Target Recipient Audience</label>
+                <select id="targetRole" name="target_role" class="form-control form-control--sm">
+                    <option value="all">All Users (System-wide)</option>
+                    <option value="teacher">Teachers Only</option>
+                    <option value="coordinator">Coordinators Only</option>
+                    <option value="staff">Staff Only</option>
+                    <option value="admin">Administrators Only</option>
+                </select>
+            </div>
+
+            <div class="form-group mb-2">
+                <label class="form-label" for="msgType">Message Classification</label>
+                <select id="msgType" name="type" class="form-control form-control--sm">
+                    <option value="info">Information</option>
+                    <option value="warning">Important Warning</option>
+                    <option value="system">System Notice</option>
+                </select>
+            </div>
+
+            <div class="form-group mb-2">
+                <label class="form-label" for="broadcastTitle">Subject / Title <span class="required" style="color:var(--danger);">*</span></label>
+                <input type="text" id="broadcastTitle" name="title" class="form-control" placeholder="e.g. System Maintenance Scheduled" required>
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="form-label" for="broadcastBody">Message Body <span class="required" style="color:var(--danger);">*</span></label>
+                <textarea id="broadcastBody" name="body" class="form-control" rows="4" placeholder="Enter notification message details..." required></textarea>
+            </div>
+
+            <div class="d-flex justify-end gap-1">
+                <button type="button" class="btn btn--ghost btn--sm" onclick="closeBroadcastModal()">Cancel</button>
+                <button type="submit" class="btn btn--primary btn--sm">Dispatch Notification</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function viewNotification(id, title, body, date, type, isRead) {
+    document.getElementById('msgModalTitle').textContent = title;
+    document.getElementById('msgModalBody').textContent = body;
+    document.getElementById('msgModalDate').textContent = date;
+    var badge = document.getElementById('msgModalBadge');
+    badge.textContent = type.toUpperCase();
+    badge.className = 'badge badge--primary';
+
+    document.getElementById('msgDetailModal').style.display = 'flex';
+
+    if (!isRead) {
+        fetch('/messages/' + id + '/read', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+    }
+}
+
+function closeMsgModal() {
+    document.getElementById('msgDetailModal').style.display = 'none';
+}
+
+function openBroadcastModal() {
+    document.getElementById('broadcastModal').style.display = 'flex';
+}
+
+function closeBroadcastModal() {
+    document.getElementById('broadcastModal').style.display = 'none';
+}
+</script>

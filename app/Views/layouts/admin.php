@@ -192,8 +192,8 @@ $notificationCount = $notificationCount ?? 0;
                 <span class="theme-icon-dark" style="display:none;">&#9728;</span>
             </button>
 
-            <!-- Notifications -->
-            <button type="button" class="notification-bell" aria-label="Notifications" onclick="window.location.href='/notifications'">
+            <!-- Messages & Notifications -->
+            <button type="button" class="notification-bell" aria-label="Messages" onclick="window.location.href='/messages'">
                 &#128276;
                 <?php if ($notificationCount > 0): ?>
                     <span class="notification-bell__count"><?= (int) $notificationCount ?></span>
@@ -311,6 +311,23 @@ $notificationCount = $notificationCount ?? 0;
             <?php endif; ?>
 
             <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>
+            <!-- Attendance & QR -->
+            <div class="sidebar__nav-group">
+                <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'attendance' ? 'active open' : '' ?>" data-toggle-sub="attendance-sub">
+                    <span style="display:flex;align-items:center;gap:0.75rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                        Attendance &amp; QR
+                    </span>
+                    <span class="chevron">&#9654;</span>
+                </a>
+                <div class="sidebar__sub-links <?= $activePage === 'attendance' ? 'open' : '' ?>" id="attendance-sub">
+                    <a href="/attendance" class="sidebar__sub-link <?= $activeSubPage === 'log' ? 'active' : '' ?>">Daily Attendance</a>
+                    <a href="/attendance/qr" class="sidebar__sub-link <?= $activeSubPage === 'qr' ? 'active' : '' ?>">QR Scan Terminal</a>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>
             <!-- Workflows -->
             <div class="sidebar__nav-group">
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'workflows' ? 'active open' : '' ?>" data-toggle-sub="workflows-sub">
@@ -323,6 +340,36 @@ $notificationCount = $notificationCount ?? 0;
                 <div class="sidebar__sub-links <?= $activePage === 'workflows' ? 'open' : '' ?>" id="workflows-sub">
                     <a href="/workflows" class="sidebar__sub-link <?= $activeSubPage === 'pending' ? 'active' : '' ?>">Pending Approvals</a>
                     <a href="/workflows/history" class="sidebar__sub-link <?= $activeSubPage === 'history' ? 'active' : '' ?>">History</a>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Messages Inbox -->
+            <a href="/messages" class="sidebar__link <?= $activePage === 'messages' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                Messages
+                <?php if ($notificationCount > 0): ?>
+                    <span class="badge badge--danger text-xs" style="margin-left:auto; border-radius:9999px; padding:0.15rem 0.45rem;"><?= (int) $notificationCount ?></span>
+                <?php endif; ?>
+            </a>
+
+            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator'])): ?>
+            <!-- Reports Hub -->
+            <div class="sidebar__nav-group">
+                <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'reports' ? 'active open' : '' ?>" data-toggle-sub="reports-sub">
+                    <span style="display:flex;align-items:center;gap:0.75rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        Reports Hub
+                    </span>
+                    <span class="chevron">&#9654;</span>
+                </a>
+                <div class="sidebar__sub-links <?= $activePage === 'reports' ? 'open' : '' ?>" id="reports-sub">
+                    <a href="/reports" class="sidebar__sub-link <?= $activeSubPage === 'hub' ? 'active' : '' ?>">All Reports</a>
+                    <a href="/reports/attendance" class="sidebar__sub-link <?= $activeSubPage === 'attendance' ? 'active' : '' ?>">Attendance Report</a>
+                    <a href="/reports/classes" class="sidebar__sub-link <?= $activeSubPage === 'classes' ? 'active' : '' ?>">Class &amp; Enrollment</a>
+                    <a href="/reports/users" class="sidebar__sub-link <?= $activeSubPage === 'users' ? 'active' : '' ?>">Users &amp; Staff</a>
+                    <a href="/reports/payments" class="sidebar__sub-link <?= $activeSubPage === 'payments' ? 'active' : '' ?>">Payment Summary</a>
+                    <a href="/reports/students" class="sidebar__sub-link <?= $activeSubPage === 'students' ? 'active' : '' ?>">Student Status</a>
                 </div>
             </div>
             <?php endif; ?>

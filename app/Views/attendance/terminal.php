@@ -1,0 +1,352 @@
+<?php
+/**
+ * QR Scan Terminal View
+ * Document 2 Page 2, 9, 10 & Kavindu Role Guide:
+ * - Real-time QR / Barcode Scan Terminal
+ * - 5-Second Loud Alert Sound on Deactivated Account
+ * - Modal Display: Account Deactivated Alert
+ * - Marked with RED FLAG in Database
+ */
+
+$classes = $classes ?? [];
+?>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-header__title">QR Scan Entrance Terminal</h1>
+        <p class="text-sm text-muted">Automated student gate &amp; classroom attendance scanner</p>
+    </div>
+    <div class="page-header__actions">
+        <a href="/attendance" class="btn btn--ghost">
+            &larr; View Attendance Sheet
+        </a>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns: 1fr 380px; gap:1.5rem;" id="terminalLayout">
+    <!-- LEFT: SCANNER INTERFACE -->
+    <div>
+        <!-- Class Selector & Status Bar -->
+        <div class="card mb-3" style="background:var(--surface); border:1px solid var(--border);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                <div style="flex:1; min-width:240px;">
+                    <label class="form-label text-xs" for="terminalClassSelector">Active Classroom / Session:</label>
+                    <select id="terminalClassSelector" class="form-control form-control--sm">
+                        <option value="">-- All Active Classes / Entrance Gate --</option>
+                        <?php foreach ($classes as $c): ?>
+                            <option value="<?= (int) $c['id'] ?>">
+                                <?= htmlspecialchars($c['class_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="d-flex items-center gap-1">
+                    <span id="scannerStatusBadge" class="badge badge--success" style="padding:0.4rem 0.8rem; font-size:0.8rem;">
+                        &#9679; Terminal Ready
+                    </span>
+                    <button type="button" class="btn btn--ghost btn--sm" id="testAudioBtn" onclick="testAlertAudio()" title="Test 5s Loud Alert Sound">
+                        &#128266; Test Siren
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scanner Card -->
+        <div class="card mb-3" style="text-align:center; padding:2rem 1.5rem; position:relative; overflow:hidden;">
+            <!-- Barcode / Manual Input Bar -->
+            <div style="max-width:540px; margin:0 auto 1.5rem auto;">
+                <form id="scanInputForm" onsubmit="handleManualSubmit(event)">
+                    <div style="display:flex; gap:0.5rem;">
+                        <input 
+                            type="text" 
+                            id="scanInput" 
+                            class="form-control" 
+                            placeholder="Scan QR Card or Enter Student ID (e.g. STU20260001)..." 
+                            autofocus 
+                            autocomplete="off"
+                            style="font-size:1.1rem; font-family:monospace; padding:0.75rem 1rem;"
+                        >
+                        <button type="submit" class="btn btn--primary" style="padding:0 1.5rem; font-weight:700;">
+                            Verify
+                        </button>
+                    </div>
+                </form>
+                <div class="form-hint text-xs mt-1" style="color:var(--text-muted);">
+                    Scanner hardware will automatically trigger on barcode / QR swipe.
+                </div>
+            </div>
+
+            <!-- Virtual Scanner Target Graphic -->
+            <div id="scannerTargetBox" style="width:260px; height:260px; margin:0 auto; border:3px dashed var(--primary); border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--surface-sunken); transition:all 0.3s ease;">
+                <div style="font-size:3rem; margin-bottom:0.5rem;">&#128247;</div>
+                <strong style="color:var(--text); font-size:0.95rem;">Present QR Code</strong>
+                <span class="text-xs text-muted mt-1">Ready for input</span>
+            </div>
+
+            <!-- Last Scanned Result Overlay Card -->
+            <div id="scanResultCard" style="display:none; max-width:480px; margin:1.5rem auto 0 auto; padding:1.25rem; border-radius:12px; animation:slideUp 0.3s ease;">
+                <div style="display:flex; align-items:center; gap:1rem; text-align:left;">
+                    <div id="resPhoto" style="width:64px; height:64px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700; flex-shrink:0; overflow:hidden;">
+                        S
+                    </div>
+                    <div style="flex:1;">
+                        <div id="resStatusBadge" class="badge mb-1">Status</div>
+                        <h3 id="resName" style="margin:0 0 0.2rem 0; font-size:1.15rem;">Student Name</h3>
+                        <div id="resId" style="font-family:monospace; font-weight:700; font-size:0.875rem; color:var(--primary);">STU20260001</div>
+                        <div id="resMsg" class="text-xs text-muted mt-1">Message</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: LIVE SCAN LOGS PANEL -->
+    <div class="card" style="display:flex; flex-direction:column; height:fit-content; max-height:650px;">
+        <div class="d-flex justify-between items-center mb-2 pb-2" style="border-bottom:1px solid var(--border);">
+            <h3 style="margin:0; font-size:1rem;">Live Terminal Feed</h3>
+            <span class="text-xs text-muted" id="feedCount">0 Scans</span>
+        </div>
+
+        <div id="terminalFeedList" style="overflow-y:auto; display:flex; flex-direction:column; gap:0.6rem; padding-right:0.25rem; flex:1;">
+            <div class="empty-state" id="emptyFeedState" style="padding:2rem 1rem;">
+                <div class="empty-state__icon">&#128225;</div>
+                <div class="empty-state__title" style="font-size:0.9rem;">Waiting for scans...</div>
+                <div class="empty-state__text text-xs">Student attendance scans will appear here live.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- DEACTIVATED ACCOUNT RED ALERT MODAL (Document 2 Page 2, 9) -->
+<!-- ======================================================== -->
+<div id="deactivatedAlertModal" style="display:none; position:fixed; inset:0; background:rgba(220, 38, 38, 0.45); backdrop-filter:blur(6px); z-index:10000; align-items:center; justify-content:center; animation:fadeIn 0.2s ease;">
+    <div style="background:#ffffff; border:3px solid #dc2626; border-radius:16px; width:100%; max-width:540px; margin:1rem; padding:2rem; box-shadow:0 25px 50px -12px rgba(220,38,38,0.35); text-align:center;">
+        <div style="width:72px; height:72px; border-radius:50%; background:#fee2e2; color:#dc2626; display:flex; align-items:center; justify-content:center; font-size:2.5rem; margin:0 auto 1rem auto; animation:bounce 1s infinite;">
+            &#9888;
+        </div>
+
+        <h2 style="color:#b91c1c; font-size:1.5rem; margin:0 0 0.5rem 0;" id="deactModalHeader">
+            Account Deactivated
+        </h2>
+
+        <div id="deactStudentDetails" style="padding:0.75rem; background:#fef2f2; border-radius:8px; border:1px solid #fecaca; margin-bottom:1rem; display:inline-block; font-weight:700; color:#991b1b;">
+            <span id="deactStudentName">Student Name</span> &bull; <code id="deactStudentID">STU20260001</code>
+        </div>
+
+        <p style="color:#4b5563; font-size:0.95rem; line-height:1.5; margin:0 0 1.5rem 0;" id="deactModalBody">
+            Your account has been automatically deactivated because the monthly fee was not received within the 21-day grace period. Please make a payment to reactivate your access.
+        </p>
+
+        <div style="padding:0.5rem; background:#fee2e2; border-radius:6px; color:#991b1b; font-weight:700; font-size:0.8125rem; margin-bottom:1.5rem;">
+            &#9873; Attendance Marked with RED FLAG in System Logs
+        </div>
+
+        <button type="button" class="btn btn--danger" style="padding:0.75rem 2rem; font-size:1rem; font-weight:700; width:100%;" onclick="closeDeactivatedModal()">
+            Acknowledge &amp; Silence Siren
+        </button>
+    </div>
+</div>
+
+<script>
+// Web Audio API 5-Second Loud Siren Alert Generator
+var audioCtx = null;
+var sirenInterval = null;
+
+function getAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    return audioCtx;
+}
+
+// 5-Second Continuous Loud Alarm Sound (Document 2 Page 2, 9 Requirement)
+function playLoudDeactivatedAlertSound() {
+    try {
+        var ctx = getAudioContext();
+        var startTime = ctx.currentTime;
+        var duration = 5.0; // exactly 5 seconds
+
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+
+        osc.type = 'sawtooth';
+        // Alternating frequency siren between 880Hz and 440Hz
+        for (var t = 0; t < duration; t += 0.5) {
+            osc.frequency.setValueAtTime(880, startTime + t);
+            osc.frequency.setValueAtTime(440, startTime + t + 0.25);
+        }
+
+        gain.gain.setValueAtTime(0.5, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+    } catch (e) {
+        console.error('Audio playback error:', e);
+    }
+}
+
+// Pleasant Chime for Present / Valid Check-in
+function playSuccessChime() {
+    try {
+        var ctx = getAudioContext();
+        var now = ctx.currentTime;
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+        osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.6);
+    } catch (e) {}
+}
+
+function testAlertAudio() {
+    playLoudDeactivatedAlertSound();
+    alert('5-Second Siren Test playing!');
+}
+
+// Handle Form Submission
+function handleManualSubmit(e) {
+    e.preventDefault();
+    var input = document.getElementById('scanInput');
+    var code = input.value.trim();
+    if (!code) return;
+
+    var classId = document.getElementById('terminalClassSelector').value;
+    processScan(code, classId);
+    input.value = '';
+    input.focus();
+}
+
+// Process scan request via AJAX
+function processScan(code, classId) {
+    var box = document.getElementById('scannerTargetBox');
+    box.style.borderColor = '#3b82f6';
+    box.style.background = '#eff6ff';
+
+    fetch('/attendance/scan', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ code: code, class_id: classId })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        box.style.borderColor = 'var(--primary)';
+        box.style.background = 'var(--surface-sunken)';
+
+        if (data.is_deactivated || data.status === 'red_flag') {
+            // TRIGGER 5-SEC LOUD ALERT SOUND AND MODAL
+            playLoudDeactivatedAlertSound();
+            showDeactivatedModal(data);
+            addFeedItem(data, 'red_flag');
+        } else if (data.success) {
+            playSuccessChime();
+            showScanSuccess(data);
+            addFeedItem(data, 'present');
+        } else {
+            alert(data.message || 'Scan error.');
+        }
+    })
+    .catch(function(err) {
+        console.error('Scan error:', err);
+        box.style.borderColor = 'var(--danger)';
+    });
+}
+
+function showDeactivatedModal(data) {
+    var modal = document.getElementById('deactivatedAlertModal');
+    var s = data.student || {};
+    document.getElementById('deactModalHeader').textContent = data.header || 'Account Deactivated';
+    document.getElementById('deactStudentName').textContent = s.full_name || 'Student';
+    document.getElementById('deactStudentID').textContent = s.student_id_display || '';
+    document.getElementById('deactModalBody').textContent = data.message || '';
+    modal.style.display = 'flex';
+}
+
+function closeDeactivatedModal() {
+    document.getElementById('deactivatedAlertModal').style.display = 'none';
+    document.getElementById('scanInput').focus();
+}
+
+function showScanSuccess(data) {
+    var card = document.getElementById('scanResultCard');
+    var s = data.student || {};
+    card.style.display = 'block';
+    card.style.background = '#f0fdf4';
+    card.style.border = '1px solid #bbf7d0';
+
+    document.getElementById('resStatusBadge').className = 'badge badge--success';
+    document.getElementById('resStatusBadge').textContent = 'Present &bull; ' + (data.check_in_time || '');
+    document.getElementById('resName').textContent = s.full_name || 'Student';
+    document.getElementById('resId').textContent = s.student_id_display || '';
+    document.getElementById('resMsg').textContent = data.message || '';
+
+    var photoEl = document.getElementById('resPhoto');
+    if (s.profile_photo) {
+        photoEl.innerHTML = '<img src="' + s.profile_photo + '" style="width:100%;height:100%;object-fit:cover;">';
+    } else {
+        photoEl.innerHTML = (s.full_name ? s.full_name.charAt(0).toUpperCase() : 'S');
+    }
+}
+
+var scanCount = 0;
+function addFeedItem(data, status) {
+    var empty = document.getElementById('emptyFeedState');
+    if (empty) empty.style.display = 'none';
+
+    var list = document.getElementById('terminalFeedList');
+    var s = data.student || {};
+    scanCount++;
+    document.getElementById('feedCount').textContent = scanCount + ' Scans';
+
+    var isRed = (status === 'red_flag');
+    var item = document.createElement('div');
+    item.style.padding = '0.5rem 0.75rem';
+    item.style.borderRadius = '8px';
+    item.style.borderLeft = isRed ? '4px solid #dc2626' : '4px solid #16a34a';
+    item.style.background = isRed ? '#fef2f2' : 'var(--surface-sunken)';
+    item.style.fontSize = '0.8125rem';
+    item.style.animation = 'slideUp 0.2s ease';
+
+    item.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>${s.full_name || 'Student'}</strong>
+            <span class="badge ${isRed ? 'badge--danger' : 'badge--success'}" style="font-size:0.65rem;">
+                ${isRed ? 'RED FLAG' : 'Present'}
+            </span>
+        </div>
+        <div class="text-xs text-muted" style="display:flex; justify-content:space-between; margin-top:0.2rem;">
+            <span>${s.student_id_display || ''}</span>
+            <span>${data.check_in_time || new Date().toLocaleTimeString()}</span>
+        </div>
+    `;
+
+    list.insertBefore(item, list.firstChild);
+}
+
+// Auto-focus input on page load
+window.addEventListener('load', function() {
+    var input = document.getElementById('scanInput');
+    if (input) input.focus();
+});
+</script>

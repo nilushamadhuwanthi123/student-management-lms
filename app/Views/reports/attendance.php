@@ -1,0 +1,159 @@
+<?php
+/**
+ * 1. Attendance Report View
+ */
+
+$reportData = $reportData ?? [];
+$classes    = $classes ?? [];
+$institutes = $institutes ?? [];
+$startDate  = $startDate ?? date('Y-m-01');
+$endDate    = $endDate ?? date('Y-m-d');
+$filters    = $filters ?? [];
+
+// Calculate summary totals
+$totPresent = array_sum(array_column($reportData, 'present_count'));
+$totLate    = array_sum(array_column($reportData, 'late_count'));
+$totAbsent  = array_sum(array_column($reportData, 'absent_count'));
+$totRedFlag = array_sum(array_column($reportData, 'red_flag_count'));
+$totLogged  = array_sum(array_column($reportData, 'total_logged'));
+$rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
+?>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-header__title">Attendance Analytics Report</h1>
+        <p class="text-sm text-muted">Period: <strong><?= date('d M Y', strtotime($startDate)) ?></strong> to <strong><?= date('d M Y', strtotime($endDate)) ?></strong></p>
+    </div>
+    <div class="page-header__actions d-flex gap-1">
+        <a href="/reports" class="btn btn--ghost btn--sm">
+            &larr; Reports Hub
+        </a>
+        <button type="button" class="btn btn--secondary btn--sm" onclick="window.print()">
+            &#128424; Print Report
+        </button>
+        <a href="/reports/attendance?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" class="btn btn--primary btn--sm">
+            &#128190; Export to CSV
+        </a>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="card mb-3 no-print">
+    <form method="GET" action="/reports/attendance" style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:flex-end;">
+        <div>
+            <label class="form-label text-xs">Start Date</label>
+            <input type="date" name="start_date" class="form-control form-control--sm" value="<?= htmlspecialchars($startDate, ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+
+        <div>
+            <label class="form-label text-xs">End Date</label>
+            <input type="date" name="end_date" class="form-control form-control--sm" value="<?= htmlspecialchars($endDate, ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+
+        <div style="min-width:180px;">
+            <label class="form-label text-xs">Class Filter</label>
+            <select name="class_id" class="form-control form-control--sm">
+                <option value="">All Classes</option>
+                <?php foreach ($classes as $c): ?>
+                    <option value="<?= (int) $c['id'] ?>" <?= ($filters['class_id'] ?? '') == $c['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($c['class_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div style="min-width:180px;">
+            <label class="form-label text-xs">Institute Filter</label>
+            <select name="institute_id" class="form-control form-control--sm">
+                <option value="">All Institutes</option>
+                <?php foreach ($institutes as $i): ?>
+                    <option value="<?= (int) $i['id'] ?>" <?= ($filters['institute_id'] ?? '') == $i['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($i['name'], ENT_QUOTES, 'UTF-8') ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div class="d-flex gap-1">
+            <button type="submit" class="btn btn--primary btn--sm">Apply Filters</button>
+            <a href="/reports/attendance" class="btn btn--ghost btn--sm">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Summary Metric Cards -->
+<div class="kpi-grid mb-3">
+    <div class="kpi-card" style="border-left: 4px solid var(--primary);">
+        <span class="kpi-card__label">Total Check-Ins</span>
+        <span class="kpi-card__value"><?= number_format($totLogged) ?></span>
+    </div>
+
+    <div class="kpi-card" style="border-left: 4px solid #10b981;">
+        <span class="kpi-card__label">Present Total</span>
+        <span class="kpi-card__value" style="color:#059669;"><?= number_format($totPresent) ?></span>
+        <span class="text-xs text-muted"><?= $rate ?>% Average Rate</span>
+    </div>
+
+    <div class="kpi-card" style="border-left: 4px solid #f59e0b;">
+        <span class="kpi-card__label">Late Arrivals</span>
+        <span class="kpi-card__value" style="color:#d97706;"><?= number_format($totLate) ?></span>
+    </div>
+
+    <div class="kpi-card" style="border-left: 4px solid var(--danger);">
+        <span class="kpi-card__label">Red Flags</span>
+        <span class="kpi-card__value" style="color:var(--danger);"><?= number_format($totRedFlag) ?></span>
+        <span class="text-xs text-muted">Deactivated Scans</span>
+    </div>
+</div>
+
+<!-- Report Table -->
+<div class="card">
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Class Name</th>
+                    <th>Subject</th>
+                    <th>Institute</th>
+                    <th style="text-align:center;">Present</th>
+                    <th style="text-align:center;">Late</th>
+                    <th style="text-align:center;">Red Flags</th>
+                    <th style="text-align:center;">Total Logged</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($reportData)): ?>
+                    <?php foreach ($reportData as $row): ?>
+                        <tr>
+                            <td><strong><?= date('d M Y', strtotime($row['date'])) ?></strong></td>
+                            <td><?= htmlspecialchars($row['class_name'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><?= htmlspecialchars($row['subject'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><?= htmlspecialchars($row['institute_name'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
+                            <td style="text-align:center;"><span class="badge badge--success"><?= (int) $row['present_count'] ?></span></td>
+                            <td style="text-align:center;"><span class="badge badge--warning"><?= (int) $row['late_count'] ?></span></td>
+                            <td style="text-align:center;">
+                                <?php if ($row['red_flag_count'] > 0): ?>
+                                    <span class="badge badge--danger">&#9873; <?= (int) $row['red_flag_count'] ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted">0</span>
+                                <?php endif; ?>
+                            </td>
+                            <td style="text-align:center;"><strong><?= (int) $row['total_logged'] ?></strong></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <div class="empty-state__icon">&#128197;</div>
+                                <div class="empty-state__title">No attendance records for selected period</div>
+                                <div class="empty-state__text">Change the date range or filters above.</div>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
