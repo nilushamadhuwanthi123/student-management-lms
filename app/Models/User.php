@@ -295,4 +295,19 @@ class User extends BaseModel
             }
         }
     }
+
+    /**
+     * Get users by role (e.g. 'coordinator', 'teacher', 'staff').
+     */
+    public function getByRole(string $role, string $status = 'active'): array
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE role = :role";
+        $params = [':role' => $role];
+        if ($status !== '') {
+            $sql .= " AND status = :status";
+            $params[':status'] = $status;
+        }
+        $sql .= " ORDER BY full_name ASC";
+        return $this->query($sql, $params)->fetchAll();
+    }
 }

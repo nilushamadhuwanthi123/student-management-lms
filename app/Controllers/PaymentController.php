@@ -35,19 +35,35 @@ class PaymentController extends BaseController
         // Get revenue stats for the selected month
         $revenueStats = [];
         $overduePayments = [];
+        $payments = [];
         try {
             $revenueStats = $this->paymentModel->getRevenueStats($monthYear);
             $overduePayments = $this->paymentModel->getOverdue($classId);
+            $payments = $this->paymentModel->getAllPayments($monthYear, $classId);
         } catch (\Throwable $e) {
             error_log('Payment stats error: ' . $e->getMessage());
         }
+
+        $overdueSum = 0.0;
+        foreach ($overduePayments as $op) {
+            $overdueSum += (float) ($op['amount_due'] ?? $op['amount'] ?? 0) - (float) ($op['amount_paid'] ?? 0);
+        }
+
+        $summary = [
+            'collected' => $revenueStats['total_collected'] ?? 0,
+            'pending'   => $revenueStats['total_pending'] ?? 0,
+            'overdue'   => $overdueSum,
+        ];
 
         // Load classes for filter dropdown
         $classes = [];
         if ($this->db) {
             try {
                 $classModel = new \ClassModel();
-                $classes = $classModel->all('name ASC');
+                $classes = $classModel->all('class_name ASC');
+                foreach ($classes as &$cls) {
+                    $cls['name'] = $cls['name'] ?? $cls['class_name'] ?? '';
+                }
             } catch (\Throwable $e) {
                 error_log('Failed to load classes: ' . $e->getMessage());
             }
@@ -56,10 +72,19 @@ class PaymentController extends BaseController
         $this->view('payments/index', [
             'pageTitle'       => 'Payments',
             'monthYear'       => $monthYear,
+            'currentMonth'    => $monthYear,
             'revenueStats'    => $revenueStats,
             'overduePayments' => $overduePayments,
+            'payments'        => $payments,
+            'summary'         => $summary,
             'classes'         => $classes,
             'selectedClassId' => $classId,
+            'filters'         => [
+                'month'    => $monthYear,
+                'class_id' => $classId,
+            ],
+            'currentPage'     => 1,
+            'totalPages'      => 1,
         ]);
     }
 
@@ -87,10 +112,38 @@ class PaymentController extends BaseController
             $this->redirect('/payments');
         }
 
+        $studentName = $student['full_name'] ?? trim(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? ''));
+
         $this->view('payments/student', [
-            'pageTitle' => 'Payments - ' . $student['first_name'] . ' ' . $student['last_name'],
+            'pageTitle' => 'Payments - ' . $studentName,
             'student'   => $student,
             'payments'  => $payments,
+        ]);
+    }
+
+    /**
+     * Mark a payment as paid by URL id param.
+     */
+    public function markPaidById(string $id): void
+    {
+        $_POST['payment_id'] = $id;
+        $this->markPaid();
+    }
+
+    /**
+     * Generate payments view form.
+     */
+    public function generateView(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+
+        $this->view('payments/generate', [
+            'pageTitle'    => 'Generate Monthly Payments',
+            'currentMonth' => date('Y-m'),
         ]);
     }
 

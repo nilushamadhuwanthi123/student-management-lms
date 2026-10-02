@@ -122,23 +122,33 @@ class WorkflowController extends BaseController
     {
         AuthMiddleware::requireAuth();
 
-        $entityId   = (int) ($_GET['entity_id'] ?? 0);
-        $entityType = $_GET['entity_type'] ?? '';
+        $filters = [
+            'type'        => trim($_GET['type'] ?? ''),
+            'status'      => trim($_GET['status'] ?? ''),
+            'date_from'   => trim($_GET['date_from'] ?? ''),
+            'date_to'     => trim($_GET['date_to'] ?? ''),
+            'entity_id'   => !empty($_GET['entity_id']) ? (int) $_GET['entity_id'] : null,
+            'entity_type' => trim($_GET['entity_type'] ?? ''),
+        ];
 
-        $history = [];
-        if ($entityId > 0 && $entityType !== '') {
-            try {
-                $history = $this->workflowModel->getHistory($entityId, $entityType);
-            } catch (\Throwable $e) {
-                error_log('Workflow history error: ' . $e->getMessage());
+        $workflows = [];
+        try {
+            if (!empty($filters['entity_id']) && !empty($filters['entity_type'])) {
+                $workflows = $this->workflowModel->getHistory((int) $filters['entity_id'], $filters['entity_type']);
+            } else {
+                $workflows = $this->workflowModel->getAllHistory(array_filter($filters));
             }
+        } catch (\Throwable $e) {
+            error_log('Workflow history error: ' . $e->getMessage());
         }
 
         $this->view('workflows/history', [
-            'pageTitle'  => 'Workflow History',
-            'history'    => $history,
-            'entityId'   => $entityId,
-            'entityType' => $entityType,
+            'pageTitle'   => 'Workflow History',
+            'workflows'   => $workflows,
+            'history'     => $workflows,
+            'filters'     => $filters,
+            'currentPage' => 1,
+            'totalPages'  => 1,
         ]);
     }
 

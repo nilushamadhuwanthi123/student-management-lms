@@ -25,7 +25,7 @@ class BaseController
      * @param array<string, mixed> $data  Variables to extract into the template scope
      * @param string|null $layout  Layout file (null for default "layouts/app")
      */
-    protected function view(string $template, array $data = [], ?string $layout = 'layouts/app'): void
+    protected function view(string $template, array $data = [], ?string $layout = 'layouts/admin'): void
     {
         $viewsPath = BASE_PATH . '/app/Views';
         $templateFile = $viewsPath . '/' . str_replace('.', '/', $template) . '.php';

@@ -170,6 +170,7 @@ $router->post('/contact', ['App\Controllers\HomeController', 'contactSubmit']);
 $router->get('/login', ['App\Controllers\AuthController', 'showLogin']);
 $router->post('/login', ['App\Controllers\AuthController', 'login']);
 $router->get('/logout', ['App\Controllers\AuthController', 'logout']);
+$router->post('/logout', ['App\Controllers\AuthController', 'logout']);
 $router->get('/first-login-password', ['App\Controllers\AuthController', 'showFirstLoginPassword']);
 $router->post('/first-login-password', ['App\Controllers\AuthController', 'updateFirstLoginPassword']);
 
@@ -178,6 +179,9 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
 
     // Dashboard
     $router->get('/dashboard', ['App\Controllers\DashboardController', 'index']);
+
+    // User Profile
+    $router->get('/profile', ['App\Controllers\UserController', 'profile']);
 
     // User & Role Management (Admins, Coordinators, Staff, Teachers)
     $router->get('/users', ['App\Controllers\UserController', 'index']);
@@ -212,18 +216,25 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/students', ['App\Controllers\StudentController', 'index']);
     $router->get('/students/create', ['App\Controllers\StudentController', 'create']);
     $router->post('/students/create', ['App\Controllers\StudentController', 'store']);
+    $router->post('/students', ['App\Controllers\StudentController', 'store']);
     $router->get('/students/{id}', ['App\Controllers\StudentController', 'show']);
     $router->get('/students/{id}/edit', ['App\Controllers\StudentController', 'edit']);
     $router->post('/students/{id}/edit', ['App\Controllers\StudentController', 'update']);
+    $router->post('/students/{id}', ['App\Controllers\StudentController', 'update']);
     $router->post('/students/{id}/delete', ['App\Controllers\StudentController', 'delete']);
 
     // Payments
     $router->get('/payments', ['App\Controllers\PaymentController', 'index']);
+    $router->get('/payments/generate', ['App\Controllers\PaymentController', 'generateView']);
+    $router->post('/payments/generate', ['App\Controllers\PaymentController', 'generateMonthly']);
+    $router->post('/payments/generate-monthly', ['App\Controllers\PaymentController', 'generateMonthly']);
     $router->get('/payments/{studentId}', ['App\Controllers\PaymentController', 'studentPayments']);
+    $router->post('/payments/{id}/mark-paid', ['App\Controllers\PaymentController', 'markPaidById']);
     $router->post('/payments/mark-paid', ['App\Controllers\PaymentController', 'markPaid']);
 
     // Workflows
     $router->get('/workflows', ['App\Controllers\WorkflowController', 'index']);
+    $router->get('/workflows/history', ['App\Controllers\WorkflowController', 'history']);
     $router->post('/workflows/{id}/approve', ['App\Controllers\WorkflowController', 'approve']);
     $router->post('/workflows/{id}/reject', ['App\Controllers\WorkflowController', 'reject']);
 
@@ -248,7 +259,9 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/reports/students', ['App\Controllers\ReportController', 'students']);
 
     // Audit & History
+    $router->get('/audit', ['App\Controllers\AuditController', 'index']);
     $router->get('/audit-log', ['App\Controllers\AuditController', 'index']);
+    $router->get('/audit/user/{id}', ['App\Controllers\AuditController', 'userHistory']);
     $router->get('/workflow-history', ['App\Controllers\AuditController', 'workflowHistory']);
 
     // Settings

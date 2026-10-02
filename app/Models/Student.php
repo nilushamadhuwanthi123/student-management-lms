@@ -10,11 +10,53 @@ class Student extends BaseModel
     protected string $table = 'students';
     protected string $primaryKey = 'id';
     protected array $fillable = [
-        'student_id', 'first_name', 'last_name', 'date_of_birth',
-        'gender', 'address', 'phone', 'email',
-        'institute_id', 'status', 'profile_picture',
-        'created_at', 'updated_at',
+        'student_id_display', 'full_name', 'email', 'phone1', 'phone2',
+        'whatsapp', 'home_number', 'date_of_birth', 'address', 'province',
+        'district', 'notes', 'profile_photo', 'password_hash', 'status',
+        'created_by', 'created_at', 'updated_at',
     ];
+
+    /**
+     * Helper to decorate student rows with alias keys for view compatibility.
+     */
+    public function decorateStudent(?array $student): ?array
+    {
+        if (!$student) {
+            return null;
+        }
+
+        $student['student_id'] = $student['student_id'] ?? $student['student_id_display'] ?? '';
+        $student['phone'] = $student['phone'] ?? $student['phone1'] ?? '';
+        $student['dob'] = $student['dob'] ?? $student['date_of_birth'] ?? '';
+        $student['photo'] = $student['photo'] ?? $student['profile_photo'] ?? '';
+
+        if (!isset($student['first_name']) || !isset($student['last_name'])) {
+            $parts = explode(' ', trim((string) ($student['full_name'] ?? '')));
+            $student['first_name'] = $student['first_name'] ?? ($parts[0] ?? '');
+            $student['last_name'] = $student['last_name'] ?? (count($parts) > 1 ? implode(' ', array_slice($parts, 1)) : '');
+        }
+
+        return $student;
+    }
+
+    public function find(int $id): ?array
+    {
+        $row = parent::find($id);
+        return $this->decorateStudent($row);
+    }
+
+    public function all(string $orderBy = 'full_name ASC'): array
+    {
+        $rows = parent::all($orderBy);
+        return array_map([$this, 'decorateStudent'], $rows);
+    }
+
+    public function paginate(int $page = 1, int $perPage = 15, array $conditions = [], string $orderBy = 'full_name ASC'): array
+    {
+        $result = parent::paginate($page, $perPage, $conditions, $orderBy);
+        $result['data'] = array_map([$this, 'decorateStudent'], $result['data']);
+        return $result;
+    }
 
     // ─── ID generation ───────────────────────────────────────────────
 
@@ -27,15 +69,15 @@ class Student extends BaseModel
         $year = date('Y');
         $pattern = "STD{$year}%";
 
-        $sql = "SELECT student_id FROM {$this->table}
-                WHERE student_id LIKE :pattern
-                ORDER BY student_id DESC LIMIT 1";
+        $sql = "SELECT student_id_display FROM {$this->table}
+                WHERE student_id_display LIKE :pattern
+                ORDER BY student_id_display DESC LIMIT 1";
         $stmt = $this->query($sql, [':pattern' => $pattern]);
         $last = $stmt->fetch();
 
-        $seq = $last ? (int) substr($last['student_id'], 7) + 1 : 1;
+        $seq = $last ? (int) substr($last['student_id_display'], 7) + 1 : 1;
 
-        return 'STD' . $year . str_pad($seq, 5, '0', STR_PAD_LEFT);
+        return 'STD' . $year . str_pad((string) $seq, 5, '0', STR_PAD_LEFT);
     }
 
     // ─── Relations ───────────────────────────────────────────────────
@@ -50,10 +92,12 @@ class Student extends BaseModel
             return null;
         }
 
-        $sql = "SELECT e.*, c.name AS class_name, c.monthly_fee,
-                       c.schedule, c.institute_id AS class_institute_id
+        $sql = "SELECT e.*, c.class_name, c.monthly_fee,
+                       c.schedule_days, c.start_time, c.end_time, c.institute_id AS class_institute_id,
+                       i.name AS institute_name
                 FROM enrollments e
                 INNER JOIN classes c ON e.class_id = c.id
+                LEFT JOIN institutes i ON c.institute_id = i.id
                 WHERE e.student_id = :sid
                 ORDER BY e.enrolled_at DESC";
         $student['enrollments'] = $this->query($sql, [':sid' => $id])->fetchAll();
@@ -66,14 +110,21 @@ class Student extends BaseModel
     {
         $sql = "SELECT s.* FROM {$this->table} s
                 INNER JOIN enrollments e ON s.id = e.student_id
-                WHERE e.class_id = :cid AND e.status = 'active'
-                ORDER BY s.first_name ASC";
-        return $this->query($sql, [':cid' => $classId])->fetchAll();
+                WHERE e.class_id = :cid AND e.enrollment_status = 'active'
+                ORDER BY s.full_name ASC";
+        $rows = $this->query($sql, [':cid' => $classId])->fetchAll();
+        return array_map([$this, 'decorateStudent'], $rows);
     }
 
     public function getByInstitute(int $instituteId): array
     {
-        return $this->where(['institute_id' => $instituteId], 'first_name ASC');
+        $sql = "SELECT DISTINCT s.* FROM {$this->table} s
+                INNER JOIN enrollments e ON s.id = e.student_id
+                INNER JOIN classes c ON e.class_id = c.id
+                WHERE c.institute_id = :iid
+                ORDER BY s.full_name ASC";
+        $rows = $this->query($sql, [':iid' => $instituteId])->fetchAll();
+        return array_map([$this, 'decorateStudent'], $rows);
     }
 
     // ─── Search ──────────────────────────────────────────────────────
@@ -90,9 +141,8 @@ class Student extends BaseModel
         $where  = [];
 
         if ($term !== '') {
-            $where[] = "(s.first_name LIKE :term OR s.last_name LIKE :term
-                         OR s.student_id LIKE :term OR s.email LIKE :term
-                         OR s.phone LIKE :term)";
+            $where[] = "(s.full_name LIKE :term OR s.student_id_display LIKE :term
+                         OR s.email LIKE :term OR s.phone1 LIKE :term)";
             $params[':term'] = "%{$term}%";
         }
 
@@ -100,15 +150,16 @@ class Student extends BaseModel
             $where[] = "s.status = :status";
             $params[':status'] = $filters['status'];
         }
+
+        $joinClass = '';
         if (!empty($filters['institute_id'])) {
-            $where[] = "s.institute_id = :inst";
+            $joinClass .= " INNER JOIN enrollments ei ON s.id = ei.student_id
+                            INNER JOIN classes ci ON ei.class_id = ci.id AND ci.institute_id = :inst";
             $params[':inst'] = $filters['institute_id'];
         }
 
-        $joinClass = '';
         if (!empty($filters['class_id'])) {
-            $joinClass = "INNER JOIN enrollments e ON s.id = e.student_id";
-            $where[] = "e.class_id = :cid AND e.status = 'active'";
+            $joinClass .= " INNER JOIN enrollments e ON s.id = e.student_id AND e.class_id = :cid AND e.enrollment_status = 'active'";
             $params[':cid'] = $filters['class_id'];
         }
 
@@ -117,8 +168,9 @@ class Student extends BaseModel
         $sql = "SELECT DISTINCT s.* FROM {$this->table} s
                 {$joinClass}
                 {$whereClause}
-                ORDER BY s.first_name ASC";
-        return $this->query($sql, $params)->fetchAll();
+                ORDER BY s.full_name ASC";
+        $rows = $this->query($sql, $params)->fetchAll();
+        return array_map([$this, 'decorateStudent'], $rows);
     }
 
     // ─── Statistics ──────────────────────────────────────────────────
@@ -137,8 +189,8 @@ class Student extends BaseModel
         $monthYear = date('Y-m');
         $sql = "SELECT COUNT(DISTINCT p.student_id) AS cnt
                 FROM payments p
-                WHERE p.month_year = :my AND p.status = 'paid'";
-        $paid = (int) $this->query($sql, [':my' => $monthYear])->fetch()['cnt'];
+                WHERE p.month_year LIKE :my AND p.payment_status = 'paid'";
+        $paid = (int) ($this->query($sql, [':my' => $monthYear . '%'])->fetch()['cnt'] ?? 0);
 
         return [
             'total'           => $total,
@@ -160,9 +212,9 @@ class Student extends BaseModel
     public function getPaymentStatus(int $studentId, string $monthYear): ?array
     {
         $sql = "SELECT * FROM payments
-                WHERE student_id = :sid AND month_year = :my
+                WHERE student_id = :sid AND month_year LIKE :my
                 LIMIT 1";
-        $row = $this->query($sql, [':sid' => $studentId, ':my' => $monthYear])->fetch();
+        $row = $this->query($sql, [':sid' => $studentId, ':my' => $monthYear . '%'])->fetch();
         return $row ?: null;
     }
 
@@ -184,3 +236,4 @@ class Student extends BaseModel
         return $this->query($sql, [':id' => $id])->rowCount() > 0;
     }
 }
+

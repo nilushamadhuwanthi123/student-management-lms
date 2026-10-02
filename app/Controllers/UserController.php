@@ -443,6 +443,21 @@ class UserController extends BaseController
         $this->redirect('/users');
     }
 
+    /**
+     * User profile view
+     */
+    public function profile(): void
+    {
+        AuthMiddleware::requireAuth();
+        $currentUser = $this->getCurrentUser();
+        $user = $this->userModel->find((int) ($currentUser['id'] ?? 0));
+
+        $this->view('users/profile', [
+            'pageTitle' => 'My Profile',
+            'user'      => $user ?: $currentUser,
+        ]);
+    }
+
     private function logAudit(string $action, string $entityType, int $entityId, array $details = []): void
     {
         try {
@@ -462,3 +477,4 @@ class UserController extends BaseController
         }
     }
 }
+

@@ -87,37 +87,41 @@ class AuditLog extends BaseModel
         $params = [];
 
         if (!empty($filters['date_from'])) {
-            $where[] = "created_at >= :date_from";
+            $where[] = "a.created_at >= :date_from";
             $params[':date_from'] = $filters['date_from'] . ' 00:00:00';
         }
         if (!empty($filters['date_to'])) {
-            $where[] = "created_at <= :date_to";
+            $where[] = "a.created_at <= :date_to";
             $params[':date_to'] = $filters['date_to'] . ' 23:59:59';
         }
         if (!empty($filters['action'])) {
-            $where[] = "action = :action";
+            $where[] = "a.action = :action";
             $params[':action'] = $filters['action'];
         }
         if (!empty($filters['entity_type'])) {
-            $where[] = "entity_type = :etype";
+            $where[] = "a.entity_type = :etype";
             $params[':etype'] = $filters['entity_type'];
         }
         if (!empty($filters['entity_id'])) {
-            $where[] = "entity_id = :eid";
+            $where[] = "a.entity_id = :eid";
             $params[':eid'] = $filters['entity_id'];
         }
         if (!empty($filters['user_id'])) {
-            $where[] = "user_id = :uid";
+            $where[] = "a.user_id = :uid";
             $params[':uid'] = $filters['user_id'];
         }
         if (!empty($filters['user_type'])) {
-            $where[] = "user_type = :utype";
+            $where[] = "a.user_type = :utype";
             $params[':utype'] = $filters['user_type'];
         }
 
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        $sql = "SELECT * FROM {$this->table} {$whereClause} ORDER BY created_at DESC";
+        $sql = "SELECT a.*, COALESCE(u.full_name, 'System') AS user_name
+                FROM {$this->table} a
+                LEFT JOIN users u ON a.user_id = u.id AND a.user_type = 'user'
+                {$whereClause}
+                ORDER BY a.created_at DESC";
         return $this->query($sql, $params)->fetchAll();
     }
 }
