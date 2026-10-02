@@ -53,33 +53,27 @@ foreach ($enrollments as $enr) {
             <?php endif; ?>
         </div>
         <div class="form-group">
-            <label class="form-label" for="dob">Date of Birth <span class="required">*</span></label>
-            <input type="date" id="dob" name="dob" class="form-control <?= isset($errors['dob']) ? 'is-invalid' : '' ?>" value="<?= $val('dob') ?>" required>
-            <?php if (isset($errors['dob'])): ?>
-                <div class="form-feedback form-feedback--invalid"><?= htmlspecialchars($errors['dob'], ENT_QUOTES, 'UTF-8') ?></div>
+            <label class="form-label" for="date_of_birth">Date of Birth</label>
+            <input type="date" id="date_of_birth" name="date_of_birth" class="form-control <?= isset($errors['date_of_birth']) ? 'is-invalid' : '' ?>" value="<?= $val('date_of_birth') ?>">
+            <?php if (isset($errors['date_of_birth'])): ?>
+                <div class="form-feedback form-feedback--invalid"><?= htmlspecialchars($errors['date_of_birth'], ENT_QUOTES, 'UTF-8') ?></div>
             <?php endif; ?>
         </div>
     </div>
 
     <div class="form-row form-row--3">
         <div class="form-group">
-            <label class="form-label" for="gender">Gender <span class="required">*</span></label>
-            <?php $genderVal = $old['gender'] ?? $student['gender'] ?? ''; ?>
-            <select id="gender" name="gender" class="form-control <?= isset($errors['gender']) ? 'is-invalid' : '' ?>" required>
-                <option value="">Select Gender</option>
-                <option value="male" <?= $genderVal === 'male' ? 'selected' : '' ?>>Male</option>
-                <option value="female" <?= $genderVal === 'female' ? 'selected' : '' ?>>Female</option>
-                <option value="other" <?= $genderVal === 'other' ? 'selected' : '' ?>>Other</option>
-            </select>
-            <?php if (isset($errors['gender'])): ?>
-                <div class="form-feedback form-feedback--invalid"><?= htmlspecialchars($errors['gender'], ENT_QUOTES, 'UTF-8') ?></div>
+            <label class="form-label" for="phone1">Phone</label>
+            <input type="tel" id="phone1" name="phone1" class="form-control <?= isset($errors['phone1']) ? 'is-invalid' : '' ?>" value="<?= $val('phone1') ?>" placeholder="+94 XX XXX XXXX">
+            <?php if (isset($errors['phone1'])): ?>
+                <div class="form-feedback form-feedback--invalid"><?= htmlspecialchars($errors['phone1'], ENT_QUOTES, 'UTF-8') ?></div>
             <?php endif; ?>
         </div>
         <div class="form-group">
-            <label class="form-label" for="phone">Phone</label>
-            <input type="tel" id="phone" name="phone" class="form-control <?= isset($errors['phone']) ? 'is-invalid' : '' ?>" value="<?= $val('phone') ?>" placeholder="+94 XX XXX XXXX">
-            <?php if (isset($errors['phone'])): ?>
-                <div class="form-feedback form-feedback--invalid"><?= htmlspecialchars($errors['phone'], ENT_QUOTES, 'UTF-8') ?></div>
+            <label class="form-label" for="whatsapp">WhatsApp</label>
+            <input type="tel" id="whatsapp" name="whatsapp" class="form-control <?= isset($errors['whatsapp']) ? 'is-invalid' : '' ?>" value="<?= $val('whatsapp') ?>" placeholder="+94 XX XXX XXXX">
+            <?php if (isset($errors['whatsapp'])): ?>
+                <div class="form-feedback form-feedback--invalid"><?= htmlspecialchars($errors['whatsapp'], ENT_QUOTES, 'UTF-8') ?></div>
             <?php endif; ?>
         </div>
         <div class="form-group">
@@ -150,7 +144,7 @@ foreach ($enrollments as $enr) {
                         <div class="d-flex items-center justify-between flex-wrap gap-1">
                             <label class="form-check" style="margin-bottom:0;">
                                 <input type="checkbox" name="class_ids[]" value="<?= (int) $cls['id'] ?>" <?= $isChecked ? 'checked' : '' ?>>
-                                <?= htmlspecialchars($cls['name'], ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars($cls['class_name'], ENT_QUOTES, 'UTF-8') ?>
                                 <?php if (!empty($cls['fee'])): ?>
                                     <span class="text-muted text-sm">(LKR <?= number_format((float) $cls['fee'], 2) ?>)</span>
                                 <?php endif; ?>

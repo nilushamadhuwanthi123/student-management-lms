@@ -61,13 +61,13 @@ class Student extends BaseModel
     // ─── ID generation ───────────────────────────────────────────────
 
     /**
-     * Generate next student display ID: STD + year + 5-digit sequence.
-     * e.g. STD202600001
+     * Generate next student display ID: STU + year + 5-digit sequence.
+     * e.g. STU202600001
      */
     public function generateStudentId(): string
     {
         $year = date('Y');
-        $pattern = "STD{$year}%";
+        $pattern = "STU{$year}%";
 
         $sql = "SELECT student_id_display FROM {$this->table}
                 WHERE student_id_display LIKE :pattern
@@ -77,7 +77,24 @@ class Student extends BaseModel
 
         $seq = $last ? (int) substr($last['student_id_display'], 7) + 1 : 1;
 
-        return 'STD' . $year . str_pad((string) $seq, 5, '0', STR_PAD_LEFT);
+        return 'STU' . $year . str_pad((string) $seq, 5, '0', STR_PAD_LEFT);
+    }
+
+    // ─── Authentication ──────────────────────────────────────────────
+
+    /**
+     * Authenticate a student by display ID + password.
+     */
+    public function authenticate(string $studentIdDisplay, string $password): ?array
+    {
+        $student = $this->findBy('student_id_display', $studentIdDisplay);
+        if (!$student) {
+            return null;
+        }
+        if (!password_verify($password, $student['password_hash'])) {
+            return null;
+        }
+        return $student;
     }
 
     // ─── Relations ───────────────────────────────────────────────────
@@ -132,7 +149,7 @@ class Student extends BaseModel
     /**
      * Search students with optional filters.
      *
-     * @param  string $term     Matched against name, student_id, email, phone
+     * @param  string $term     Matched against name, student_id_display, email, phone1
      * @param  array  $filters  Optional: class_id, institute_id, status
      */
     public function search(string $term, array $filters = []): array
@@ -186,7 +203,7 @@ class Student extends BaseModel
         $active = $this->count(['status' => 'active']);
         $deactivated = $this->count(['status' => 'deactivated']);
 
-        $monthYear = date('Y-m');
+        $monthYear = date('Y-m-01'); // First day of current month
         $sql = "SELECT COUNT(DISTINCT p.student_id) AS cnt
                 FROM payments p
                 WHERE p.month_year LIKE :my AND p.payment_status = 'paid'";
@@ -211,6 +228,7 @@ class Student extends BaseModel
      */
     public function getPaymentStatus(int $studentId, string $monthYear): ?array
     {
+        $monthStart = $monthYear . '-01';
         $sql = "SELECT * FROM payments
                 WHERE student_id = :sid AND month_year LIKE :my
                 LIMIT 1";
@@ -236,4 +254,3 @@ class Student extends BaseModel
         return $this->query($sql, [':id' => $id])->rowCount() > 0;
     }
 }
-

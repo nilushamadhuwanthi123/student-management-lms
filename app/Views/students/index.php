@@ -48,7 +48,7 @@ $totalStudents = $totalStudents ?? 0;
                 <option value="">All Classes</option>
                 <?php foreach ($classes as $cls): ?>
                     <option value="<?= (int) $cls['id'] ?>" <?= ($filters['class_id'] ?? '') == $cls['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($cls['name'], ENT_QUOTES, 'UTF-8') ?>
+                        <?= htmlspecialchars($cls['class_name'], ENT_QUOTES, 'UTF-8') ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -80,7 +80,7 @@ $totalStudents = $totalStudents ?? 0;
             <?php if (!empty($students)): ?>
                 <?php foreach ($students as $student): ?>
                     <tr>
-                        <td class="font-medium"><?= htmlspecialchars($student['student_id'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                        <td class="font-medium"><?= htmlspecialchars($student['student_id_display'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                         <td>
                             <div class="d-flex items-center gap-1">
                                 <div class="avatar avatar--sm">

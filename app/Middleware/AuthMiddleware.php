@@ -36,6 +36,8 @@ class AuthMiddleware
             exit;
         }
 
+        self::checkSessionActivity();
+        self::verifyFingerprint();
         self::checkDeactivated();
     }
 
@@ -45,6 +47,47 @@ class AuthMiddleware
     public static function isAuthenticated(): bool
     {
         return session_has('user_id') && session_get('user_id') !== null;
+    }
+
+    /**
+     * Check session activity and expire if inactive too long.
+     */
+    public static function checkSessionActivity(): void
+    {
+        $lastActivity = session_get('last_activity');
+        $timeout = (int) env('SESSION_TIMEOUT', 1800);
+
+        if ($lastActivity !== null && (time() - (int) $lastActivity) > $timeout) {
+            session_destroy_all();
+            session_start();
+            session_flash('error', 'Your session has expired due to inactivity. Please log in again.');
+            header('Location: /login');
+            exit;
+        }
+
+        session_set('last_activity', time());
+    }
+
+    /**
+     * Verify the session fingerprint to detect session hijacking.
+     */
+    public static function verifyFingerprint(): void
+    {
+        $storedFingerprint = session_get('session_fingerprint');
+
+        if ($storedFingerprint !== null) {
+            $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+            $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+            $currentFingerprint = hash('sha256', $ip . $userAgent);
+
+            if ($storedFingerprint !== $currentFingerprint) {
+                session_destroy_all();
+                session_start();
+                session_flash('error', 'Your session has been invalidated for security reasons.');
+                header('Location: /login');
+                exit;
+            }
+        }
     }
 
     /**
@@ -128,11 +171,14 @@ class AuthMiddleware
     public static function checkDeactivated(): void
     {
         $status = session_get('user_status');
+        $userType = session_get('user_type');
+        $role = self::getUserRole();
 
         if ($status === 'deactivated') {
-            $role = self::getUserRole();
-
-            if (in_array($role, [self::ROLE_STUDENT, self::ROLE_PARENT], true)) {
+            if (
+                in_array($role, [self::ROLE_STUDENT, self::ROLE_PARENT], true)
+                || in_array($userType, ['student', 'parent'], true)
+            ) {
                 session_destroy_all();
                 session_start();
                 session_flash(
@@ -163,6 +209,8 @@ class AuthMiddleware
             'role' => session_get('user_role'),
             'status' => session_get('user_status'),
             'institute_id' => session_get('user_institute_id'),
+            'user_type' => session_get('user_type'),
+            'display_id' => session_get('user_display_id'),
         ];
     }
 

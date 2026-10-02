@@ -85,6 +85,14 @@ class User extends BaseModel
         return $this->findBy('email', $email);
     }
 
+    /**
+     * Find by primary phone number.
+     */
+    public function findByPhone(string $phone): ?array
+    {
+        return $this->findBy('phone1', $phone);
+    }
+
     // ─── ID Generation ───────────────────────────────────────────────
 
     /**
@@ -227,7 +235,6 @@ class User extends BaseModel
                         LEFT JOIN classes c ON uc.class_id = c.id";
 
         if (!empty($filters['institute_id'])) {
-            // Either user is coordinator of institute OR class is in institute
             $where[] = "(c.institute_id = :inst_id OR EXISTS(SELECT 1 FROM institutes inst WHERE inst.coordinator_id = u.id AND inst.id = :inst_id2))";
             $params[':inst_id'] = (int) $filters['institute_id'];
             $params[':inst_id2'] = (int) $filters['institute_id'];
@@ -266,13 +273,25 @@ class User extends BaseModel
     // ─── Class Assignments ───────────────────────────────────────────
 
     /**
-     * Get classes attached to user.
+     * Get class IDs attached to user.
      */
     public function getAssignedClassIds(int $userId): array
     {
         $sql = "SELECT class_id FROM user_classes WHERE user_id = :uid";
         $stmt = $this->query($sql, [':uid' => $userId]);
         return array_column($stmt->fetchAll(), 'class_id');
+    }
+
+    /**
+     * Get classes attached to user (full class details).
+     */
+    public function getAssignedClasses(int $userId): array
+    {
+        $sql = "SELECT c.* FROM classes c
+                INNER JOIN user_classes uc ON c.id = uc.class_id
+                WHERE uc.user_id = :user_id
+                ORDER BY c.class_name ASC";
+        return $this->query($sql, [':user_id' => $userId])->fetchAll();
     }
 
     /**
@@ -308,6 +327,77 @@ class User extends BaseModel
             $params[':status'] = $status;
         }
         $sql .= " ORDER BY full_name ASC";
+        return $this->query($sql, $params)->fetchAll();
+    }
+
+    /**
+     * Get users by institute.
+     */
+    public function getByInstitute(int $instituteId): array
+    {
+        $sql = "SELECT u.* FROM {$this->table} u
+                INNER JOIN user_classes uc ON u.id = uc.user_id
+                INNER JOIN classes c ON uc.class_id = c.id
+                WHERE c.institute_id = :inst
+                ORDER BY u.full_name ASC";
+        return $this->query($sql, [':inst' => $instituteId])->fetchAll();
+    }
+
+    /**
+     * Get users by class.
+     */
+    public function getByClass(int $classId): array
+    {
+        $sql = "SELECT u.* FROM {$this->table} u
+                INNER JOIN user_classes uc ON u.id = uc.user_id
+                WHERE uc.class_id = :class_id
+                ORDER BY u.full_name ASC";
+        return $this->query($sql, [':class_id' => $classId])->fetchAll();
+    }
+
+    // ─── Search ──────────────────────────────────────────────────────
+
+    /**
+     * Full-text search with optional filters.
+     *
+     * @param  string $term     Search term (matched against name, email, user_id_display, phone1)
+     * @param  array  $filters  Optional keys: role, class_id, status
+     * @return array
+     */
+    public function search(string $term, array $filters = []): array
+    {
+        $params = [];
+        $where  = [];
+
+        if ($term !== '') {
+            $where[] = "(u.full_name LIKE :term OR u.email LIKE :term
+                         OR u.user_id_display LIKE :term OR u.phone1 LIKE :term)";
+            $params[':term'] = "%{$term}%";
+        }
+
+        if (!empty($filters['role'])) {
+            $where[] = "u.role = :role";
+            $params[':role'] = $filters['role'];
+        }
+
+        if (!empty($filters['status'])) {
+            $where[] = "u.status = :status";
+            $params[':status'] = $filters['status'];
+        }
+
+        $joinClass = '';
+        if (!empty($filters['class_id'])) {
+            $joinClass = "INNER JOIN user_classes uc ON u.id = uc.user_id";
+            $where[] = "uc.class_id = :cid";
+            $params[':cid'] = $filters['class_id'];
+        }
+
+        $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $sql = "SELECT DISTINCT u.* FROM {$this->table} u
+                {$joinClass}
+                {$whereClause}
+                ORDER BY u.full_name ASC";
         return $this->query($sql, $params)->fetchAll();
     }
 }

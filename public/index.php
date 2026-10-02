@@ -39,6 +39,7 @@ require_once BASE_PATH . '/config/app.php';
 require_once BASE_PATH . '/config/database.php';
 require_once BASE_PATH . '/config/session.php';
 require_once BASE_PATH . '/config/csrf.php';
+require_once BASE_PATH . '/config/security.php';
 
 // ──────────────────────────────────────────────────────────
 // Error handling
@@ -67,6 +68,9 @@ set_exception_handler(function (Throwable $e) use ($appDebug): void {
 
     error_log($e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
 });
+
+// Apply security headers
+\App\Middleware\SecurityHeaders::apply();
 
 // ──────────────────────────────────────────────────────────
 // Load routes
