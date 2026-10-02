@@ -226,6 +226,8 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/students/{id}/edit', ['App\Controllers\StudentController', 'update']);
     $router->post('/students/{id}', ['App\Controllers\StudentController', 'update']);
     $router->post('/students/{id}/delete', ['App\Controllers\StudentController', 'delete']);
+    $router->post('/students/{id}/deactivate', ['App\Controllers\StudentController', 'deactivate']);
+    $router->post('/students/{id}/reactivate', ['App\Controllers\StudentController', 'reactivate']);
 
     // Payments
     $router->get('/payments', ['App\Controllers\PaymentController', 'index']);

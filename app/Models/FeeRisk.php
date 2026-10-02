@@ -20,11 +20,11 @@ class FeeRisk extends BaseModel
 
     public function getByStudent(int $studentId): array
     {
-        $sql = "SELECT fr.*, c.name AS class_name, c.code AS class_code
+        $sql = "SELECT fr.*, c.class_name
                 FROM {$this->table} fr
                 INNER JOIN classes c ON fr.class_id = c.id
                 WHERE fr.student_id = :sid
-                ORDER BY c.name ASC";
+                ORDER BY c.class_name ASC";
         return $this->query($sql, [':sid' => $studentId])->fetchAll();
     }
 
@@ -93,14 +93,14 @@ class FeeRisk extends BaseModel
             $params[':cid'] = $classId;
         }
 
-        $sql = "SELECT fr.*, s.student_id AS display_student_id,
-                       s.first_name, s.last_name, s.phone, s.email,
-                       c.name AS class_name
+        $sql = "SELECT fr.*, s.student_id_display,
+                       s.full_name, s.phone1, s.email,
+                       c.class_name
                 FROM {$this->table} fr
                 INNER JOIN students s ON fr.student_id = s.id
                 INNER JOIN classes c ON fr.class_id = c.id
                 WHERE fr.state = :state {$classFilter}
-                ORDER BY fr.months_overdue DESC, s.first_name ASC";
+                ORDER BY fr.months_overdue DESC, s.full_name ASC";
         return $this->query($sql, $params)->fetchAll();
     }
 

@@ -47,7 +47,6 @@ class StudentController extends BaseController
         // If there's a search term, use the search method
         if ($search !== '' || !empty($filters)) {
             $students = $this->studentModel->search($search, $filters);
-            // Manual pagination over search results
             $total = count($students);
             $pages = (int) ceil($total / $perPage);
             $offset = ($page - 1) * $perPage;
@@ -88,7 +87,6 @@ class StudentController extends BaseController
             AuthMiddleware::ROLE_STAFF,
         ]);
 
-        // Load institutes and classes for dropdowns
         $institutes = [];
         $classes = [];
         if ($this->db) {
@@ -97,7 +95,6 @@ class StudentController extends BaseController
                 $institutes = $instituteModel->all('name ASC');
                 $classModel = new \ClassModel();
                 $classes = $classModel->all('class_name ASC');
-                // Ensure name and fee aliases exist on class rows for view
                 foreach ($classes as &$cls) {
                     $cls['name'] = $cls['name'] ?? $cls['class_name'] ?? '';
                     $cls['fee'] = $cls['fee'] ?? $cls['monthly_fee'] ?? 0;
@@ -152,7 +149,6 @@ class StudentController extends BaseController
             'email'              => $email !== '' ? $email : null,
             'phone1'             => $phone !== '' ? $phone : null,
             'date_of_birth'      => $dob !== '' ? $dob : date('Y-m-d'),
-            'gender'             => in_array($gender, ['male', 'female', 'other'], true) ? $gender : 'male',
             'address'            => $address !== '' ? $address : null,
             'status'             => 'active',
             'created_by'         => (int) session_get('user_id'),
@@ -210,16 +206,58 @@ class StudentController extends BaseController
             $this->redirect('/students');
         }
 
-        // Get payment history
+        // ─── Parent / Guardian info ──────────────────────────────────
+        $parents = [];
+        try {
+            $parentModel = new \Parent_();
+            $parents = $parentModel->findByStudent((int) $id);
+        } catch (\Throwable $e) {
+            error_log('Parent fetch failed: ' . $e->getMessage());
+        }
+
+        // ─── Payment history ─────────────────────────────────────────
         $payments = [];
+        $paymentSummary = ['total_due' => 0, 'total_paid' => 0, 'pending_count' => 0, 'overdue_count' => 0];
         try {
             $paymentModel = new \Payment();
             $payments = $paymentModel->getByStudent((int) $id);
+
+            foreach ($payments as $pmt) {
+                $paymentSummary['total_due'] += (float) ($pmt['amount_due'] ?? 0);
+                $paymentSummary['total_paid'] += (float) ($pmt['amount_paid'] ?? 0);
+                $pmtStatus = $pmt['payment_status'] ?? $pmt['status'] ?? 'pending';
+                if ($pmtStatus === 'pending') {
+                    $paymentSummary['pending_count']++;
+                }
+                if ($pmtStatus === 'overdue') {
+                    $paymentSummary['overdue_count']++;
+                }
+            }
         } catch (\Throwable $e) {
             error_log('Payment fetch failed: ' . $e->getMessage());
         }
 
-        // Get workflow history
+        // ─── Attendance stats ────────────────────────────────────────
+        $attendanceRecords = [];
+        $attendanceSummary = ['total' => 0, 'present' => 0, 'late' => 0, 'absent' => 0, 'red_flag' => 0];
+        try {
+            $attendanceModel = new \Attendance();
+            $attendanceRecords = $attendanceModel->getByStudent((int) $id, 20);
+            $attendanceSummary = $attendanceModel->getStudentSummary((int) $id);
+        } catch (\Throwable $e) {
+            error_log('Attendance fetch failed: ' . $e->getMessage());
+        }
+
+        // ─── Fee risk status ─────────────────────────────────────────
+        $feeRiskRecords = [];
+        try {
+            $feeRiskModel = new \FeeRisk();
+            $feeRiskRecords = $feeRiskModel->getByStudent((int) $id);
+        } catch (\Throwable $e) {
+            error_log('Fee risk fetch failed: ' . $e->getMessage());
+        }
+
+        // ─── Workflow history ────────────────────────────────────────
         $workflows = [];
         try {
             $wfModel = new \Workflow();
@@ -228,7 +266,7 @@ class StudentController extends BaseController
             error_log('Workflow fetch failed: ' . $e->getMessage());
         }
 
-        // Get audit trail
+        // ─── Audit trail ─────────────────────────────────────────────
         $auditTrail = [];
         try {
             $auditLog = new \AuditLog();
@@ -237,13 +275,37 @@ class StudentController extends BaseController
             error_log('Audit trail fetch failed: ' . $e->getMessage());
         }
 
+        // ─── Created by user name ────────────────────────────────────
+        $createdByName = '';
+        if (!empty($student['created_by'])) {
+            try {
+                $userModel = new \User();
+                $creator = $userModel->find((int) $student['created_by']);
+                $createdByName = $creator['full_name'] ?? '';
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
+
         $this->view('students/show', [
-            'pageTitle'   => $student['full_name'],
-            'student'     => $student,
-            'enrollments' => $student['enrollments'] ?? [],
-            'payments'    => $payments,
-            'workflows'   => $workflows,
-            'auditTrail'  => $auditTrail,
+            'pageTitle'          => $student['full_name'] . ' - Student 360',
+            'activePage'         => 'students',
+            'activeSubPage'      => 'list',
+            'student'            => $student,
+            'parents'            => $parents,
+            'enrollments'        => $student['enrollments'] ?? [],
+            'payments'           => $payments,
+            'paymentSummary'     => $paymentSummary,
+            'attendanceRecords'  => $attendanceRecords,
+            'attendanceSummary'  => $attendanceSummary,
+            'feeRiskRecords'     => $feeRiskRecords,
+            'workflows'          => $workflows,
+            'auditTrail'         => $auditTrail,
+            'createdByName'      => $createdByName,
+            'breadcrumbs'        => [
+                ['Students', '/students'],
+                [$student['full_name'], ''],
+            ],
         ]);
     }
 
@@ -323,7 +385,6 @@ class StudentController extends BaseController
         }
 
         $dob     = trim($_POST['dob'] ?? $_POST['date_of_birth'] ?? '');
-        $gender  = trim($_POST['gender'] ?? 'male');
         $phone   = trim($_POST['phone'] ?? $_POST['phone1'] ?? '');
         $email   = trim($_POST['email'] ?? '');
         $address = trim($_POST['address'] ?? '');
@@ -336,12 +397,37 @@ class StudentController extends BaseController
         $data = [
             'full_name'     => $fullName,
             'date_of_birth' => $dob !== '' ? $dob : ($student['date_of_birth'] ?? date('Y-m-d')),
-            'gender'        => in_array($gender, ['male', 'female', 'other'], true) ? $gender : 'male',
             'address'       => $address !== '' ? $address : null,
             'phone1'        => $phone !== '' ? $phone : null,
             'email'         => $email !== '' ? $email : null,
             'updated_at'    => date('Y-m-d H:i:s'),
         ];
+
+        // Optional fields
+        $phone2 = trim($_POST['phone2'] ?? '');
+        if ($phone2 !== '') {
+            $data['phone2'] = $phone2;
+        }
+        $whatsapp = trim($_POST['whatsapp'] ?? '');
+        if ($whatsapp !== '') {
+            $data['whatsapp'] = $whatsapp;
+        }
+        $homeNumber = trim($_POST['home_number'] ?? '');
+        if ($homeNumber !== '') {
+            $data['home_number'] = $homeNumber;
+        }
+        $province = trim($_POST['province'] ?? '');
+        if ($province !== '') {
+            $data['province'] = $province;
+        }
+        $district = trim($_POST['district'] ?? '');
+        if ($district !== '') {
+            $data['district'] = $district;
+        }
+        $notes = trim($_POST['notes'] ?? '');
+        if ($notes !== '') {
+            $data['notes'] = $notes;
+        }
 
         try {
             $this->studentModel->update((int) $id, $data);
@@ -360,7 +446,143 @@ class StudentController extends BaseController
     }
 
     /**
+     * Initiate student deactivation workflow.
+     */
+    public function deactivate(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+            AuthMiddleware::ROLE_COORDINATOR,
+            AuthMiddleware::ROLE_STAFF,
+        ]);
+        verifyCsrfToken();
 
+        $student = $this->studentModel->find((int) $id);
+        if (!$student) {
+            $this->flash('error', 'Student not found.');
+            $this->redirect('/students');
+        }
+
+        $reason = trim($_POST['reason'] ?? '');
+        if ($reason === '') {
+            $this->flash('error', 'Reason is required for deactivation.');
+            $this->redirect('/students/' . $id);
+        }
+
+        $currentUser = $this->getCurrentUser();
+        $currentRole = $currentUser['role'] ?? 'staff';
+
+        try {
+            $steps = $this->buildDeactivationSteps($currentRole, (int) $currentUser['id']);
+
+            if (empty($steps)) {
+                // Super admin can deactivate directly
+                $this->studentModel->deactivate((int) $id);
+                $this->logAudit('deactivate_student', 'student', (int) $id, [
+                    'reason' => $reason,
+                    'direct' => true,
+                ]);
+                $this->flash('success', 'Student deactivated successfully.');
+            } else {
+                $wfModel = new \Workflow();
+                $wfModel->createWorkflow(
+                    'deactivation',
+                    (int) $id,
+                    (int) $currentUser['id'],
+                    $currentRole,
+                    $steps,
+                    $reason
+                );
+                $this->logAudit('initiate_deactivation', 'student', (int) $id, [
+                    'reason' => $reason,
+                ]);
+                $this->flash('success', 'Deactivation request submitted for approval.');
+            }
+        } catch (\Throwable $e) {
+            error_log('Deactivation failed: ' . $e->getMessage());
+            $this->flash('error', 'Failed to process deactivation: ' . $e->getMessage());
+        }
+
+        $this->redirect('/students/' . $id);
+    }
+
+    /**
+     * Reactivate a deactivated student.
+     */
+    public function reactivate(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+            AuthMiddleware::ROLE_COORDINATOR,
+        ]);
+        verifyCsrfToken();
+
+        $student = $this->studentModel->find((int) $id);
+        if (!$student) {
+            $this->flash('error', 'Student not found.');
+            $this->redirect('/students');
+        }
+
+        try {
+            $this->studentModel->reactivate((int) $id);
+
+            // Also reactivate linked parents
+            $parentModel = new \Parent_();
+            $parents = $parentModel->findByStudent((int) $id);
+            foreach ($parents as $p) {
+                $parentModel->reactivate((int) $p['id']);
+            }
+
+            $this->logAudit('reactivate_student', 'student', (int) $id, [
+                'name' => $student['full_name'],
+            ]);
+
+            $this->flash('success', 'Student reactivated successfully.');
+        } catch (\Throwable $e) {
+            error_log('Reactivation failed: ' . $e->getMessage());
+            $this->flash('error', 'Failed to reactivate student.');
+        }
+
+        $this->redirect('/students/' . $id);
+    }
+
+    /**
+     * Build deactivation approval steps based on initiator role.
+     */
+    private function buildDeactivationSteps(string $initiatorRole, int $initiatorId): array
+    {
+        $steps = [];
+        $userModel = new \User();
+
+        if (in_array($initiatorRole, ['staff', 'teacher'], true)) {
+            $coordinators = $userModel->getByRole('coordinator', 'active');
+            if (!empty($coordinators)) {
+                $steps[] = ['approver_id' => $coordinators[0]['id'], 'approver_role' => 'coordinator'];
+            }
+        }
+
+        if (in_array($initiatorRole, ['staff', 'teacher', 'coordinator'], true)) {
+            $admins = $userModel->getByRole('admin', 'active');
+            if (!empty($admins)) {
+                $steps[] = ['approver_id' => $admins[0]['id'], 'approver_role' => 'admin'];
+            }
+        }
+
+        if (in_array($initiatorRole, ['staff', 'teacher', 'coordinator', 'admin'], true)) {
+            $superAdmins = $userModel->getByRole('super_admin', 'active');
+            if (!empty($superAdmins)) {
+                $steps[] = ['approver_id' => $superAdmins[0]['id'], 'approver_role' => 'super_admin'];
+            }
+        }
+
+        return $steps;
+    }
+
+    /**
      * Log an audit entry for student actions.
      */
     private function logAudit(string $action, string $entityType, int $entityId, array $details = []): void

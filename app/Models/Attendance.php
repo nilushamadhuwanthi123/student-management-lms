@@ -283,4 +283,42 @@ class Attendance extends BaseModel
 
         return $this->query($sql, $params)->fetchAll();
     }
+
+    /**
+     * Get attendance records for a specific student (most recent first).
+     */
+    public function getByStudent(int $studentId, int $limit = 50): array
+    {
+        $sql = "SELECT a.*, c.class_name
+                FROM {$this->table} a
+                LEFT JOIN classes c ON a.class_id = c.id
+                WHERE a.student_id = :sid
+                ORDER BY a.date DESC, a.check_in_time DESC
+                LIMIT {$limit}";
+        return $this->query($sql, [':sid' => $studentId])->fetchAll();
+    }
+
+    /**
+     * Get attendance summary counts for a specific student (all time).
+     */
+    public function getStudentSummary(int $studentId): array
+    {
+        $sql = "SELECT
+                    COUNT(*) AS total_records,
+                    SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) AS present_count,
+                    SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) AS late_count,
+                    SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) AS absent_count,
+                    SUM(CASE WHEN status = 'red_flag' THEN 1 ELSE 0 END) AS red_flag_count
+                FROM {$this->table}
+                WHERE student_id = :sid";
+
+        $res = $this->query($sql, [':sid' => $studentId])->fetch();
+        return [
+            'total'    => (int) ($res['total_records'] ?? 0),
+            'present'  => (int) ($res['present_count'] ?? 0),
+            'late'     => (int) ($res['late_count'] ?? 0),
+            'absent'   => (int) ($res['absent_count'] ?? 0),
+            'red_flag' => (int) ($res['red_flag_count'] ?? 0),
+        ];
+    }
 }
