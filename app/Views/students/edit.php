@@ -180,7 +180,7 @@ document.getElementById('institute_id').addEventListener('change', function () {
     }
     container.innerHTML = '<div class="spinner-overlay"><div class="spinner spinner--sm"></div></div>';
 
-    fetch('/api/institutes/' + instituteId + '/classes', {
+    fetch('/api/classes-by-institute/' + instituteId, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(function (res) { return res.json(); })

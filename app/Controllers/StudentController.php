@@ -550,6 +550,74 @@ class StudentController extends BaseController
         $this->redirect('/students/' . $id);
     }
 
+
+    /**
+     * Initiate student deletion workflow.
+     */
+    public function delete(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+            AuthMiddleware::ROLE_COORDINATOR,
+            AuthMiddleware::ROLE_STAFF,
+        ]);
+        verifyCsrfToken();
+
+        $student = $this->studentModel->find((int) $id);
+        if (!$student) {
+            $this->flash('error', 'Student not found.');
+            $this->redirect('/students');
+        }
+
+        $reason = trim($_POST['reason'] ?? '');
+        if ($reason === '') {
+            $this->flash('error', 'Reason is required for deletion.');
+            $this->redirect('/students/' . $id);
+        }
+
+        $currentUser = $this->getCurrentUser();
+        $currentRole = $currentUser['role'] ?? 'staff';
+
+        try {
+            $steps = $this->buildDeactivationSteps($currentRole, (int) $currentUser['id']);
+
+            if (empty($steps)) {
+                // Super admin can delete directly
+                $this->studentModel->delete((int) $id);
+                $this->logAudit('delete_student', 'student', (int) $id, [
+                    'name'   => $student['full_name'],
+                    'reason' => $reason,
+                    'direct' => true,
+                ]);
+                $this->flash('success', 'Student deleted successfully.');
+                $this->redirect('/students');
+                return;
+            } else {
+                $wfModel = new \Workflow();
+                $wfModel->createWorkflow(
+                    'deletion',
+                    (int) $id,
+                    (int) $currentUser['id'],
+                    $currentRole,
+                    $steps,
+                    $reason
+                );
+                $this->logAudit('initiate_deletion', 'student', (int) $id, [
+                    'name'   => $student['full_name'],
+                    'reason' => $reason,
+                ]);
+                $this->flash('success', 'Deletion request submitted for approval.');
+            }
+        } catch (\Throwable $e) {
+            error_log('Deletion workflow failed: ' . $e->getMessage());
+            $this->flash('error', 'Failed to process deletion: ' . $e->getMessage());
+        }
+
+        $this->redirect('/students/' . $id);
+    }
+
     /**
      * Build deactivation approval steps based on initiator role.
      */
