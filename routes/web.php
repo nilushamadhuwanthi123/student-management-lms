@@ -191,11 +191,16 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/students/{id}/edit', ['App\Controllers\StudentController', 'edit']);
     $router->post('/students/{id}/edit', ['App\Controllers\StudentController', 'update']);
     $router->post('/students/{id}/delete', ['App\Controllers\StudentController', 'delete']);
+    $router->post('/students/{id}/photo', ['App\Controllers\FileController', 'uploadStudentPhoto']);
+
+    // Secure file serving (profile photos, documents)
+    $router->get('/files/{subDir}/{filename}', ['App\Controllers\FileController', 'serve']);
 
     // Payments
     $router->get('/payments', ['App\Controllers\PaymentController', 'index']);
     $router->get('/payments/{studentId}', ['App\Controllers\PaymentController', 'studentPayments']);
     $router->post('/payments/mark-paid', ['App\Controllers\PaymentController', 'markPaid']);
+    $router->post('/payments/generate', ['App\Controllers\PaymentController', 'generateMonthly']);
 
     // Workflows
     $router->get('/workflows', ['App\Controllers\WorkflowController', 'index']);

@@ -4,27 +4,39 @@ declare(strict_types=1);
 
 /**
  * CSRF Token Management
+ *
+ * Uses a per-session token with time-based expiry (not single-use),
+ * so multi-tab usage works correctly.
  */
 
+/** Token lifetime in seconds (default: 1 hour). */
+define('CSRF_TOKEN_TTL', (int) env('CSRF_TOKEN_LIFETIME', '3600'));
+
 /**
- * Generate a CSRF token and store it in the session.
+ * Generate a CSRF token and store it in the session with a timestamp.
  */
 function generateCsrfToken(): string
 {
     $token = bin2hex(random_bytes(32));
     $_SESSION['_csrf_token'] = $token;
+    $_SESSION['_csrf_token_time'] = time();
     return $token;
 }
 
 /**
- * Get the current CSRF token, generating one if it doesn't exist.
+ * Get the current CSRF token, generating one if it doesn't exist or has expired.
  */
 function getCsrfToken(): string
 {
-    if (empty($_SESSION['_csrf_token'])) {
+    $token = $_SESSION['_csrf_token'] ?? null;
+    $tokenTime = $_SESSION['_csrf_token_time'] ?? 0;
+
+    // Regenerate if missing or expired
+    if ($token === null || (time() - $tokenTime) > CSRF_TOKEN_TTL) {
         return generateCsrfToken();
     }
-    return $_SESSION['_csrf_token'];
+
+    return $token;
 }
 
 /**
@@ -36,14 +48,16 @@ function validateCsrfToken(?string $token): bool
         return false;
     }
 
-    $valid = hash_equals($_SESSION['_csrf_token'], $token);
+    $tokenTime = $_SESSION['_csrf_token_time'] ?? 0;
 
-    // Regenerate token after validation to prevent reuse
-    if ($valid) {
+    // Check if token has expired
+    if ((time() - $tokenTime) > CSRF_TOKEN_TTL) {
+        // Regenerate for next request
         generateCsrfToken();
+        return false;
     }
 
-    return $valid;
+    return hash_equals($_SESSION['_csrf_token'], $token);
 }
 
 /**
@@ -57,7 +71,7 @@ function verifyCsrfToken(): void
 
         if (!validateCsrfToken($token)) {
             http_response_code(403);
-            exit('Invalid CSRF token. Please refresh the page and try again.');
+            exit('Invalid or expired CSRF token. Please refresh the page and try again.');
         }
     }
 }

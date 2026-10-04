@@ -12,9 +12,11 @@
 .DS_Store
 Thumbs.db
 
-# Uploads (keep structure, ignore files)
+# Uploads (keep structure, ignore actual uploaded files)
 public/uploads/profiles/*
 !public/uploads/profiles/.gitkeep
+storage/uploads/profiles/*
+!storage/uploads/profiles/.gitkeep
 
 # Storage
 storage/logs/*

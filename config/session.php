@@ -17,8 +17,17 @@ if (session_status() === PHP_SESSION_NONE) {
         ini_set('session.cookie_secure', '1');
     }
 
-    ini_set('session.gc_maxlifetime', '1800'); // 30 minutes
+    $sessionTimeout = (int) (defined('SESSION_TIMEOUT') ? SESSION_TIMEOUT : 1800);
+    ini_set('session.gc_maxlifetime', (string) $sessionTimeout);
     ini_set('session.cookie_lifetime', '0');   // Until browser closes
+
+    // Scope the session cookie to the application's base path
+    // so it isn't shared with other apps on the same host.
+    $cookiePath = '/';
+    if (defined('BASE_URL') && BASE_URL !== '') {
+        $cookiePath = BASE_URL . '/';
+    }
+    ini_set('session.cookie_path', $cookiePath);
 
     session_name('STUDENT_MGMT_SESSID');
     session_start();
