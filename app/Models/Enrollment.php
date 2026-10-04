@@ -11,7 +11,7 @@ class Enrollment extends BaseModel
     protected string $primaryKey = 'id';
     protected array $fillable = [
         'student_id', 'class_id', 'scholarship_type',
-        'status', 'enrolled_at', 'unenrolled_at',
+        'enrollment_status', 'enrolled_at', 'unenrolled_at',
     ];
 
     // ─── Enroll / Unenroll ───────────────────────────────────────────
@@ -29,8 +29,8 @@ class Enrollment extends BaseModel
         return $this->create([
             'student_id'       => $studentId,
             'class_id'         => $classId,
-            'scholarship_type' => $scholarshipType ?? 'none',
-            'status'           => 'active',
+            'scholarship_type'  => $scholarshipType ?? 'none',
+            'enrollment_status' => 'active',
             'enrolled_at'      => date('Y-m-d H:i:s'),
         ]);
     }
@@ -41,8 +41,8 @@ class Enrollment extends BaseModel
     public function unenroll(int $studentId, int $classId): bool
     {
         $sql = "UPDATE {$this->table}
-                SET status = 'unenrolled', unenrolled_at = NOW()
-                WHERE student_id = :sid AND class_id = :cid AND status = 'active'";
+                SET enrollment_status = 'unenrolled', unenrolled_at = NOW()
+                WHERE student_id = :sid AND class_id = :cid AND enrollment_status = 'active'";
         return $this->query($sql, [
             ':sid' => $studentId,
             ':cid' => $classId,
@@ -56,8 +56,8 @@ class Enrollment extends BaseModel
      */
     public function getByStudent(int $studentId): array
     {
-        $sql = "SELECT e.*, c.name AS class_name, c.monthly_fee,
-                       c.schedule, c.code AS class_code,
+        $sql = "SELECT e.*, c.class_name, c.monthly_fee,
+                       c.schedule_days, c.start_time, c.end_time,
                        i.name AS institute_name
                 FROM {$this->table} e
                 INNER JOIN classes c ON e.class_id = c.id
@@ -72,12 +72,40 @@ class Enrollment extends BaseModel
      */
     public function getByClass(int $classId): array
     {
-        $sql = "SELECT e.*, s.student_id AS display_student_id,
-                       s.first_name, s.last_name, s.phone, s.email, s.status AS student_status
+        $sql = "SELECT e.*, s.student_id_display,
+                       s.full_name, s.phone1, s.email, s.status AS student_status
                 FROM {$this->table} e
                 INNER JOIN students s ON e.student_id = s.id
                 WHERE e.class_id = :cid
-                ORDER BY s.first_name ASC";
+                ORDER BY s.full_name ASC";
         return $this->query($sql, [':cid' => $classId])->fetchAll();
+    }
+
+    /**
+     * Get active enrollments for a student (class IDs only).
+     */
+    public function getActiveClassIds(int $studentId): array
+    {
+        $sql = "SELECT class_id FROM {$this->table}
+                WHERE student_id = :sid AND enrollment_status = 'active'";
+        return array_column(
+            $this->query($sql, [':sid' => $studentId])->fetchAll(),
+            'class_id'
+        );
+    }
+
+    /**
+     * Update scholarship type for an existing enrollment.
+     */
+    public function updateScholarship(int $studentId, int $classId, string $scholarshipType): bool
+    {
+        $sql = "UPDATE {$this->table}
+                SET scholarship_type = :sch
+                WHERE student_id = :sid AND class_id = :cid AND enrollment_status = 'active'";
+        return $this->query($sql, [
+            ':sch' => $scholarshipType,
+            ':sid' => $studentId,
+            ':cid' => $classId,
+        ])->rowCount() > 0;
     }
 }

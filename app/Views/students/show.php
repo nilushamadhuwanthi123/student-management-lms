@@ -10,6 +10,7 @@ $enrollments = $enrollments ?? [];
 $payments    = $payments ?? [];
 $workflows   = $workflows ?? [];
 $auditTrail  = $auditTrail ?? [];
+$baseUrl     = defined('BASE_URL') ? BASE_URL : '';
 
 $status = $student['status'] ?? 'active';
 $badgeClass = match ($status) {
@@ -26,8 +27,8 @@ $badgeClass = match ($status) {
     <!-- Profile Card -->
     <div style="flex:0 0 280px;min-width:260px;">
         <div class="profile-card">
-            <?php if (!empty($student['photo'])): ?>
-                <img src="<?= htmlspecialchars($student['photo'], ENT_QUOTES, 'UTF-8') ?>" alt="Student photo" class="profile-card__photo">
+            <?php if (!empty($student['profile_photo'])): ?>
+                <img src="<?= $baseUrl ?>/files/<?= htmlspecialchars($student['profile_photo'], ENT_QUOTES, 'UTF-8') ?>" alt="Student photo" class="profile-card__photo">
             <?php else: ?>
                 <div class="avatar avatar--xl" style="margin:0 auto 1rem;">
                     <?= strtoupper(mb_substr($student['full_name'] ?? 'S', 0, 1)) ?>
@@ -41,11 +42,11 @@ $badgeClass = match ($status) {
             <span class="badge <?= $badgeClass ?>"><?= ucfirst(htmlspecialchars($status, ENT_QUOTES, 'UTF-8')) ?></span>
 
             <div style="margin-top:1.25rem;" class="d-flex flex-wrap gap-1 justify-center">
-                <a href="/students/<?= (int) $student['id'] ?>/edit" class="btn btn--secondary btn--sm">Edit</a>
+                <a href="<?= $baseUrl ?>/students/<?= (int) $student['id'] ?>/edit" class="btn btn--secondary btn--sm">Edit</a>
                 <?php if ($status === 'active'): ?>
                     <button type="button" class="btn btn--ghost btn--sm" onclick="openModal('deactivateModal')">Deactivate</button>
                 <?php elseif ($status === 'deactivated'): ?>
-                    <form method="POST" action="/students/<?= (int) $student['id'] ?>/reactivate" style="display:inline;">
+                    <form method="POST" action="<?= $baseUrl ?>/students/<?= (int) $student['id'] ?>/reactivate" style="display:inline;">
                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                         <button type="submit" class="btn btn--ghost btn--sm">Reactivate</button>
                     </form>
@@ -92,7 +93,7 @@ $badgeClass = match ($status) {
                 <p class="text-sm text-muted">
                     Enrolled in <strong><?= count($enrollments) ?></strong> class(es).
                     <?php
-                    $activeEnrollments = array_filter($enrollments, fn($e) => ($e['status'] ?? '') === 'active');
+                    $activeEnrollments = array_filter($enrollments, fn($e) => ($e['enrollment_status'] ?? '') === 'active');
                     ?>
                     <strong><?= count($activeEnrollments) ?></strong> active.
                 </p>
@@ -128,7 +129,7 @@ $badgeClass = match ($status) {
                                     </td>
                                     <td>
                                         <?php
-                                        $enrStatus = $enr['status'] ?? 'active';
+                                        $enrStatus = $enr['enrollment_status'] ?? 'active';
                                         echo '<span class="badge badge--' . ($enrStatus === 'active' ? 'active' : 'neutral') . '">' . ucfirst(htmlspecialchars($enrStatus, ENT_QUOTES, 'UTF-8')) . '</span>';
                                         ?>
                                     </td>
@@ -161,12 +162,12 @@ $badgeClass = match ($status) {
                         <?php if (!empty($payments)): ?>
                             <?php foreach ($payments as $pmt): ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($pmt['month'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                                    <td><?= htmlspecialchars($pmt['month'] ?? $pmt['month_year'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                                     <td><?= htmlspecialchars($pmt['class_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                                     <td class="font-medium">LKR <?= number_format((float) ($pmt['amount'] ?? 0), 2) ?></td>
                                     <td>
                                         <?php
-                                        $pmtStatus = $pmt['status'] ?? 'pending';
+                                        $pmtStatus = $pmt['payment_status'] ?? $pmt['status'] ?? 'pending';
                                         $pmtBadge = match ($pmtStatus) {
                                             'paid'    => 'badge--success',
                                             'pending' => 'badge--pending',
@@ -265,7 +266,7 @@ $badgeClass = match ($status) {
             <h3 class="modal__title">Deactivate Student</h3>
             <button type="button" class="modal__close" onclick="closeModal('deactivateModal')">&times;</button>
         </div>
-        <form method="POST" action="/students/<?= (int) $student['id'] ?>/deactivate">
+        <form method="POST" action="<?= $baseUrl ?>/students/<?= (int) $student['id'] ?>/deactivate">
             <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
             <div class="modal__body">
                 <p>Are you sure you want to initiate deactivation for <strong><?= htmlspecialchars($student['full_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong>?</p>
@@ -289,7 +290,7 @@ $badgeClass = match ($status) {
             <h3 class="modal__title">Delete Student</h3>
             <button type="button" class="modal__close" onclick="closeModal('deleteModal')">&times;</button>
         </div>
-        <form method="POST" action="/students/<?= (int) $student['id'] ?>/delete">
+        <form method="POST" action="<?= $baseUrl ?>/students/<?= (int) $student['id'] ?>/delete">
             <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
             <div class="modal__body">
                 <p>Are you sure you want to initiate deletion for <strong><?= htmlspecialchars($student['full_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong>? This will start a multi-step approval workflow.</p>

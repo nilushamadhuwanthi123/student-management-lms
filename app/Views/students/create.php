@@ -9,6 +9,7 @@ $institutes = $institutes ?? [];
 $classes    = $classes ?? [];
 $errors     = $errors ?? [];
 $old        = $old ?? [];
+$baseUrl    = defined('BASE_URL') ? BASE_URL : '';
 ?>
 
 <?php include __DIR__ . '/../components/breadcrumb.php'; ?>
@@ -24,7 +25,7 @@ $old        = $old ?? [];
     </div>
 <?php endif; ?>
 
-<form method="POST" action="/students" data-validate class="card" style="max-width:800px;">
+<form method="POST" action="<?= $baseUrl ?>/students/create" data-validate class="card" style="max-width:800px;">
     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
     <!-- Personal Information -->
@@ -128,8 +129,8 @@ $old        = $old ?? [];
                             <label class="form-check" style="margin-bottom:0;">
                                 <input type="checkbox" name="class_ids[]" value="<?= (int) $cls['id'] ?>" <?= $isChecked ? 'checked' : '' ?>>
                                 <?= htmlspecialchars($cls['class_name'], ENT_QUOTES, 'UTF-8') ?>
-                                <?php if (!empty($cls['fee'])): ?>
-                                    <span class="text-muted text-sm">(LKR <?= number_format((float) $cls['fee'], 2) ?>)</span>
+                                <?php if (!empty($cls['monthly_fee'])): ?>
+                                    <span class="text-muted text-sm">(LKR <?= number_format((float) $cls['monthly_fee'], 2) ?>)</span>
                                 <?php endif; ?>
                             </label>
                             <select name="scholarship_type[<?= (int) $cls['id'] ?>]" class="form-control" style="width:auto;min-width:160px;">
@@ -152,11 +153,13 @@ $old        = $old ?? [];
     <!-- Submit -->
     <div class="d-flex gap-1" style="margin-top:1.5rem;">
         <button type="submit" class="btn btn--primary">Register Student</button>
-        <a href="/students" class="btn btn--ghost">Cancel</a>
+        <a href="<?= $baseUrl ?>/students" class="btn btn--ghost">Cancel</a>
     </div>
 </form>
 
 <script>
+var BASE_URL = <?= json_encode($baseUrl) ?>;
+
 // AJAX load classes when institute changes
 document.getElementById('institute_id').addEventListener('change', function () {
     var instituteId = this.value;
@@ -167,7 +170,7 @@ document.getElementById('institute_id').addEventListener('change', function () {
     }
     container.innerHTML = '<div class="spinner-overlay"><div class="spinner spinner--sm"></div></div>';
 
-    fetch('/api/institutes/' + instituteId + '/classes', {
+    fetch(BASE_URL + '/api/classes-by-institute/' + instituteId, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(function (res) { return res.json(); })
@@ -178,7 +181,7 @@ document.getElementById('institute_id').addEventListener('change', function () {
         }
         var html = '';
         classes.forEach(function (cls) {
-            var fee = cls.fee ? ' (LKR ' + parseFloat(cls.fee).toLocaleString('en-LK', {minimumFractionDigits: 2}) + ')' : '';
+            var fee = cls.monthly_fee ? ' (LKR ' + parseFloat(cls.monthly_fee).toLocaleString('en-LK', {minimumFractionDigits: 2}) + ')' : '';
             html += '<div class="card" style="padding:0.75rem 1rem;">'
                 + '<div class="d-flex items-center justify-between flex-wrap gap-1">'
                 + '<label class="form-check" style="margin-bottom:0;">'

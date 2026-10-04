@@ -22,11 +22,10 @@ class Institute extends BaseModel
     public function getWithCoordinator(int $id): ?array
     {
         $sql = "SELECT i.*,
-                       u.first_name AS coordinator_first_name,
-                       u.last_name  AS coordinator_last_name,
-                       u.email      AS coordinator_email,
-                       u.phone      AS coordinator_phone,
-                       u.user_id    AS coordinator_user_id
+                       u.full_name       AS coordinator_name,
+                       u.email           AS coordinator_email,
+                       u.phone1          AS coordinator_phone,
+                       u.user_id_display AS coordinator_user_id
                 FROM {$this->table} i
                 LEFT JOIN users u ON i.coordinator_id = u.id
                 WHERE i.id = :id

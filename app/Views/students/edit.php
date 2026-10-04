@@ -11,6 +11,7 @@ $classes     = $classes ?? [];
 $enrollments = $enrollments ?? [];
 $errors      = $errors ?? [];
 $old         = $old ?? [];
+$baseUrl     = defined('BASE_URL') ? BASE_URL : '';
 
 // Merge old input over student data for repopulation
 $val = function (string $key) use ($old, $student): string {
@@ -37,9 +38,8 @@ foreach ($enrollments as $enr) {
     </div>
 <?php endif; ?>
 
-<form method="POST" action="/students/<?= (int) $student['id'] ?>" data-validate class="card" style="max-width:800px;">
+<form method="POST" action="<?= $baseUrl ?>/students/<?= (int) $student['id'] ?>/edit" data-validate class="card" style="max-width:800px;">
     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
-    <input type="hidden" name="_method" value="PUT">
 
     <!-- Personal Information -->
     <h3 style="margin-bottom:1rem;">Personal Information</h3>
@@ -145,8 +145,8 @@ foreach ($enrollments as $enr) {
                             <label class="form-check" style="margin-bottom:0;">
                                 <input type="checkbox" name="class_ids[]" value="<?= (int) $cls['id'] ?>" <?= $isChecked ? 'checked' : '' ?>>
                                 <?= htmlspecialchars($cls['class_name'], ENT_QUOTES, 'UTF-8') ?>
-                                <?php if (!empty($cls['fee'])): ?>
-                                    <span class="text-muted text-sm">(LKR <?= number_format((float) $cls['fee'], 2) ?>)</span>
+                                <?php if (!empty($cls['monthly_fee'])): ?>
+                                    <span class="text-muted text-sm">(LKR <?= number_format((float) $cls['monthly_fee'], 2) ?>)</span>
                                 <?php endif; ?>
                             </label>
                             <select name="scholarship_type[<?= (int) $cls['id'] ?>]" class="form-control" style="width:auto;min-width:160px;">
@@ -166,11 +166,13 @@ foreach ($enrollments as $enr) {
     <!-- Submit -->
     <div class="d-flex gap-1" style="margin-top:1.5rem;">
         <button type="submit" class="btn btn--primary">Update Student</button>
-        <a href="/students/<?= (int) $student['id'] ?>" class="btn btn--ghost">Cancel</a>
+        <a href="<?= $baseUrl ?>/students/<?= (int) $student['id'] ?>" class="btn btn--ghost">Cancel</a>
     </div>
 </form>
 
 <script>
+var BASE_URL = <?= json_encode($baseUrl) ?>;
+
 document.getElementById('institute_id').addEventListener('change', function () {
     var instituteId = this.value;
     var container = document.getElementById('classCheckboxes');
@@ -180,7 +182,7 @@ document.getElementById('institute_id').addEventListener('change', function () {
     }
     container.innerHTML = '<div class="spinner-overlay"><div class="spinner spinner--sm"></div></div>';
 
-    fetch('/api/institutes/' + instituteId + '/classes', {
+    fetch(BASE_URL + '/api/classes-by-institute/' + instituteId, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(function (res) { return res.json(); })
@@ -189,13 +191,13 @@ document.getElementById('institute_id').addEventListener('change', function () {
             container.innerHTML = '<p class="text-muted text-sm">No classes available for this institute.</p>';
             return;
         }
-        var enrolled = <?= json_encode($enrolledClassIds) ?>;
+        var enrolled = <?= json_encode(array_map('intval', $enrolledClassIds)) ?>;
         var scholarships = <?= json_encode($scholarshipByClass) ?>;
         var html = '';
         classes.forEach(function (cls) {
             var isChecked = enrolled.indexOf(cls.id) !== -1 ? ' checked' : '';
             var sch = scholarships[cls.id] || 'full_payment';
-            var fee = cls.fee ? ' (LKR ' + parseFloat(cls.fee).toLocaleString('en-LK', {minimumFractionDigits: 2}) + ')' : '';
+            var fee = cls.monthly_fee ? ' (LKR ' + parseFloat(cls.monthly_fee).toLocaleString('en-LK', {minimumFractionDigits: 2}) + ')' : '';
             html += '<div class="card" style="padding:0.75rem 1rem;">'
                 + '<div class="d-flex items-center justify-between flex-wrap gap-1">'
                 + '<label class="form-check" style="margin-bottom:0;">'

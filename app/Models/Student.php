@@ -13,7 +13,7 @@ class Student extends BaseModel
         'student_id_display', 'full_name', 'email',
         'phone1', 'phone2', 'whatsapp', 'home_number',
         'date_of_birth', 'address', 'province', 'district',
-        'notes', 'profile_photo', 'password_hash',
+        'institute_id', 'notes', 'profile_photo', 'password_hash',
         'status', 'created_by', 'created_at', 'updated_at',
     ];
 

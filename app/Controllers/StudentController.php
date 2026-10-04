@@ -152,11 +152,24 @@ class StudentController extends BaseController
             $data['notes'] = trim($_POST['notes']);
         }
 
+        // Guardian info from form
+        $guardianName  = trim($_POST['guardian_name'] ?? '');
+        $guardianPhone = trim($_POST['guardian_phone'] ?? '');
+        $guardianEmail = trim($_POST['guardian_email'] ?? '');
+
+        // Enrollment data
+        $classIds        = $_POST['class_ids'] ?? [];
+        $scholarshipTypes = $_POST['scholarship_type'] ?? [];
+
         $errors = $this->validate($data, [
             'full_name'     => 'required|max:255',
             'date_of_birth' => 'required|date',
             'institute_id'  => 'required|integer',
         ]);
+
+        if (empty($classIds)) {
+            $errors['class_ids'] = 'At least one class must be selected.';
+        }
 
         if (!empty($errors)) {
             $this->flash('error', implode(' ', $errors));
@@ -174,16 +187,33 @@ class StudentController extends BaseController
         $data['password_hash'] = password_hash('password', PASSWORD_DEFAULT);
 
         try {
-            $id = $this->studentModel->create($data);
+            $studentId = $this->studentModel->create($data);
+
+            // ── Create enrollments for selected classes ──
+            $enrollmentModel = new \Enrollment();
+            foreach ($classIds as $classId) {
+                $scholarship = $scholarshipTypes[$classId] ?? 'full_payment';
+                $enrollmentModel->enrollStudent(
+                    $studentId,
+                    (int) $classId,
+                    $scholarship
+                );
+            }
+
+            // ── Create guardian/parent record if provided ──
+            if ($guardianName !== '' || $guardianPhone !== '') {
+                $this->createOrLinkGuardian($studentId, $guardianName, $guardianPhone, $guardianEmail);
+            }
 
             // Log the action
-            $this->logAudit('create_student', 'student', $id, [
+            $this->logAudit('create_student', 'student', $studentId, [
                 'student_id_display' => $data['student_id_display'],
                 'name'               => $data['full_name'],
+                'classes_enrolled'   => count($classIds),
             ]);
 
             $this->flash('success', "Student registered successfully. Student ID: {$data['student_id_display']}");
-            $this->redirect(BASE_URL . '/students/' . $id);
+            $this->redirect(BASE_URL . '/students/' . $studentId);
         } catch (\Throwable $e) {
             error_log('Student creation failed: ' . $e->getMessage());
             $this->flash('error', 'Failed to register student. Please try again.');
@@ -214,10 +244,30 @@ class StudentController extends BaseController
             error_log('Payment fetch failed: ' . $e->getMessage());
         }
 
+        // Get guardian info from parents table
+        $guardian = null;
+        try {
+            $parentModel = new \Parent_();
+            $guardians = $parentModel->findByStudent((int) $id);
+            if (!empty($guardians)) {
+                $guardian = $guardians[0]; // Primary guardian
+            }
+        } catch (\Throwable $e) {
+            error_log('Guardian fetch failed: ' . $e->getMessage());
+        }
+
+        // Merge guardian info into student data for view compatibility
+        if ($guardian) {
+            $student['guardian_name']  = $guardian['parent_name'] ?? '';
+            $student['guardian_phone'] = $guardian['phone1'] ?? '';
+            $student['guardian_email'] = ''; // parents table has no email column
+        }
+
         $this->view('students/show', [
-            'pageTitle' => $student['full_name'] ?? 'Student Details',
-            'student'   => $student,
-            'payments'  => $payments,
+            'pageTitle'   => $student['full_name'] ?? 'Student Details',
+            'student'     => $student,
+            'enrollments' => $student['enrollments'] ?? [],
+            'payments'    => $payments,
         ]);
     }
 
@@ -241,20 +291,50 @@ class StudentController extends BaseController
             $this->redirect(BASE_URL . '/students');
         }
 
-        $institutes = [];
-        if ($this->db) {
-            try {
-                $instituteModel = new \Institute();
-                $institutes = $instituteModel->all('name ASC');
-            } catch (\Throwable $e) {
-                error_log('Failed to load institutes: ' . $e->getMessage());
+        $institutes  = [];
+        $classes     = [];
+        $enrollments = [];
+
+        try {
+            $instituteModel = new \Institute();
+            $institutes = $instituteModel->all('name ASC');
+
+            // Load classes for the student's institute
+            if (!empty($student['institute_id'])) {
+                $classModel = new \ClassModel();
+                $classes = $classModel->getByInstitute((int) $student['institute_id']);
             }
+
+            // Load current enrollments
+            $enrollmentModel = new \Enrollment();
+            $enrollments = $enrollmentModel->getByStudent((int) $id);
+        } catch (\Throwable $e) {
+            error_log('Failed to load edit form data: ' . $e->getMessage());
         }
 
+        // Load guardian info
+        $guardian = null;
+        try {
+            $parentModel = new \Parent_();
+            $guardians = $parentModel->findByStudent((int) $id);
+            if (!empty($guardians)) {
+                $guardian = $guardians[0];
+            }
+        } catch (\Throwable $e) {
+            error_log('Guardian fetch failed: ' . $e->getMessage());
+        }
+
+        // Merge guardian data into student for form pre-population
+        $student['guardian_name']  = $guardian['parent_name'] ?? '';
+        $student['guardian_phone'] = $guardian['phone1'] ?? '';
+        $student['guardian_email'] = ''; // parents table has no email column
+
         $this->view('students/edit', [
-            'pageTitle'  => 'Edit Student',
-            'student'    => $student,
-            'institutes' => $institutes,
+            'pageTitle'   => 'Edit Student',
+            'student'     => $student,
+            'institutes'  => $institutes,
+            'classes'     => $classes,
+            'enrollments' => $enrollments,
         ]);
     }
 
@@ -294,6 +374,15 @@ class StudentController extends BaseController
         $data['district'] = trim($_POST['district'] ?? '');
         $data['notes']    = trim($_POST['notes'] ?? '');
 
+        // Guardian info
+        $guardianName  = trim($_POST['guardian_name'] ?? '');
+        $guardianPhone = trim($_POST['guardian_phone'] ?? '');
+        $guardianEmail = trim($_POST['guardian_email'] ?? '');
+
+        // Enrollment data
+        $classIds         = $_POST['class_ids'] ?? [];
+        $scholarshipTypes = $_POST['scholarship_type'] ?? [];
+
         $errors = $this->validate($data, [
             'full_name'     => 'required|max:255',
             'date_of_birth' => 'required|date',
@@ -310,6 +399,12 @@ class StudentController extends BaseController
         try {
             $this->studentModel->update((int) $id, $data);
 
+            // ── Sync enrollments ──
+            $this->syncEnrollments((int) $id, $classIds, $scholarshipTypes);
+
+            // ── Update or create guardian ──
+            $this->createOrLinkGuardian((int) $id, $guardianName, $guardianPhone, $guardianEmail);
+
             $this->logAudit('update_student', 'student', (int) $id, [
                 'name' => $data['full_name'],
             ]);
@@ -320,6 +415,122 @@ class StudentController extends BaseController
             error_log('Student update failed: ' . $e->getMessage());
             $this->flash('error', 'Failed to update student. Please try again.');
             $this->redirect(BASE_URL . "/students/{$id}/edit");
+        }
+    }
+
+    /**
+     * Delete a student (soft delete via workflow or hard delete).
+     */
+    public function delete(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+        verifyCsrfToken();
+
+        $student = $this->studentModel->find((int) $id);
+        if (!$student) {
+            $this->flash('error', 'Student not found.');
+            $this->redirect(BASE_URL . '/students');
+            return;
+        }
+
+        // Initiate deletion workflow instead of immediate delete
+        try {
+            $workflowModel = new \Workflow();
+            $user = $this->getCurrentUser();
+            $workflowModel->create([
+                'type'            => 'student_deletion',
+                'entity_type'     => 'student',
+                'entity_id'       => (int) $id,
+                'initiated_by'    => (int) ($user['id'] ?? 0),
+                'reason'          => trim($_POST['reason'] ?? 'No reason provided'),
+                'status'          => 'pending',
+                'created_at'      => date('Y-m-d H:i:s'),
+            ]);
+
+            $this->logAudit('request_delete_student', 'student', (int) $id, [
+                'name'   => $student['full_name'],
+                'reason' => trim($_POST['reason'] ?? ''),
+            ]);
+
+            $this->flash('info', 'Student deletion request submitted for approval.');
+        } catch (\Throwable $e) {
+            error_log('Delete workflow failed: ' . $e->getMessage());
+            $this->flash('error', 'Failed to submit deletion request.');
+        }
+
+        $this->redirect(BASE_URL . '/students/' . $id);
+    }
+
+    // ─── Private helpers ────────────────────────────────────────────
+
+    /**
+     * Create or update a guardian record linked to a student.
+     */
+    private function createOrLinkGuardian(int $studentId, string $name, string $phone, string $email): void
+    {
+        if ($name === '' && $phone === '') {
+            return; // No guardian data provided
+        }
+
+        try {
+            $parentModel = new \Parent_();
+            $existing = $parentModel->findByStudent($studentId);
+
+            $guardianData = [
+                'student_id'  => $studentId,
+                'parent_name' => $name,
+                'phone1'      => $phone,
+                'status'      => 'active',
+                'updated_at'  => date('Y-m-d H:i:s'),
+            ];
+
+            if (!empty($existing)) {
+                // Update existing guardian
+                $parentModel->update((int) $existing[0]['id'], $guardianData);
+            } else {
+                // Create new guardian with default password
+                $guardianData['password_hash'] = password_hash('guardian', PASSWORD_DEFAULT);
+                $guardianData['created_at'] = date('Y-m-d H:i:s');
+                $parentModel->create($guardianData);
+            }
+        } catch (\Throwable $e) {
+            error_log('Guardian create/update failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sync enrollments: enroll in new classes, unenroll from removed ones,
+     * update scholarship types for existing ones.
+     */
+    private function syncEnrollments(int $studentId, array $newClassIds, array $scholarshipTypes): void
+    {
+        $enrollmentModel = new \Enrollment();
+        $currentClassIds = $enrollmentModel->getActiveClassIds($studentId);
+
+        $newClassIds = array_map('intval', $newClassIds);
+
+        // Enroll in newly selected classes
+        $toEnroll = array_diff($newClassIds, $currentClassIds);
+        foreach ($toEnroll as $classId) {
+            $scholarship = $scholarshipTypes[$classId] ?? 'full_payment';
+            $enrollmentModel->enrollStudent($studentId, $classId, $scholarship);
+        }
+
+        // Unenroll from removed classes
+        $toUnenroll = array_diff($currentClassIds, $newClassIds);
+        foreach ($toUnenroll as $classId) {
+            $enrollmentModel->unenroll($studentId, $classId);
+        }
+
+        // Update scholarship types for classes that remain
+        $remaining = array_intersect($newClassIds, $currentClassIds);
+        foreach ($remaining as $classId) {
+            $scholarship = $scholarshipTypes[$classId] ?? 'full_payment';
+            $enrollmentModel->updateScholarship($studentId, $classId, $scholarship);
         }
     }
 
