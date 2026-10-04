@@ -1,6 +1,8 @@
 <?php
 /**
  * Enrollment Model
+ * Matches DB schema: enrollments table with enrollment_status ENUM('active','inactive')
+ * and scholarship_type ENUM('full_payment','half_payment','free_card').
  */
 
 require_once __DIR__ . '/BaseModel.php';
@@ -11,7 +13,7 @@ class Enrollment extends BaseModel
     protected string $primaryKey = 'id';
     protected array $fillable = [
         'student_id', 'class_id', 'scholarship_type',
-        'status', 'enrolled_at', 'unenrolled_at',
+        'enrollment_status', 'enrolled_at',
     ];
 
     // ─── Enroll / Unenroll ───────────────────────────────────────────
@@ -21,28 +23,28 @@ class Enrollment extends BaseModel
      *
      * @param  int         $studentId
      * @param  int         $classId
-     * @param  string|null $scholarshipType  'none', 'half', 'free'
+     * @param  string      $scholarshipType  'full_payment', 'half_payment', 'free_card'
      * @return int  New enrollment ID
      */
-    public function enrollStudent(int $studentId, int $classId, ?string $scholarshipType = 'none'): int
+    public function enrollStudent(int $studentId, int $classId, string $scholarshipType = 'full_payment'): int
     {
         return $this->create([
-            'student_id'       => $studentId,
-            'class_id'         => $classId,
-            'scholarship_type' => $scholarshipType ?? 'none',
-            'status'           => 'active',
-            'enrolled_at'      => date('Y-m-d H:i:s'),
+            'student_id'        => $studentId,
+            'class_id'          => $classId,
+            'scholarship_type'  => $scholarshipType,
+            'enrollment_status' => 'active',
+            'enrolled_at'       => date('Y-m-d H:i:s'),
         ]);
     }
 
     /**
-     * Unenroll a student from a class (soft — sets status + timestamp).
+     * Unenroll a student from a class (sets enrollment_status to 'inactive').
      */
     public function unenroll(int $studentId, int $classId): bool
     {
         $sql = "UPDATE {$this->table}
-                SET status = 'unenrolled', unenrolled_at = NOW()
-                WHERE student_id = :sid AND class_id = :cid AND status = 'active'";
+                SET enrollment_status = 'inactive', updated_at = NOW()
+                WHERE student_id = :sid AND class_id = :cid AND enrollment_status = 'active'";
         return $this->query($sql, [
             ':sid' => $studentId,
             ':cid' => $classId,
@@ -56,8 +58,9 @@ class Enrollment extends BaseModel
      */
     public function getByStudent(int $studentId): array
     {
-        $sql = "SELECT e.*, c.name AS class_name, c.monthly_fee,
-                       c.schedule, c.code AS class_code,
+        $sql = "SELECT e.*, c.class_name, c.subject, c.grade, c.medium,
+                       c.monthly_fee, c.schedule_days, c.start_time, c.end_time,
+                       c.status AS class_status,
                        i.name AS institute_name
                 FROM {$this->table} e
                 INNER JOIN classes c ON e.class_id = c.id
@@ -72,12 +75,46 @@ class Enrollment extends BaseModel
      */
     public function getByClass(int $classId): array
     {
-        $sql = "SELECT e.*, s.student_id AS display_student_id,
-                       s.first_name, s.last_name, s.phone, s.email, s.status AS student_status
+        $sql = "SELECT e.*, s.student_id_display,
+                       s.full_name, s.phone1, s.email, s.status AS student_status
                 FROM {$this->table} e
                 INNER JOIN students s ON e.student_id = s.id
                 WHERE e.class_id = :cid
-                ORDER BY s.first_name ASC";
+                ORDER BY s.full_name ASC";
         return $this->query($sql, [':cid' => $classId])->fetchAll();
+    }
+
+    /**
+     * Get active enrollment count for a class.
+     */
+    public function countActiveByClass(int $classId): int
+    {
+        $sql = "SELECT COUNT(*) AS cnt FROM {$this->table}
+                WHERE class_id = :cid AND enrollment_status = 'active'";
+        $row = $this->query($sql, [':cid' => $classId])->fetch();
+        return (int) ($row['cnt'] ?? 0);
+    }
+
+    /**
+     * Get active enrollment count for a student.
+     */
+    public function countActiveByStudent(int $studentId): int
+    {
+        $sql = "SELECT COUNT(*) AS cnt FROM {$this->table}
+                WHERE student_id = :sid AND enrollment_status = 'active'";
+        $row = $this->query($sql, [':sid' => $studentId])->fetch();
+        return (int) ($row['cnt'] ?? 0);
+    }
+
+    /**
+     * Check if a student is enrolled in a specific class.
+     */
+    public function isEnrolled(int $studentId, int $classId): bool
+    {
+        $sql = "SELECT id FROM {$this->table}
+                WHERE student_id = :sid AND class_id = :cid AND enrollment_status = 'active'
+                LIMIT 1";
+        $row = $this->query($sql, [':sid' => $studentId, ':cid' => $classId])->fetch();
+        return $row !== false;
     }
 }
