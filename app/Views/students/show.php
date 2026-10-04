@@ -36,7 +36,7 @@ $badgeClass = match ($status) {
 
             <div class="profile-card__name"><?= htmlspecialchars($student['full_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
             <div class="profile-card__role">
-                <?= htmlspecialchars($student['student_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                <?= htmlspecialchars($student['student_id_display'] ?? '', ENT_QUOTES, 'UTF-8') ?>
             </div>
             <span class="badge <?= $badgeClass ?>"><?= ucfirst(htmlspecialchars($status, ENT_QUOTES, 'UTF-8')) ?></span>
 
@@ -71,9 +71,8 @@ $badgeClass = match ($status) {
                 <h4 style="margin-bottom:0.75rem;">Personal Details</h4>
                 <ul class="profile-card__details">
                     <li><span class="label">Full Name</span><span class="value"><?= htmlspecialchars($student['full_name'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span></li>
-                    <li><span class="label">Date of Birth</span><span class="value"><?= htmlspecialchars($student['dob'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span></li>
-                    <li><span class="label">Gender</span><span class="value"><?= ucfirst(htmlspecialchars($student['gender'] ?? '-', ENT_QUOTES, 'UTF-8')) ?></span></li>
-                    <li><span class="label">Phone</span><span class="value"><?= htmlspecialchars($student['phone'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span></li>
+                    <li><span class="label">Date of Birth</span><span class="value"><?= htmlspecialchars($student['date_of_birth'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span></li>
+                    <li><span class="label">Phone</span><span class="value"><?= htmlspecialchars($student['phone1'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span></li>
                     <li><span class="label">Email</span><span class="value"><?= htmlspecialchars($student['email'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span></li>
                     <li><span class="label">Address</span><span class="value"><?= htmlspecialchars($student['address'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span></li>
                 </ul>

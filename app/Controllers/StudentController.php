@@ -60,7 +60,7 @@ class StudentController extends BaseController
                 'current_page' => $page,
             ];
         } else {
-            $pagination = $this->studentModel->paginate($page, $perPage, [], 'first_name ASC');
+            $pagination = $this->studentModel->paginate($page, $perPage, [], 'full_name ASC');
         }
 
         $this->view('students/index', [
@@ -96,7 +96,7 @@ class StudentController extends BaseController
                 $instituteModel = new \Institute();
                 $institutes = $instituteModel->all('name ASC');
                 $classModel = new \ClassModel();
-                $classes = $classModel->all('name ASC');
+                $classes = $classModel->all('class_name ASC');
             } catch (\Throwable $e) {
                 error_log('Failed to load form data: ' . $e->getMessage());
             }
@@ -111,6 +111,9 @@ class StudentController extends BaseController
 
     /**
      * Process student registration form submission.
+     *
+     * DB schema uses: full_name (not first_name/last_name), student_id_display,
+     * and does NOT have a gender column.
      */
     public function store(): void
     {
@@ -124,50 +127,67 @@ class StudentController extends BaseController
         verifyCsrfToken();
 
         $data = [
-            'first_name'    => trim($_POST['first_name'] ?? ''),
-            'last_name'     => trim($_POST['last_name'] ?? ''),
+            'full_name'     => trim($_POST['full_name'] ?? ''),
             'date_of_birth' => trim($_POST['date_of_birth'] ?? ''),
-            'gender'        => trim($_POST['gender'] ?? ''),
             'address'       => trim($_POST['address'] ?? ''),
-            'phone'         => trim($_POST['phone'] ?? ''),
+            'phone1'        => trim($_POST['phone1'] ?? ''),
             'email'         => trim($_POST['email'] ?? ''),
             'institute_id'  => $_POST['institute_id'] ?? '',
         ];
 
+        // Optional fields
+        if (!empty($_POST['phone2'])) {
+            $data['phone2'] = trim($_POST['phone2']);
+        }
+        if (!empty($_POST['whatsapp'])) {
+            $data['whatsapp'] = trim($_POST['whatsapp']);
+        }
+        if (!empty($_POST['province'])) {
+            $data['province'] = trim($_POST['province']);
+        }
+        if (!empty($_POST['district'])) {
+            $data['district'] = trim($_POST['district']);
+        }
+        if (!empty($_POST['notes'])) {
+            $data['notes'] = trim($_POST['notes']);
+        }
+
         $errors = $this->validate($data, [
-            'first_name'    => 'required|max:100',
-            'last_name'     => 'required|max:100',
+            'full_name'     => 'required|max:255',
             'date_of_birth' => 'required|date',
-            'gender'        => 'required|in:male,female,other',
             'institute_id'  => 'required|integer',
         ]);
 
         if (!empty($errors)) {
             $this->flash('error', implode(' ', $errors));
-            $this->redirect('/students/create');
+            $this->redirect(BASE_URL . '/students/create');
         }
 
-        // Generate student ID and create
-        $data['student_id'] = $this->studentModel->generateStudentId();
+        // Generate student display ID and set defaults
+        $data['student_id_display'] = $this->studentModel->generateStudentId();
         $data['status'] = 'active';
+        $data['created_by'] = (int) session_get('user_id');
         $data['created_at'] = date('Y-m-d H:i:s');
         $data['updated_at'] = date('Y-m-d H:i:s');
+
+        // Set a default password hash (student changes on first login)
+        $data['password_hash'] = password_hash('password', PASSWORD_DEFAULT);
 
         try {
             $id = $this->studentModel->create($data);
 
             // Log the action
             $this->logAudit('create_student', 'student', $id, [
-                'student_id' => $data['student_id'],
-                'name'       => $data['first_name'] . ' ' . $data['last_name'],
+                'student_id_display' => $data['student_id_display'],
+                'name'               => $data['full_name'],
             ]);
 
-            $this->flash('success', "Student registered successfully. Student ID: {$data['student_id']}");
-            $this->redirect('/students/' . $id);
+            $this->flash('success', "Student registered successfully. Student ID: {$data['student_id_display']}");
+            $this->redirect(BASE_URL . '/students/' . $id);
         } catch (\Throwable $e) {
             error_log('Student creation failed: ' . $e->getMessage());
             $this->flash('error', 'Failed to register student. Please try again.');
-            $this->redirect('/students/create');
+            $this->redirect(BASE_URL . '/students/create');
         }
     }
 
@@ -182,7 +202,7 @@ class StudentController extends BaseController
 
         if (!$student) {
             $this->flash('error', 'Student not found.');
-            $this->redirect('/students');
+            $this->redirect(BASE_URL . '/students');
         }
 
         // Get payment history
@@ -195,7 +215,7 @@ class StudentController extends BaseController
         }
 
         $this->view('students/show', [
-            'pageTitle' => $student['first_name'] . ' ' . $student['last_name'],
+            'pageTitle' => $student['full_name'] ?? 'Student Details',
             'student'   => $student,
             'payments'  => $payments,
         ]);
@@ -218,7 +238,7 @@ class StudentController extends BaseController
 
         if (!$student) {
             $this->flash('error', 'Student not found.');
-            $this->redirect('/students');
+            $this->redirect(BASE_URL . '/students');
         }
 
         $institutes = [];
@@ -255,31 +275,34 @@ class StudentController extends BaseController
         $student = $this->studentModel->find((int) $id);
         if (!$student) {
             $this->flash('error', 'Student not found.');
-            $this->redirect('/students');
+            $this->redirect(BASE_URL . '/students');
         }
 
         $data = [
-            'first_name'    => trim($_POST['first_name'] ?? ''),
-            'last_name'     => trim($_POST['last_name'] ?? ''),
+            'full_name'     => trim($_POST['full_name'] ?? ''),
             'date_of_birth' => trim($_POST['date_of_birth'] ?? ''),
-            'gender'        => trim($_POST['gender'] ?? ''),
             'address'       => trim($_POST['address'] ?? ''),
-            'phone'         => trim($_POST['phone'] ?? ''),
+            'phone1'        => trim($_POST['phone1'] ?? ''),
             'email'         => trim($_POST['email'] ?? ''),
             'institute_id'  => $_POST['institute_id'] ?? '',
         ];
 
+        // Optional fields — always update so they can be cleared
+        $data['phone2']   = trim($_POST['phone2'] ?? '');
+        $data['whatsapp'] = trim($_POST['whatsapp'] ?? '');
+        $data['province'] = trim($_POST['province'] ?? '');
+        $data['district'] = trim($_POST['district'] ?? '');
+        $data['notes']    = trim($_POST['notes'] ?? '');
+
         $errors = $this->validate($data, [
-            'first_name'    => 'required|max:100',
-            'last_name'     => 'required|max:100',
+            'full_name'     => 'required|max:255',
             'date_of_birth' => 'required|date',
-            'gender'        => 'required|in:male,female,other',
             'institute_id'  => 'required|integer',
         ]);
 
         if (!empty($errors)) {
             $this->flash('error', implode(' ', $errors));
-            $this->redirect("/students/{$id}/edit");
+            $this->redirect(BASE_URL . "/students/{$id}/edit");
         }
 
         $data['updated_at'] = date('Y-m-d H:i:s');
@@ -288,15 +311,15 @@ class StudentController extends BaseController
             $this->studentModel->update((int) $id, $data);
 
             $this->logAudit('update_student', 'student', (int) $id, [
-                'name' => $data['first_name'] . ' ' . $data['last_name'],
+                'name' => $data['full_name'],
             ]);
 
             $this->flash('success', 'Student updated successfully.');
-            $this->redirect('/students/' . $id);
+            $this->redirect(BASE_URL . '/students/' . $id);
         } catch (\Throwable $e) {
             error_log('Student update failed: ' . $e->getMessage());
             $this->flash('error', 'Failed to update student. Please try again.');
-            $this->redirect("/students/{$id}/edit");
+            $this->redirect(BASE_URL . "/students/{$id}/edit");
         }
     }
 

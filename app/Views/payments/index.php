@@ -49,7 +49,7 @@ $currentMonth = $currentMonth ?? date('Y-m');
                     <option value="">All Classes</option>
                     <?php foreach ($classes as $cls): ?>
                         <option value="<?= (int) $cls['id'] ?>" <?= ($filters['class_id'] ?? '') == $cls['id'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($cls['name'], ENT_QUOTES, 'UTF-8') ?>
+                            <?= htmlspecialchars($cls['class_name'], ENT_QUOTES, 'UTF-8') ?>
                         </option>
                     <?php endforeach; ?>
                 </select>

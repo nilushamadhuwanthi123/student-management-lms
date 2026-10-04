@@ -11,8 +11,8 @@ class Parent_ extends BaseModel
     protected string $table = 'parents';
     protected string $primaryKey = 'id';
     protected array $fillable = [
-        'student_id', 'first_name', 'last_name', 'relationship',
-        'phone', 'email', 'password', 'address',
+        'student_id', 'parent_name', 'phone1', 'phone2',
+        'whatsapp', 'password_hash',
         'status', 'created_at', 'updated_at',
     ];
 
@@ -23,7 +23,7 @@ class Parent_ extends BaseModel
      */
     public function findByStudent(int $studentId): array
     {
-        return $this->where(['student_id' => $studentId], 'first_name ASC');
+        return $this->where(['student_id' => $studentId], 'parent_name ASC');
     }
 
     // ─── Authentication ──────────────────────────────────────────────
@@ -33,11 +33,11 @@ class Parent_ extends BaseModel
      */
     public function authenticate(string $phone, string $password): ?array
     {
-        $parent = $this->findBy('phone', $phone);
+        $parent = $this->findBy('phone1', $phone);
         if (!$parent) {
             return null;
         }
-        if (!password_verify($password, $parent['password'])) {
+        if (!password_verify($password, $parent['password_hash'])) {
             return null;
         }
         return $parent;

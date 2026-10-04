@@ -13,9 +13,14 @@ class BaseController
 
     public function __construct()
     {
-        // Use the global database connection if available
-        global $pdo;
-        $this->db = $pdo ?? null;
+        // Use Database::connect() as the primary connection provider.
+        // Falls back to global $pdo for backward compatibility.
+        try {
+            $this->db = \Database::connect();
+        } catch (\Throwable $e) {
+            global $pdo;
+            $this->db = $pdo ?? null;
+        }
     }
 
     /**
@@ -25,7 +30,7 @@ class BaseController
      * @param array<string, mixed> $data  Variables to extract into the template scope
      * @param string|null $layout  Layout file (null for default "layouts/app")
      */
-    protected function view(string $template, array $data = [], ?string $layout = 'layouts/app'): void
+    protected function view(string $template, array $data = [], ?string $layout = 'layouts/admin'): void
     {
         $viewsPath = BASE_PATH . '/app/Views';
         $templateFile = $viewsPath . '/' . str_replace('.', '/', $template) . '.php';
@@ -88,7 +93,7 @@ class BaseController
      */
     protected function back(): never
     {
-        $referer = $_SERVER['HTTP_REFERER'] ?? '/dashboard';
+        $referer = $_SERVER['HTTP_REFERER'] ?? (BASE_URL . '/dashboard');
         header('Location: ' . $referer);
         exit;
     }

@@ -10,16 +10,17 @@ class ClassModel extends BaseModel
     protected string $table = 'classes';
     protected string $primaryKey = 'id';
     protected array $fillable = [
-        'name', 'code', 'institute_id', 'teacher_id', 'staff_id',
-        'monthly_fee', 'schedule', 'description', 'status',
-        'created_at', 'updated_at',
+        'class_name', 'subject', 'medium', 'grade', 'institute_id',
+        'room', 'teacher_id', 'staff_id', 'schedule_days',
+        'start_time', 'end_time', 'monthly_fee', 'teacher_revenue_split',
+        'notes', 'status', 'created_at', 'updated_at',
     ];
 
     // ─── Filtered queries ────────────────────────────────────────────
 
     public function getByInstitute(int $instituteId): array
     {
-        return $this->where(['institute_id' => $instituteId], 'name ASC');
+        return $this->where(['institute_id' => $instituteId], 'class_name ASC');
     }
 
     /**
@@ -28,14 +29,11 @@ class ClassModel extends BaseModel
     public function getWithDetails(int $id): ?array
     {
         $sql = "SELECT c.*,
-                       t.first_name  AS teacher_first_name,
-                       t.last_name   AS teacher_last_name,
-                       t.user_id     AS teacher_user_id,
-                       sf.first_name AS staff_first_name,
-                       sf.last_name  AS staff_last_name,
-                       sf.user_id    AS staff_user_id,
-                       i.name        AS institute_name,
-                       i.code        AS institute_code
+                       t.full_name        AS teacher_name,
+                       t.user_id_display  AS teacher_user_id,
+                       sf.full_name       AS staff_name,
+                       sf.user_id_display AS staff_user_id,
+                       i.name             AS institute_name
                 FROM {$this->table} c
                 LEFT JOIN users t  ON c.teacher_id = t.id
                 LEFT JOIN users sf ON c.staff_id   = sf.id
@@ -52,7 +50,7 @@ class ClassModel extends BaseModel
     public function getStudentCount(int $classId): int
     {
         $sql = "SELECT COUNT(*) AS cnt FROM enrollments
-                WHERE class_id = :cid AND status = 'active'";
+                WHERE class_id = :cid AND enrollment_status = 'active'";
         return (int) $this->query($sql, [':cid' => $classId])->fetch()['cnt'];
     }
 
@@ -61,7 +59,7 @@ class ClassModel extends BaseModel
      */
     public function getActiveClasses(): array
     {
-        return $this->where(['status' => 'active'], 'name ASC');
+        return $this->where(['status' => 'active'], 'class_name ASC');
     }
 
     // ─── Search ──────────────────────────────────────────────────────
@@ -74,8 +72,8 @@ class ClassModel extends BaseModel
         $sql = "SELECT c.*, i.name AS institute_name
                 FROM {$this->table} c
                 LEFT JOIN institutes i ON c.institute_id = i.id
-                WHERE c.name LIKE :term OR c.code LIKE :term
-                ORDER BY c.name ASC";
-        return $this->query($sql, [':term' => "%{$term}%"])->fetchAll();
+                WHERE c.class_name LIKE :term OR c.subject LIKE :term2
+                ORDER BY c.class_name ASC";
+        return $this->query($sql, [':term' => "%{$term}%", ':term2' => "%{$term}%"])->fetchAll();
     }
 }

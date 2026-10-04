@@ -47,7 +47,7 @@ class PaymentController extends BaseController
         if ($this->db) {
             try {
                 $classModel = new \ClassModel();
-                $classes = $classModel->all('name ASC');
+                $classes = $classModel->all('class_name ASC');
             } catch (\Throwable $e) {
                 error_log('Failed to load classes: ' . $e->getMessage());
             }
@@ -84,11 +84,11 @@ class PaymentController extends BaseController
 
         if (!$student) {
             $this->flash('error', 'Student not found.');
-            $this->redirect('/payments');
+            $this->redirect(BASE_URL . '/payments');
         }
 
         $this->view('payments/student', [
-            'pageTitle' => 'Payments - ' . $student['first_name'] . ' ' . $student['last_name'],
+            'pageTitle' => 'Payments - ' . ($student['full_name'] ?? 'Student'),
             'student'   => $student,
             'payments'  => $payments,
         ]);
@@ -161,7 +161,7 @@ class PaymentController extends BaseController
             $this->flash('error', 'Failed to generate monthly payments.');
         }
 
-        $this->redirect('/payments?month=' . urlencode($monthYear));
+        $this->redirect(BASE_URL . '/payments?month=' . urlencode($monthYear));
     }
 
     /**

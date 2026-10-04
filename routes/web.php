@@ -173,6 +173,10 @@ $router->get('/logout', ['App\Controllers\AuthController', 'logout']);
 $router->get('/first-login-password', ['App\Controllers\AuthController', 'showFirstLoginPassword']);
 $router->post('/first-login-password', ['App\Controllers\AuthController', 'updateFirstLoginPassword']);
 
+// Password management routes (requires auth)
+$router->get('/change-password', ['App\Controllers\AuthController', 'showChangePassword']);
+$router->post('/change-password', ['App\Controllers\AuthController', 'changePassword']);
+
 // Authenticated routes
 $router->group(['middleware' => ['auth']], function (Router $router) {
 

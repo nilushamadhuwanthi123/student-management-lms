@@ -43,11 +43,17 @@ class PublicController extends BaseController
     {
         $this->view('public/contact', [
             'pageTitle' => 'Contact Us',
+            'old'       => $_SESSION['_contact_old'] ?? [],
         ], 'layouts/public');
+        // Clear preserved form values after rendering
+        unset($_SESSION['_contact_old']);
     }
 
     /**
      * Contact form — POST processes the submission.
+     *
+     * Persists the message to the database before showing confirmation.
+     * Shows a failure message with preserved values when storage fails.
      */
     public function contactSubmit(): void
     {
@@ -68,29 +74,36 @@ class PublicController extends BaseController
         ]);
 
         if (!empty($errors)) {
+            $_SESSION['_contact_old'] = $data;
             $this->flash('error', implode(' ', $errors));
-            $this->redirect('/contact');
+            $this->redirect(BASE_URL . '/contact');
         }
 
-        // Store the contact message (using the database if available)
-        if ($this->db) {
+        // Persist the contact message — do NOT show success unless storage succeeds
+        if (!$this->db) {
+            $_SESSION['_contact_old'] = $data;
+            $this->flash('error', 'Unable to save your message at this time. Please try again later.');
+            $this->redirect(BASE_URL . '/contact');
+        }
+
+        try {
             $sql = "INSERT INTO contact_messages (name, email, subject, message, created_at)
                     VALUES (:name, :email, :subject, :message, NOW())";
-            try {
-                $stmt = $this->db->prepare($sql);
-                $stmt->execute([
-                    ':name'    => $data['name'],
-                    ':email'   => $data['email'],
-                    ':subject' => $data['subject'],
-                    ':message' => $data['message'],
-                ]);
-            } catch (\PDOException $e) {
-                // Table may not exist yet — log and continue
-                error_log('Contact form storage failed: ' . $e->getMessage());
-            }
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':name'    => $data['name'],
+                ':email'   => $data['email'],
+                ':subject' => $data['subject'],
+                ':message' => $data['message'],
+            ]);
+        } catch (\PDOException $e) {
+            error_log('Contact form storage failed: ' . $e->getMessage());
+            $_SESSION['_contact_old'] = $data;
+            $this->flash('error', 'Unable to save your message at this time. Please try again later.');
+            $this->redirect(BASE_URL . '/contact');
         }
 
         $this->flash('success', 'Thank you for your message! We will get back to you soon.');
-        $this->redirect('/contact');
+        $this->redirect(BASE_URL . '/contact');
     }
 }

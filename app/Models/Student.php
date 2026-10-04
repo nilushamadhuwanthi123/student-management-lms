@@ -10,32 +10,50 @@ class Student extends BaseModel
     protected string $table = 'students';
     protected string $primaryKey = 'id';
     protected array $fillable = [
-        'student_id', 'first_name', 'last_name', 'date_of_birth',
-        'gender', 'address', 'phone', 'email',
-        'institute_id', 'status', 'profile_picture',
-        'created_at', 'updated_at',
+        'student_id_display', 'full_name', 'email',
+        'phone1', 'phone2', 'whatsapp', 'home_number',
+        'date_of_birth', 'address', 'province', 'district',
+        'notes', 'profile_photo', 'password_hash',
+        'status', 'created_by', 'created_at', 'updated_at',
     ];
 
     // ─── ID generation ───────────────────────────────────────────────
 
     /**
-     * Generate next student display ID: STD + year + 5-digit sequence.
-     * e.g. STD202600001
+     * Generate next student display ID: STU + year + 5-digit sequence.
+     * e.g. STU202600001
      */
     public function generateStudentId(): string
     {
         $year = date('Y');
-        $pattern = "STD{$year}%";
+        $pattern = "STU{$year}%";
 
-        $sql = "SELECT student_id FROM {$this->table}
-                WHERE student_id LIKE :pattern
-                ORDER BY student_id DESC LIMIT 1";
+        $sql = "SELECT student_id_display FROM {$this->table}
+                WHERE student_id_display LIKE :pattern
+                ORDER BY student_id_display DESC LIMIT 1";
         $stmt = $this->query($sql, [':pattern' => $pattern]);
         $last = $stmt->fetch();
 
-        $seq = $last ? (int) substr($last['student_id'], 7) + 1 : 1;
+        $seq = $last ? (int) substr($last['student_id_display'], 7) + 1 : 1;
 
-        return 'STD' . $year . str_pad($seq, 5, '0', STR_PAD_LEFT);
+        return 'STU' . $year . str_pad($seq, 5, '0', STR_PAD_LEFT);
+    }
+
+    // ─── Authentication ──────────────────────────────────────────────
+
+    /**
+     * Authenticate a student by display ID + password.
+     */
+    public function authenticate(string $studentIdDisplay, string $password): ?array
+    {
+        $student = $this->findBy('student_id_display', $studentIdDisplay);
+        if (!$student) {
+            return null;
+        }
+        if (!password_verify($password, $student['password_hash'])) {
+            return null;
+        }
+        return $student;
     }
 
     // ─── Relations ───────────────────────────────────────────────────
@@ -50,8 +68,9 @@ class Student extends BaseModel
             return null;
         }
 
-        $sql = "SELECT e.*, c.name AS class_name, c.monthly_fee,
-                       c.schedule, c.institute_id AS class_institute_id
+        $sql = "SELECT e.*, c.class_name, c.monthly_fee,
+                       c.schedule_days, c.start_time, c.end_time,
+                       c.institute_id AS class_institute_id
                 FROM enrollments e
                 INNER JOIN classes c ON e.class_id = c.id
                 WHERE e.student_id = :sid
@@ -66,14 +85,9 @@ class Student extends BaseModel
     {
         $sql = "SELECT s.* FROM {$this->table} s
                 INNER JOIN enrollments e ON s.id = e.student_id
-                WHERE e.class_id = :cid AND e.status = 'active'
-                ORDER BY s.first_name ASC";
+                WHERE e.class_id = :cid AND e.enrollment_status = 'active'
+                ORDER BY s.full_name ASC";
         return $this->query($sql, [':cid' => $classId])->fetchAll();
-    }
-
-    public function getByInstitute(int $instituteId): array
-    {
-        return $this->where(['institute_id' => $instituteId], 'first_name ASC');
     }
 
     // ─── Search ──────────────────────────────────────────────────────
@@ -81,8 +95,8 @@ class Student extends BaseModel
     /**
      * Search students with optional filters.
      *
-     * @param  string $term     Matched against name, student_id, email, phone
-     * @param  array  $filters  Optional: class_id, institute_id, status
+     * @param  string $term     Matched against name, student_id_display, email, phone1
+     * @param  array  $filters  Optional: class_id, status
      */
     public function search(string $term, array $filters = []): array
     {
@@ -90,9 +104,9 @@ class Student extends BaseModel
         $where  = [];
 
         if ($term !== '') {
-            $where[] = "(s.first_name LIKE :term OR s.last_name LIKE :term
-                         OR s.student_id LIKE :term OR s.email LIKE :term
-                         OR s.phone LIKE :term)";
+            $where[] = "(s.full_name LIKE :term
+                         OR s.student_id_display LIKE :term OR s.email LIKE :term
+                         OR s.phone1 LIKE :term)";
             $params[':term'] = "%{$term}%";
         }
 
@@ -100,15 +114,11 @@ class Student extends BaseModel
             $where[] = "s.status = :status";
             $params[':status'] = $filters['status'];
         }
-        if (!empty($filters['institute_id'])) {
-            $where[] = "s.institute_id = :inst";
-            $params[':inst'] = $filters['institute_id'];
-        }
 
         $joinClass = '';
         if (!empty($filters['class_id'])) {
             $joinClass = "INNER JOIN enrollments e ON s.id = e.student_id";
-            $where[] = "e.class_id = :cid AND e.status = 'active'";
+            $where[] = "e.class_id = :cid AND e.enrollment_status = 'active'";
             $params[':cid'] = $filters['class_id'];
         }
 
@@ -117,7 +127,7 @@ class Student extends BaseModel
         $sql = "SELECT DISTINCT s.* FROM {$this->table} s
                 {$joinClass}
                 {$whereClause}
-                ORDER BY s.first_name ASC";
+                ORDER BY s.full_name ASC";
         return $this->query($sql, $params)->fetchAll();
     }
 
@@ -134,11 +144,14 @@ class Student extends BaseModel
         $active = $this->count(['status' => 'active']);
         $deactivated = $this->count(['status' => 'deactivated']);
 
-        $monthYear = date('Y-m');
+        $monthYear = date('Y-m-01'); // First day of current month
         $sql = "SELECT COUNT(DISTINCT p.student_id) AS cnt
                 FROM payments p
-                WHERE p.month_year = :my AND p.status = 'paid'";
-        $paid = (int) $this->query($sql, [':my' => $monthYear])->fetch()['cnt'];
+                WHERE p.month_year = :my
+                  AND p.payment_status = 'paid'";
+        $paid = (int) $this->query($sql, [
+            ':my' => $monthYear,
+        ])->fetch()['cnt'];
 
         return [
             'total'           => $total,
@@ -159,10 +172,15 @@ class Student extends BaseModel
      */
     public function getPaymentStatus(int $studentId, string $monthYear): ?array
     {
+        $monthStart = $monthYear . '-01';
         $sql = "SELECT * FROM payments
-                WHERE student_id = :sid AND month_year = :my
+                WHERE student_id = :sid
+                  AND month_year = :my
                 LIMIT 1";
-        $row = $this->query($sql, [':sid' => $studentId, ':my' => $monthYear])->fetch();
+        $row = $this->query($sql, [
+            ':sid' => $studentId,
+            ':my'  => $monthStart,
+        ])->fetch();
         return $row ?: null;
     }
 

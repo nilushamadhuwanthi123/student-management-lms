@@ -77,7 +77,7 @@ class WorkflowController extends BaseController
             $this->flash('error', 'An error occurred while processing the approval.');
         }
 
-        $this->redirect('/workflows');
+        $this->redirect(BASE_URL . '/workflows');
     }
 
     /**
@@ -93,7 +93,7 @@ class WorkflowController extends BaseController
 
         if ($reason === '') {
             $this->flash('error', 'A reason is required when rejecting a workflow.');
-            $this->redirect('/workflows');
+            $this->redirect(BASE_URL . '/workflows');
         }
 
         try {
@@ -112,7 +112,7 @@ class WorkflowController extends BaseController
             $this->flash('error', 'An error occurred while processing the rejection.');
         }
 
-        $this->redirect('/workflows');
+        $this->redirect(BASE_URL . '/workflows');
     }
 
     /**
