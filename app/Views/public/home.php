@@ -13,7 +13,7 @@
             To add a real hero video, uncomment the <video> tag below
             and provide the video source file.
             <video autoplay muted loop playsinline poster="/assets/img/hero-poster.jpg">
-                <source src="/assets/video/hero.mp4" type="video/mp4">
+                <source src="<?= BASE_URL ?>/assets/video/hero.mp4" type="video/mp4">
             </video>
         -->
         <!-- Animated gradient fallback -->
@@ -49,13 +49,13 @@
         </p>
 
         <div class="reveal flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="/login" class="inline-flex items-center px-8 py-3.5 rounded-full text-sm font-semibold
+            <a href="<?= BASE_URL ?>/login" class="inline-flex items-center px-8 py-3.5 rounded-full text-sm font-semibold
                 bg-[#0E6F58] text-white hover:bg-[#09503F] transition-all duration-300
                 shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 btn-glow">
                 Get Started
                 <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
             </a>
-            <a href="/features" class="inline-flex items-center px-8 py-3.5 rounded-full text-sm font-semibold
+            <a href="<?= BASE_URL ?>/features" class="inline-flex items-center px-8 py-3.5 rounded-full text-sm font-semibold
                 text-white border border-white/20 hover:bg-white/10 backdrop-blur-sm transition-all duration-300">
                 Learn More
             </a>
@@ -273,7 +273,7 @@
         <p class="text-base mb-8" style="color: var(--text-secondary); max-width: 440px; margin-left: auto; margin-right: auto;">
             Join hundreds of educational institutions already using EduManager to streamline their operations.
         </p>
-        <a href="/login" class="inline-flex items-center px-8 py-3.5 rounded-full text-sm font-semibold
+        <a href="<?= BASE_URL ?>/login" class="inline-flex items-center px-8 py-3.5 rounded-full text-sm font-semibold
             bg-[var(--primary)] text-[var(--text-inverse)] hover:bg-[var(--primary-hover)] transition-all duration-300
             shadow-lg btn-glow">
             Login to Get Started

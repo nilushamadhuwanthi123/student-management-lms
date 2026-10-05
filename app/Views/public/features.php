@@ -4,7 +4,7 @@
  * Layout: layouts/public
  */
 
-$breadcrumbs = [['Home', '/'], ['Features', '#']];
+$breadcrumbs = [['Home', BASE_URL . '/'], ['Features', '#']];
 ?>
 
 <!-- Page Header -->
@@ -138,6 +138,6 @@ $breadcrumbs = [['Home', '/'], ['Features', '#']];
         <p style="max-width: 480px; margin: 0 auto 2rem;">
             Log in to explore the full power of EduManager for your educational institute.
         </p>
-        <a href="/login" class="btn btn--primary btn--lg">Login to Get Started</a>
+        <a href="<?= BASE_URL ?>/login" class="btn btn--primary btn--lg">Login to Get Started</a>
     </div>
 </section>

@@ -71,15 +71,15 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
 <div class="mb-3">
     <h3>Quick Actions</h3>
     <div class="d-flex flex-wrap gap-1" style="margin-top:0.75rem;">
-        <a href="/students/create" class="btn btn--primary">
+        <a href="<?= BASE_URL ?>/students/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Register Student
         </a>
-        <a href="/payments" class="btn btn--secondary">
+        <a href="<?= BASE_URL ?>/payments" class="btn btn--secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             Mark Payments
         </a>
-        <a href="/workflows" class="btn btn--secondary">
+        <a href="<?= BASE_URL ?>/workflows" class="btn btn--secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             View Workflows
         </a>

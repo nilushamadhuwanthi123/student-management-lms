@@ -27,7 +27,7 @@ $notificationCount = $notificationCount ?? 0;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle ?? 'EduManager', ENT_QUOTES, 'UTF-8') ?> - EduManager</title>
     <?php if (function_exists('csrfMeta')): ?><?= csrfMeta() ?><?php endif; ?>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
     <style>
         .navbar-admin {
             padding-left: calc(var(--sidebar-width) + 1.5rem);
@@ -193,7 +193,7 @@ $notificationCount = $notificationCount ?? 0;
             </button>
 
             <!-- Notifications -->
-            <button type="button" class="notification-bell" aria-label="Notifications" onclick="window.location.href='/notifications'">
+            <button type="button" class="notification-bell" aria-label="Notifications" onclick="window.location.href='<?= BASE_URL ?>/notifications'">
                 &#128276;
                 <?php if ($notificationCount > 0): ?>
                     <span class="notification-bell__count"><?= (int) $notificationCount ?></span>
@@ -213,10 +213,10 @@ $notificationCount = $notificationCount ?? 0;
                     <span style="font-size:0.625rem; color:var(--text-muted);">&#9660;</span>
                 </button>
                 <div class="dropdown__menu">
-                    <a href="/profile" class="dropdown__item">Profile</a>
-                    <a href="/settings" class="dropdown__item">Settings</a>
+                    <a href="<?= BASE_URL ?>/profile" class="dropdown__item">Profile</a>
+                    <a href="<?= BASE_URL ?>/settings" class="dropdown__item">Settings</a>
                     <div class="dropdown__divider"></div>
-                    <form method="POST" action="/logout" style="margin:0;">
+                    <form method="POST" action="<?= BASE_URL ?>/logout" style="margin:0;">
                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                         <button type="submit" class="dropdown__item dropdown__item--danger" style="width:100%;">Logout</button>
                     </form>
@@ -243,7 +243,7 @@ $notificationCount = $notificationCount ?? 0;
             <div class="sidebar__section">Main</div>
 
             <!-- Dashboard -->
-            <a href="/dashboard" class="sidebar__link <?= $activePage === 'dashboard' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>/dashboard" class="sidebar__link <?= $activePage === 'dashboard' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 Dashboard
             </a>
@@ -259,9 +259,9 @@ $notificationCount = $notificationCount ?? 0;
                     <span class="chevron">&#9654;</span>
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'students' ? 'open' : '' ?>" id="students-sub">
-                    <a href="/students" class="sidebar__sub-link <?= $activeSubPage === 'list' ? 'active' : '' ?>">All Students</a>
+                    <a href="<?= BASE_URL ?>/students" class="sidebar__sub-link <?= $activeSubPage === 'list' ? 'active' : '' ?>">All Students</a>
                     <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff'])): ?>
-                    <a href="/students/create" class="sidebar__sub-link <?= $activeSubPage === 'create' ? 'active' : '' ?>">Register New</a>
+                    <a href="<?= BASE_URL ?>/students/create" class="sidebar__sub-link <?= $activeSubPage === 'create' ? 'active' : '' ?>">Register New</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -278,9 +278,9 @@ $notificationCount = $notificationCount ?? 0;
                     <span class="chevron">&#9654;</span>
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'payments' ? 'open' : '' ?>" id="payments-sub">
-                    <a href="/payments" class="sidebar__sub-link <?= $activeSubPage === 'overview' ? 'active' : '' ?>">Overview</a>
+                    <a href="<?= BASE_URL ?>/payments" class="sidebar__sub-link <?= $activeSubPage === 'overview' ? 'active' : '' ?>">Overview</a>
                     <?php if (in_array($userRole, ['super_admin', 'admin'])): ?>
-                    <a href="/payments/generate" class="sidebar__sub-link <?= $activeSubPage === 'generate' ? 'active' : '' ?>">Generate Monthly</a>
+                    <a href="<?= BASE_URL ?>/payments/generate" class="sidebar__sub-link <?= $activeSubPage === 'generate' ? 'active' : '' ?>">Generate Monthly</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -297,8 +297,8 @@ $notificationCount = $notificationCount ?? 0;
                     <span class="chevron">&#9654;</span>
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'workflows' ? 'open' : '' ?>" id="workflows-sub">
-                    <a href="/workflows" class="sidebar__sub-link <?= $activeSubPage === 'pending' ? 'active' : '' ?>">Pending Approvals</a>
-                    <a href="/workflows/history" class="sidebar__sub-link <?= $activeSubPage === 'history' ? 'active' : '' ?>">History</a>
+                    <a href="<?= BASE_URL ?>/workflows" class="sidebar__sub-link <?= $activeSubPage === 'pending' ? 'active' : '' ?>">Pending Approvals</a>
+                    <a href="<?= BASE_URL ?>/workflows/history" class="sidebar__sub-link <?= $activeSubPage === 'history' ? 'active' : '' ?>">History</a>
                 </div>
             </div>
             <?php endif; ?>
@@ -307,7 +307,7 @@ $notificationCount = $notificationCount ?? 0;
             <div class="sidebar__section">Administration</div>
 
             <!-- Audit Log -->
-            <a href="/audit" class="sidebar__link <?= $activePage === 'audit' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>/audit" class="sidebar__link <?= $activePage === 'audit' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                 Audit Log
             </a>
@@ -324,10 +324,10 @@ $notificationCount = $notificationCount ?? 0;
                     <span class="chevron">&#9654;</span>
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'settings' ? 'open' : '' ?>" id="settings-sub">
-                    <a href="/settings" class="sidebar__sub-link <?= $activeSubPage === 'general' ? 'active' : '' ?>">General</a>
-                    <a href="/settings/deactivation" class="sidebar__sub-link <?= $activeSubPage === 'deactivation' ? 'active' : '' ?>">Deactivation</a>
-                    <a href="/settings/deletion" class="sidebar__sub-link <?= $activeSubPage === 'deletion' ? 'active' : '' ?>">Deletion</a>
-                    <a href="/settings/dashboard-items" class="sidebar__sub-link <?= $activeSubPage === 'dashboard-items' ? 'active' : '' ?>">Dashboard Items</a>
+                    <a href="<?= BASE_URL ?>/settings" class="sidebar__sub-link <?= $activeSubPage === 'general' ? 'active' : '' ?>">General</a>
+                    <a href="<?= BASE_URL ?>/settings/deactivation" class="sidebar__sub-link <?= $activeSubPage === 'deactivation' ? 'active' : '' ?>">Deactivation</a>
+                    <a href="<?= BASE_URL ?>/settings/deletion" class="sidebar__sub-link <?= $activeSubPage === 'deletion' ? 'active' : '' ?>">Deletion</a>
+                    <a href="<?= BASE_URL ?>/settings/dashboard-items" class="sidebar__sub-link <?= $activeSubPage === 'dashboard-items' ? 'active' : '' ?>">Dashboard Items</a>
                 </div>
             </div>
             <?php endif; ?>
@@ -346,7 +346,7 @@ $notificationCount = $notificationCount ?? 0;
         </main>
     </div>
 
-    <script src="/assets/js/app.js"></script>
+    <script src="<?= BASE_URL ?>/assets/js/app.js"></script>
     <script>
     (function () {
         // Theme icon sync

@@ -4,7 +4,7 @@
  * Layout: layouts/public
  */
 
-$breadcrumbs = [['Home', '/'], ['About', '#']];
+$breadcrumbs = [['Home', BASE_URL . '/'], ['About', '#']];
 ?>
 
 <!-- Page Header -->
@@ -127,8 +127,8 @@ $breadcrumbs = [['Home', '/'], ['About', '#']];
             Discover the full range of features that make EduManager the ideal choice for your institute.
         </p>
         <div class="d-flex gap-2 justify-center flex-wrap">
-            <a href="/features" class="btn btn--primary btn--lg">Explore Features</a>
-            <a href="/contact" class="btn btn--secondary btn--lg">Contact Us</a>
+            <a href="<?= BASE_URL ?>/features" class="btn btn--primary btn--lg">Explore Features</a>
+            <a href="<?= BASE_URL ?>/contact" class="btn btn--secondary btn--lg">Contact Us</a>
         </div>
     </div>
 </section>

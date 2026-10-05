@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Page Not Found | EduManager</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
     <style>
         .error-page {
             min-height: 100vh;
@@ -47,7 +47,7 @@
             <div class="error-code">404</div>
             <h1 class="error-title">Page Not Found</h1>
             <p class="error-text">The page you are looking for does not exist or has been moved.</p>
-            <a href="/dashboard" class="btn btn--primary">Go Home</a>
+            <a href="<?= BASE_URL ?>/dashboard" class="btn btn--primary">Go Home</a>
         </div>
     </div>
     <script>

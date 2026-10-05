@@ -18,7 +18,7 @@ $totalPages  = $totalPages ?? 1;
 <div class="page-header">
     <h1 class="page-header__title">Audit Log</h1>
     <div class="page-header__actions">
-        <form method="GET" action="/audit/export" style="display:inline;">
+        <form method="GET" action="<?= BASE_URL ?>/audit/export" style="display:inline;">
             <?php foreach ($filters as $k => $v): ?>
                 <?php if ($v !== '' && $v !== null): ?>
                     <input type="hidden" name="<?= htmlspecialchars($k, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars($v, ENT_QUOTES, 'UTF-8') ?>">
@@ -35,7 +35,7 @@ $totalPages  = $totalPages ?? 1;
 <!-- Filters -->
 <div class="table-wrapper mb-3">
     <div class="table-toolbar">
-        <form method="GET" action="/audit" style="display:flex;flex-wrap:wrap;gap:0.75rem;width:100%;align-items:flex-end;">
+        <form method="GET" action="<?= BASE_URL ?>/audit" style="display:flex;flex-wrap:wrap;gap:0.75rem;width:100%;align-items:flex-end;">
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label text-xs" style="margin-bottom:0.15rem;">Date From</label>
                 <input type="date" name="date_from" class="form-control" style="width:auto;" value="<?= htmlspecialchars($filters['date_from'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
@@ -79,7 +79,7 @@ $totalPages  = $totalPages ?? 1;
             </div>
             <div>
                 <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-                <a href="/audit" class="btn btn--ghost btn--sm">Clear</a>
+                <a href="<?= BASE_URL ?>/audit" class="btn btn--ghost btn--sm">Clear</a>
             </div>
         </form>
     </div>

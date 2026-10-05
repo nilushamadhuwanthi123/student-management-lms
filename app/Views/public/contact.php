@@ -4,7 +4,7 @@
  * Layout: layouts/public
  */
 
-$breadcrumbs = [['Home', '/'], ['Contact', '#']];
+$breadcrumbs = [['Home', BASE_URL . '/'], ['Contact', '#']];
 ?>
 
 <!-- Page Header -->
@@ -29,7 +29,7 @@ $breadcrumbs = [['Home', '/'], ['Contact', '#']];
             <div>
                 <div class="card" style="padding: 2rem;">
                     <h3 style="margin-bottom: 1.5rem;">Send us a Message</h3>
-                    <form action="/contact" method="POST">
+                    <form action="<?= BASE_URL ?>/contact" method="POST">
                         <?= csrfField() ?>
 
                         <div class="form-row form-row--2">

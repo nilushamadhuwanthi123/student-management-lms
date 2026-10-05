@@ -76,7 +76,7 @@ if (empty($paths)) {
 <div class="card" style="max-width:900px;">
     <h3 style="margin-bottom:1rem;">Configure Approval Chain</h3>
 
-    <form method="POST" action="/settings/deletion">
+    <form method="POST" action="<?= BASE_URL ?>/settings/deletion">
         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
         <div class="form-group">
