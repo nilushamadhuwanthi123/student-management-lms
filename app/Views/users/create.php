@@ -16,13 +16,13 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
         <p class="text-sm text-muted">Register a new Administrator, Coordinator, Staff, or Teacher account</p>
     </div>
     <div class="page-header__actions">
-        <a href="/users" class="btn btn--ghost">
+        <a href="<?= BASE_URL ?>/users" class="btn btn--ghost">
             &larr; Back to Users
         </a>
     </div>
 </div>
 
-<form method="POST" action="/users/create" enctype="multipart/form-data" id="createUserForm">
+<form method="POST" action="<?= BASE_URL ?>/users/create" enctype="multipart/form-data" id="createUserForm">
     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
     <!-- Auto Registration Banner (Document 1 Page 2) -->
@@ -198,7 +198,7 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
 
     <!-- Submit Buttons -->
     <div class="d-flex justify-end gap-1 mb-4">
-        <a href="/users" class="btn btn--ghost">Cancel</a>
+        <a href="<?= BASE_URL ?>/users" class="btn btn--ghost">Cancel</a>
         <button type="submit" class="btn btn--primary" style="padding:0.65rem 1.5rem;">
             Save User Record
         </button>

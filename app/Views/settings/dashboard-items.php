@@ -37,7 +37,7 @@ $currentVisibility = $widgetsByRole[$selectedRole] ?? [];
     <div class="d-flex items-center justify-between flex-wrap gap-2">
         <div style="flex:1;min-width:280px;">
             <label class="form-label" for="roleSelector"><strong>Select Role to Configure:</strong></label>
-            <select id="roleSelector" class="form-control" onchange="window.location.href='/settings/dashboard-items?role=' + this.value;">
+            <select id="roleSelector" class="form-control" onchange="window.location.href='<?= BASE_URL ?>/settings/dashboard-items?role=' + this.value;">
                 <?php foreach ($roles as $rKey => $rLabel): ?>
                     <option value="<?= $rKey ?>" <?= $selectedRole === $rKey ? 'selected' : '' ?>>
                         <?= htmlspecialchars($rLabel, ENT_QUOTES, 'UTF-8') ?>
@@ -52,7 +52,7 @@ $currentVisibility = $widgetsByRole[$selectedRole] ?? [];
 </div>
 
 <!-- Widgets Form -->
-<form method="POST" action="/settings/dashboard-items">
+<form method="POST" action="<?= BASE_URL ?>/settings/dashboard-items">
     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
     <input type="hidden" name="active_role" value="<?= htmlspecialchars($selectedRole, ENT_QUOTES, 'UTF-8') ?>">
 

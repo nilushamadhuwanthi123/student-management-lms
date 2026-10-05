@@ -167,11 +167,11 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
             </div>
 
             <div class="s360-profile__actions">
-                <a href="/students/<?= (int) $student['id'] ?>/edit" class="btn btn--secondary btn--sm">Edit</a>
+                <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/edit" class="btn btn--secondary btn--sm">Edit</a>
                 <?php if ($status === 'active'): ?>
                     <button type="button" class="btn btn--ghost btn--sm" onclick="openModal('deactivateModal')">Deactivate</button>
                 <?php elseif ($status === 'deactivated'): ?>
-                    <form method="POST" action="/students/<?= (int) $student['id'] ?>/reactivate" style="display:inline;">
+                    <form method="POST" action="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/reactivate" style="display:inline;">
                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                         <button type="submit" class="btn btn--success btn--sm">Reactivate</button>
                     </form>
@@ -620,7 +620,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
             <h3 class="modal__title">Deactivate Student</h3>
             <button type="button" class="modal__close" onclick="closeModal('deactivateModal')">&times;</button>
         </div>
-        <form method="POST" action="/students/<?= (int) $student['id'] ?>/deactivate">
+        <form method="POST" action="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/deactivate">
             <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
             <div class="modal__body">
                 <p>Are you sure you want to initiate deactivation for <strong><?= $e($student['full_name']) ?></strong>?</p>
@@ -645,7 +645,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
             <h3 class="modal__title">Delete Student</h3>
             <button type="button" class="modal__close" onclick="closeModal('deleteModal')">&times;</button>
         </div>
-        <form method="POST" action="/students/<?= (int) $student['id'] ?>/delete">
+        <form method="POST" action="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/delete">
             <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
             <div class="modal__body">
                 <p>Are you sure you want to initiate deletion for <strong><?= $e($student['full_name']) ?></strong>?</p>

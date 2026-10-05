@@ -391,7 +391,7 @@ class StudentController extends BaseController
 
         if ($fullName === '') {
             $this->flash('error', 'Full Name is required.');
-            $this->redirect("/students/{$id}/edit");
+            $this->redirect(BASE_URL . "/students/{$id}/edit");
         }
 
         $data = [
@@ -441,7 +441,7 @@ class StudentController extends BaseController
         } catch (\Throwable $e) {
             error_log('Student update failed: ' . $e->getMessage());
             $this->flash('error', 'Failed to update student: ' . $e->getMessage());
-            $this->redirect("/students/{$id}/edit");
+            $this->redirect(BASE_URL . "/students/{$id}/edit");
         }
     }
 

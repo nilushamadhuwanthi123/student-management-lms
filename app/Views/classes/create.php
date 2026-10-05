@@ -18,14 +18,14 @@ $mediums    = $mediums ?? ['Sinhala', 'English', 'Tamil'];
         <p class="text-sm text-muted">Configure academic curriculum, teacher assignment, venue, and fee structure</p>
     </div>
     <div class="page-header__actions">
-        <a href="/classes" class="btn btn--ghost">
+        <a href="<?= BASE_URL ?>/classes" class="btn btn--ghost">
             &larr; Back to Classes
         </a>
     </div>
 </div>
 
 <div class="card" style="max-width:900px;">
-    <form method="POST" action="/classes/create">
+    <form method="POST" action="<?= BASE_URL ?>/classes/create">
         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
         <!-- Basic Class Information -->
@@ -176,7 +176,7 @@ $mediums    = $mediums ?? ['Sinhala', 'English', 'Tamil'];
         </div>
 
         <div class="d-flex justify-end gap-1 mt-4 pt-2" style="border-top:1px solid var(--border);">
-            <a href="/classes" class="btn btn--ghost">Cancel</a>
+            <a href="<?= BASE_URL ?>/classes" class="btn btn--ghost">Cancel</a>
             <button type="submit" class="btn btn--primary">
                 Create Class
             </button>

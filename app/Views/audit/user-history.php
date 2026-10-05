@@ -11,9 +11,9 @@ $userType = $userType ?? 'user';
 ?>
 
 <div class="breadcrumb mb-2">
-    <a href="/dashboard">Dashboard</a>
+    <a href="<?= BASE_URL ?>/dashboard">Dashboard</a>
     <span class="breadcrumb__sep">/</span>
-    <a href="/audit">Audit Log</a>
+    <a href="<?= BASE_URL ?>/audit">Audit Log</a>
     <span class="breadcrumb__sep">/</span>
     <span>User #<?= (int) $userId ?> History</span>
 </div>
@@ -24,7 +24,7 @@ $userType = $userType ?? 'user';
         <p class="text-sm text-muted">Showing chronological timeline of actions performed by <?= htmlspecialchars(ucfirst($userType), ENT_QUOTES, 'UTF-8') ?> ID #<?= (int) $userId ?></p>
     </div>
     <div class="d-flex gap-1">
-        <a href="/audit" class="btn btn--ghost btn--sm">&larr; Back to Audit Log</a>
+        <a href="<?= BASE_URL ?>/audit" class="btn btn--ghost btn--sm">&larr; Back to Audit Log</a>
     </div>
 </div>
 

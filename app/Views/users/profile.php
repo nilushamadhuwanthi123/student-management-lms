@@ -18,7 +18,7 @@ $roleBadge = match ($role) {
 ?>
 
 <div class="breadcrumb mb-2">
-    <a href="/dashboard">Dashboard</a>
+    <a href="<?= BASE_URL ?>/dashboard">Dashboard</a>
     <span class="breadcrumb__sep">/</span>
     <span>My Profile</span>
 </div>
@@ -70,7 +70,7 @@ $roleBadge = match ($role) {
         <div class="card">
             <h3 style="margin-bottom:1rem; font-size:1.15rem;">Account Security</h3>
             <p class="text-sm text-muted mb-2">Need to update your login credentials or reset your password?</p>
-            <a href="/first-login-password" class="btn btn--secondary btn--sm">Change Password</a>
+            <a href="<?= BASE_URL ?>/first-login-password" class="btn btn--secondary btn--sm">Change Password</a>
         </div>
     </div>
 </div>

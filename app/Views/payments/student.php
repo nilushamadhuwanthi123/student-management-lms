@@ -30,9 +30,9 @@ foreach ($payments as $p) {
 ?>
 
 <div class="breadcrumb mb-2">
-    <a href="/dashboard">Dashboard</a>
+    <a href="<?= BASE_URL ?>/dashboard">Dashboard</a>
     <span class="breadcrumb__sep">/</span>
-    <a href="/payments">Payments</a>
+    <a href="<?= BASE_URL ?>/payments">Payments</a>
     <span class="breadcrumb__sep">/</span>
     <span><?= htmlspecialchars($student['full_name'] ?? 'Student', ENT_QUOTES, 'UTF-8') ?></span>
 </div>
@@ -43,8 +43,8 @@ foreach ($payments as $p) {
         <p class="text-sm text-muted">ID: <?= htmlspecialchars($student['student_id_display'] ?? $student['student_id'] ?? '-', ENT_QUOTES, 'UTF-8') ?> | Status: <span class="badge badge--active"><?= ucfirst(htmlspecialchars($student['status'] ?? 'active', ENT_QUOTES, 'UTF-8')) ?></span></p>
     </div>
     <div class="d-flex gap-1">
-        <a href="/students/<?= (int) ($student['id'] ?? 0) ?>" class="btn btn--secondary btn--sm">View 360 Profile</a>
-        <a href="/payments" class="btn btn--ghost btn--sm">&larr; Back to Payments</a>
+        <a href="<?= BASE_URL ?>/students/<?= (int) ($student['id'] ?? 0) ?>" class="btn btn--secondary btn--sm">View 360 Profile</a>
+        <a href="<?= BASE_URL ?>/payments" class="btn btn--ghost btn--sm">&larr; Back to Payments</a>
     </div>
 </div>
 
@@ -117,7 +117,7 @@ foreach ($payments as $p) {
                         <td class="text-xs text-muted"><?= !empty($pmt['paid_at']) ? htmlspecialchars($pmt['paid_at'], ENT_QUOTES, 'UTF-8') : '-' ?></td>
                         <td>
                             <?php if ($pStatus !== 'paid'): ?>
-                                <form method="POST" action="/payments/<?= (int) $pmt['id'] ?>/mark-paid" style="display:inline;">
+                                <form method="POST" action="<?= BASE_URL ?>/payments/<?= (int) $pmt['id'] ?>/mark-paid" style="display:inline;">
                                     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                     <button type="submit" class="btn btn--primary btn--xs" onclick="return confirm('Confirm payment collection for this month?')">
                                         Mark Paid

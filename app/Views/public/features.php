@@ -227,6 +227,6 @@ $breadcrumbs = [['Home', '/'], ['Features', '#']];
     <div class="max-w-3xl mx-auto px-4 sm:px-6 reveal">
         <h2 class="font-display font-bold text-3xl mb-4" style="color: var(--text);">Start Exploring EduManager</h2>
         <p class="text-sm sm:text-base mb-8" style="color: var(--text-secondary);">Sign in to access your administrative dashboard, live terminal, and reports hub.</p>
-        <a href="/login" class="btn btn--primary btn--lg rounded-full font-semibold btn-glow">Sign In Now &rarr;</a>
+        <a href="<?= BASE_URL ?>/login" class="btn btn--primary btn--lg rounded-full font-semibold btn-glow">Sign In Now &rarr;</a>
     </div>
 </section>

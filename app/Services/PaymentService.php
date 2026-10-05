@@ -83,14 +83,14 @@ class PaymentService
      */
     public function checkOverdue(int $studentId): array
     {
-        $currentMonth = date('Y-m');
+        $currentMonth = date('Y-m-01');
 
-        // Get all pending payments before the current month
+        // Get all payments for student — month_year is DATE (first of month)
         $allPayments = $this->paymentModel->getByStudent($studentId);
         $overdue = [];
 
         foreach ($allPayments as $payment) {
-            if ($payment['status'] === 'pending' && $payment['month_year'] < $currentMonth) {
+            if ($payment['payment_status'] === 'pending' && $payment['month_year'] < $currentMonth) {
                 $overdue[] = $payment;
             }
         }
@@ -105,8 +105,10 @@ class PaymentService
     /**
      * Calculate the fee after applying a scholarship discount.
      *
+     * Scholarship ENUM values: 'full_payment', 'half_payment', 'free_card'
+     *
      * @param  float  $baseFee         The class monthly fee
-     * @param  string $scholarshipType 'none', 'half', or 'free'
+     * @param  string $scholarshipType
      * @return float  The amount due
      */
     public function calculateFeeWithScholarship(float $baseFee, string $scholarshipType): float

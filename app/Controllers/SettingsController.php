@@ -58,7 +58,7 @@ class SettingsController extends BaseController
             $this->flash('error', 'Failed to update settings.');
         }
 
-        $this->redirect('/settings');
+        $this->redirect(BASE_URL . '/settings');
     }
 
     /**
@@ -109,7 +109,7 @@ class SettingsController extends BaseController
             $this->flash('error', 'Failed to update deactivation settings.');
         }
 
-        $this->redirect('/settings/deactivation');
+        $this->redirect(BASE_URL . '/settings/deactivation');
     }
 
     /**
@@ -160,7 +160,7 @@ class SettingsController extends BaseController
             $this->flash('error', 'Failed to update deletion settings.');
         }
 
-        $this->redirect('/settings/deletion');
+        $this->redirect(BASE_URL . '/settings/deletion');
     }
 
     /**
@@ -225,7 +225,7 @@ class SettingsController extends BaseController
             $this->flash('error', 'Failed to update dashboard items.');
         }
 
-        $this->redirect('/settings/dashboard-items');
+        $this->redirect(BASE_URL . '/settings/dashboard-items');
     }
 
     /**

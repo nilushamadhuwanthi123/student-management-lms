@@ -24,7 +24,7 @@ $old        = $old ?? [];
     </div>
 <?php endif; ?>
 
-<form method="POST" action="/students" data-validate class="card" style="max-width:800px;">
+<form method="POST" action="<?= BASE_URL ?>/students" data-validate class="card" style="max-width:800px;">
     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
     <!-- Personal Information -->
@@ -152,7 +152,7 @@ $old        = $old ?? [];
     <!-- Submit -->
     <div class="d-flex gap-1" style="margin-top:1.5rem;">
         <button type="submit" class="btn btn--primary">Register Student</button>
-        <a href="/students" class="btn btn--ghost">Cancel</a>
+        <a href="<?= BASE_URL ?>/students" class="btn btn--ghost">Cancel</a>
     </div>
 </form>
 

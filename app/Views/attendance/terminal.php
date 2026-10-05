@@ -17,7 +17,7 @@ $classes = $classes ?? [];
         <p class="text-sm text-muted">Automated student gate &amp; classroom attendance scanner</p>
     </div>
     <div class="page-header__actions">
-        <a href="/attendance" class="btn btn--ghost">
+        <a href="<?= BASE_URL ?>/attendance" class="btn btn--ghost">
             &larr; View Attendance Sheet
         </a>
     </div>

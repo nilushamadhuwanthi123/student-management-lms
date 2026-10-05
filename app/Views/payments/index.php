@@ -38,7 +38,7 @@ $currentMonth = $currentMonth ?? date('Y-m');
 <!-- Filters -->
 <div class="table-wrapper mb-3">
     <div class="table-toolbar">
-        <form method="GET" action="/payments" style="display:flex;flex-wrap:wrap;gap:0.75rem;width:100%;align-items:center;">
+        <form method="GET" action="<?= BASE_URL ?>/payments" style="display:flex;flex-wrap:wrap;gap:0.75rem;width:100%;align-items:center;">
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label text-xs" style="margin-bottom:0.15rem;">Month</label>
                 <input type="month" name="month" class="form-control" style="width:auto;" value="<?= htmlspecialchars($filters['month'] ?? $currentMonth, ENT_QUOTES, 'UTF-8') ?>">
@@ -56,7 +56,7 @@ $currentMonth = $currentMonth ?? date('Y-m');
             </div>
             <div style="align-self:flex-end;">
                 <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-                <a href="/payments" class="btn btn--ghost btn--sm">Clear</a>
+                <a href="<?= BASE_URL ?>/payments" class="btn btn--ghost btn--sm">Clear</a>
             </div>
         </form>
     </div>
@@ -102,7 +102,7 @@ $currentMonth = $currentMonth ?? date('Y-m');
                         </td>
                         <td>
                             <?php if ($pmtStatus !== 'paid'): ?>
-                                <form method="POST" action="/payments/<?= (int) $pmt['id'] ?>/mark-paid" style="display:inline;">
+                                <form method="POST" action="<?= BASE_URL ?>/payments/<?= (int) $pmt['id'] ?>/mark-paid" style="display:inline;">
                                     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                     <button type="submit" class="btn btn--primary btn--sm" onclick="return confirm('Mark this payment as paid?')">
                                         Mark Paid

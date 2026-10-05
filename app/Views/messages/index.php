@@ -22,7 +22,7 @@ $role          = $currentUser['role'] ?? 'user';
     </div>
     <div class="page-header__actions">
         <?php if ($unreadCount > 0): ?>
-            <form method="POST" action="/messages/mark-all-read" style="margin:0;">
+            <form method="POST" action="<?= BASE_URL ?>/messages/mark-all-read" style="margin:0;">
                 <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                 <button type="submit" class="btn btn--secondary btn--sm">
                     Mark All as Read (<?= $unreadCount ?>)
@@ -55,17 +55,17 @@ $role          = $currentUser['role'] ?? 'user';
         foreach ($types as $tKey => $tLabel): 
             $isActive = ($filters['type'] ?? '') === $tKey;
         ?>
-            <a href="/messages?type=<?= $tKey ?>" class="btn <?= $isActive ? 'btn--primary' : 'btn--ghost' ?> btn--xs" style="border-radius:20px;">
+            <a href="<?= BASE_URL ?>/messages?type=<?= $tKey ?>" class="btn <?= $isActive ? 'btn--primary' : 'btn--ghost' ?> btn--xs" style="border-radius:20px;">
                 <?= $tLabel ?>
             </a>
         <?php endforeach; ?>
 
         <div style="margin-left:auto; display:flex; gap:0.5rem; align-items:center;">
-            <a href="/messages?status=unread" class="btn <?= ($filters['is_read'] === 0) ? 'btn--secondary' : 'btn--ghost' ?> btn--xs">
+            <a href="<?= BASE_URL ?>/messages?status=unread" class="btn <?= ($filters['is_read'] === 0) ? 'btn--secondary' : 'btn--ghost' ?> btn--xs">
                 Unread Only
             </a>
             <?php if (!empty($filters['type']) || $filters['is_read'] !== ''): ?>
-                <a href="/messages" class="btn btn--ghost btn--xs" style="color:var(--danger);">Clear Filters</a>
+                <a href="<?= BASE_URL ?>/messages" class="btn btn--ghost btn--xs" style="color:var(--danger);">Clear Filters</a>
             <?php endif; ?>
         </div>
     </div>
@@ -112,7 +112,7 @@ $role          = $currentUser['role'] ?? 'user';
                     <div style="text-align:right; flex-shrink:0;">
                         <span class="text-xs text-muted" style="display:block;"><?= date('d M Y, g:i A', strtotime($n['created_at'])) ?></span>
                         <?php if (!$isRead): ?>
-                            <form method="POST" action="/messages/<?= (int) $n['id'] ?>/read" style="margin-top:0.35rem;" onclick="event.stopPropagation();">
+                            <form method="POST" action="<?= BASE_URL ?>/messages/<?= (int) $n['id'] ?>/read" style="margin-top:0.35rem;" onclick="event.stopPropagation();">
                                 <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                 <button type="submit" class="btn btn--ghost btn--xs text-xs" style="color:var(--primary);">
                                     Mark Read
@@ -160,7 +160,7 @@ $role          = $currentUser['role'] ?? 'user';
         <h3 style="margin-bottom:0.75rem;">Compose System Broadcast</h3>
         <p class="text-xs text-muted mb-2">Send an internal notification to user inboxes (in-app routing, no SMS/email)</p>
 
-        <form method="POST" action="/messages/send">
+        <form method="POST" action="<?= BASE_URL ?>/messages/send">
             <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
             <div class="form-group mb-2">

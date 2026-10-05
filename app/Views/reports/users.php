@@ -15,15 +15,15 @@ $status = $status ?? '';
         <p class="text-sm text-muted">Administrative roster, active credentials, and role breakdown</p>
     </div>
     <div class="page-header__actions d-flex gap-1">
-        <a href="/reports" class="btn btn--ghost btn--sm">&larr; Reports Hub</a>
+        <a href="<?= BASE_URL ?>/reports" class="btn btn--ghost btn--sm">&larr; Reports Hub</a>
         <button type="button" class="btn btn--secondary btn--sm" onclick="window.print()">&#128424; Print Report</button>
-        <a href="/reports/users?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" class="btn btn--primary btn--sm">&#128190; Export to CSV</a>
+        <a href="<?= BASE_URL ?>/reports/users?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" class="btn btn--primary btn--sm">&#128190; Export to CSV</a>
     </div>
 </div>
 
 <!-- Filters -->
 <div class="card mb-3 no-print">
-    <form method="GET" action="/reports/users" style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:flex-end;">
+    <form method="GET" action="<?= BASE_URL ?>/reports/users" style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:flex-end;">
         <div>
             <label class="form-label text-xs">Role</label>
             <select name="role" class="form-control form-control--sm" onchange="this.form.submit()">
@@ -46,7 +46,7 @@ $status = $status ?? '';
         </div>
 
         <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-        <a href="/reports/users" class="btn btn--ghost btn--sm">Reset</a>
+        <a href="<?= BASE_URL ?>/reports/users" class="btn btn--ghost btn--sm">Reset</a>
     </form>
 </div>
 

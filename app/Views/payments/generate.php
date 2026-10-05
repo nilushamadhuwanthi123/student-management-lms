@@ -9,9 +9,9 @@ $currentMonth = $currentMonth ?? date('Y-m');
 ?>
 
 <div class="breadcrumb mb-2">
-    <a href="/dashboard">Dashboard</a>
+    <a href="<?= BASE_URL ?>/dashboard">Dashboard</a>
     <span class="breadcrumb__sep">/</span>
-    <a href="/payments">Payments</a>
+    <a href="<?= BASE_URL ?>/payments">Payments</a>
     <span class="breadcrumb__sep">/</span>
     <span>Generate Monthly</span>
 </div>
@@ -22,7 +22,7 @@ $currentMonth = $currentMonth ?? date('Y-m');
 </div>
 
 <div class="card" style="max-width:600px;">
-    <form method="POST" action="/payments/generate">
+    <form method="POST" action="<?= BASE_URL ?>/payments/generate">
         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
         <div class="form-group mb-3">
@@ -47,7 +47,7 @@ $currentMonth = $currentMonth ?? date('Y-m');
             <button type="submit" class="btn btn--primary" onclick="return confirm('Generate monthly invoices for all active enrollments for this period?')">
                 &#9881; Generate Invoices
             </button>
-            <a href="/payments" class="btn btn--ghost">Cancel</a>
+            <a href="<?= BASE_URL ?>/payments" class="btn btn--ghost">Cancel</a>
         </div>
     </form>
 </div>
