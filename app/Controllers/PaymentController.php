@@ -32,12 +32,14 @@ class PaymentController extends BaseController
         $monthYear = $_GET['month'] ?? date('Y-m');
         $classId   = !empty($_GET['class_id']) ? (int) $_GET['class_id'] : null;
 
-        // Get revenue stats for the selected month
+        // Get revenue stats, overdue list, and filtered payments for the selected month
         $revenueStats = [];
         $overduePayments = [];
+        $payments = [];
         try {
             $revenueStats = $this->paymentModel->getRevenueStats($monthYear);
             $overduePayments = $this->paymentModel->getOverdue($classId);
+            $payments = $this->paymentModel->getFilteredPayments($monthYear, $classId);
         } catch (\Throwable $e) {
             error_log('Payment stats error: ' . $e->getMessage());
         }
@@ -58,6 +60,7 @@ class PaymentController extends BaseController
             'monthYear'       => $monthYear,
             'revenueStats'    => $revenueStats,
             'overduePayments' => $overduePayments,
+            'payments'        => $payments,
             'classes'         => $classes,
             'selectedClassId' => $classId,
         ]);

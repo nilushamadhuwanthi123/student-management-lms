@@ -11,8 +11,8 @@ class Notification extends BaseModel
     protected string $primaryKey = 'id';
     protected array $fillable = [
         'recipient_id', 'recipient_type', 'title', 'body',
-        'type', 'related_entity_type', 'related_entity_id',
-        'is_read', 'read_at', 'created_at',
+        'notification_type', 'related_entity_type', 'related_entity_id',
+        'is_read', 'created_at',
     ];
 
     // ─── Send ────────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ class Notification extends BaseModel
             'recipient_type' => $recipientType,
             'title'          => $title,
             'body'           => $body,
-            'type'           => $type,
+            'notification_type' => $type,
             'is_read'        => 0,
             'created_at'     => date('Y-m-d H:i:s'),
         ];
@@ -66,7 +66,7 @@ class Notification extends BaseModel
     public function sendBulk(array $recipients, string $title, string $body, string $type): int
     {
         $sql = "INSERT INTO {$this->table}
-                (recipient_id, recipient_type, title, body, type, is_read, created_at)
+                (recipient_id, recipient_type, title, body, notification_type, is_read, created_at)
                 VALUES (:rid, :rtype, :title, :body, :type, 0, NOW())";
 
         $count = 0;

@@ -2,17 +2,18 @@
 /**
  * Payments - Overview
  *
- * Variables: $payments, $summary, $filters, $classes,
- *            $currentPage, $totalPages, $currentMonth
+ * Variables from PaymentController::index():
+ *   $monthYear, $revenueStats, $overduePayments, $classes,
+ *   $selectedClassId, $payments
  */
 
-$payments    = $payments ?? [];
-$summary     = $summary ?? [];
-$filters     = $filters ?? [];
-$classes     = $classes ?? [];
-$currentPage = $currentPage ?? 1;
-$totalPages  = $totalPages ?? 1;
-$currentMonth = $currentMonth ?? date('Y-m');
+$baseUrl         = defined('BASE_URL') ? BASE_URL : '';
+$monthYear       = $monthYear ?? date('Y-m');
+$revenueStats    = $revenueStats ?? [];
+$overduePayments = $overduePayments ?? [];
+$classes         = $classes ?? [];
+$selectedClassId = $selectedClassId ?? null;
+$payments        = $payments ?? [];
 ?>
 
 <div class="page-header">
@@ -23,32 +24,32 @@ $currentMonth = $currentMonth ?? date('Y-m');
 <div class="kpi-grid mb-3">
     <div class="kpi-card animate-slide-up delay-1">
         <span class="kpi-card__label">Collected This Month</span>
-        <span class="kpi-card__value" style="color:var(--success);">LKR <?= number_format((float) ($summary['collected'] ?? 0), 2) ?></span>
+        <span class="kpi-card__value" style="color:var(--success);">LKR <?= number_format((float) ($revenueStats['total_collected'] ?? 0), 2) ?></span>
     </div>
     <div class="kpi-card animate-slide-up delay-2">
         <span class="kpi-card__label">Pending</span>
-        <span class="kpi-card__value" style="color:var(--warning);">LKR <?= number_format((float) ($summary['pending'] ?? 0), 2) ?></span>
+        <span class="kpi-card__value" style="color:var(--warning);">LKR <?= number_format((float) ($revenueStats['total_pending'] ?? 0), 2) ?></span>
     </div>
     <div class="kpi-card animate-slide-up delay-3">
-        <span class="kpi-card__label">Overdue</span>
-        <span class="kpi-card__value" style="color:var(--danger);">LKR <?= number_format((float) ($summary['overdue'] ?? 0), 2) ?></span>
+        <span class="kpi-card__label">Overdue Records</span>
+        <span class="kpi-card__value" style="color:var(--danger);"><?= count($overduePayments) ?></span>
     </div>
 </div>
 
 <!-- Filters -->
 <div class="table-wrapper mb-3">
     <div class="table-toolbar">
-        <form method="GET" action="/payments" style="display:flex;flex-wrap:wrap;gap:0.75rem;width:100%;align-items:center;">
+        <form method="GET" action="<?= $baseUrl ?>/payments" style="display:flex;flex-wrap:wrap;gap:0.75rem;width:100%;align-items:center;">
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label text-xs" style="margin-bottom:0.15rem;">Month</label>
-                <input type="month" name="month" class="form-control" style="width:auto;" value="<?= htmlspecialchars($filters['month'] ?? $currentMonth, ENT_QUOTES, 'UTF-8') ?>">
+                <input type="month" name="month" class="form-control" style="width:auto;" value="<?= htmlspecialchars($monthYear, ENT_QUOTES, 'UTF-8') ?>">
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label text-xs" style="margin-bottom:0.15rem;">Class</label>
                 <select name="class_id" class="form-control" style="width:auto;min-width:150px;">
                     <option value="">All Classes</option>
                     <?php foreach ($classes as $cls): ?>
-                        <option value="<?= (int) $cls['id'] ?>" <?= ($filters['class_id'] ?? '') == $cls['id'] ? 'selected' : '' ?>>
+                        <option value="<?= (int) $cls['id'] ?>" <?= $selectedClassId == $cls['id'] ? 'selected' : '' ?>>
                             <?= htmlspecialchars($cls['class_name'], ENT_QUOTES, 'UTF-8') ?>
                         </option>
                     <?php endforeach; ?>
@@ -56,7 +57,7 @@ $currentMonth = $currentMonth ?? date('Y-m');
             </div>
             <div style="align-self:flex-end;">
                 <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-                <a href="/payments" class="btn btn--ghost btn--sm">Clear</a>
+                <a href="<?= $baseUrl ?>/payments" class="btn btn--ghost btn--sm">Clear</a>
             </div>
         </form>
     </div>
@@ -68,7 +69,7 @@ $currentMonth = $currentMonth ?? date('Y-m');
                 <th data-sort>Student</th>
                 <th data-sort>Class</th>
                 <th data-sort>Month</th>
-                <th data-sort>Amount (LKR)</th>
+                <th data-sort>Amount Due (LKR)</th>
                 <th>Status</th>
                 <th>Action</th>
             </tr>
@@ -86,31 +87,33 @@ $currentMonth = $currentMonth ?? date('Y-m');
                             </div>
                         </td>
                         <td><?= htmlspecialchars($pmt['class_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($pmt['month'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
-                        <td class="font-medium">LKR <?= number_format((float) ($pmt['amount'] ?? 0), 2) ?></td>
+                        <td><?= htmlspecialchars(date('M Y', strtotime($pmt['month_year'] ?? 'now')), ENT_QUOTES, 'UTF-8') ?></td>
+                        <td class="font-medium">LKR <?= number_format((float) ($pmt['amount_due'] ?? 0), 2) ?></td>
                         <td>
                             <?php
-                            $pmtStatus = $pmt['status'] ?? 'pending';
+                            $pmtStatus = $pmt['payment_status'] ?? 'pending';
                             $pmtBadge = match ($pmtStatus) {
                                 'paid'    => 'badge--success',
                                 'pending' => 'badge--pending',
                                 'overdue' => 'badge--danger',
+                                'waived'  => 'badge--neutral',
                                 default   => 'badge--neutral',
                             };
                             ?>
                             <span class="badge <?= $pmtBadge ?>"><?= ucfirst(htmlspecialchars($pmtStatus, ENT_QUOTES, 'UTF-8')) ?></span>
                         </td>
                         <td>
-                            <?php if ($pmtStatus !== 'paid'): ?>
-                                <form method="POST" action="/payments/<?= (int) $pmt['id'] ?>/mark-paid" style="display:inline;">
+                            <?php if ($pmtStatus !== 'paid' && $pmtStatus !== 'waived'): ?>
+                                <form method="POST" action="<?= $baseUrl ?>/payments/mark-paid" style="display:inline;">
                                     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
+                                    <input type="hidden" name="payment_id" value="<?= (int) $pmt['id'] ?>">
                                     <button type="submit" class="btn btn--primary btn--sm" onclick="return confirm('Mark this payment as paid?')">
                                         Mark Paid
                                     </button>
                                 </form>
                             <?php else: ?>
                                 <span class="btn btn--ghost btn--sm disabled" style="color:var(--success);">
-                                    Paid &#10003;
+                                    <?= $pmtStatus === 'waived' ? 'Waived' : 'Paid' ?> &#10003;
                                 </span>
                             <?php endif; ?>
                         </td>
@@ -129,12 +132,4 @@ $currentMonth = $currentMonth ?? date('Y-m');
             <?php endif; ?>
         </tbody>
     </table>
-
-    <!-- Pagination -->
-    <?php if ($totalPages > 1): ?>
-        <?php
-        $baseUrl = '/payments?' . http_build_query(array_filter($filters));
-        include __DIR__ . '/../components/pagination.php';
-        ?>
-    <?php endif; ?>
 </div>

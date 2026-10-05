@@ -10,8 +10,8 @@ class Institute extends BaseModel
     protected string $table = 'institutes';
     protected string $primaryKey = 'id';
     protected array $fillable = [
-        'name', 'code', 'address', 'phone', 'email',
-        'coordinator_id', 'status', 'created_at', 'updated_at',
+        'name', 'coordinator_id', 'location', 'phone1', 'phone2',
+        'notes', 'status', 'created_at', 'updated_at',
     ];
 
     // ─── Relations ───────────────────────────────────────────────────
