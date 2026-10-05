@@ -190,6 +190,8 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/students/{id}', ['App\Controllers\StudentController', 'show']);
     $router->get('/students/{id}/edit', ['App\Controllers\StudentController', 'edit']);
     $router->post('/students/{id}/edit', ['App\Controllers\StudentController', 'update']);
+    $router->post('/students/{id}/deactivate', ['App\Controllers\StudentController', 'deactivate']);
+    $router->post('/students/{id}/reactivate', ['App\Controllers\StudentController', 'reactivate']);
     $router->post('/students/{id}/delete', ['App\Controllers\StudentController', 'delete']);
     $router->post('/students/{id}/photo', ['App\Controllers\FileController', 'uploadStudentPhoto']);
 
@@ -206,6 +208,7 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/workflows', ['App\Controllers\WorkflowController', 'index']);
     $router->post('/workflows/{id}/approve', ['App\Controllers\WorkflowController', 'approve']);
     $router->post('/workflows/{id}/reject', ['App\Controllers\WorkflowController', 'reject']);
+    $router->get('/workflows/history', ['App\Controllers\WorkflowController', 'history']);
 
     // Audit & History
     $router->get('/audit-log', ['App\Controllers\AuditController', 'index']);

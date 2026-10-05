@@ -56,11 +56,15 @@ class Institute extends BaseModel
     }
 
     /**
-     * Number of students belonging to an institute.
+     * Number of students enrolled in an institute's classes.
+     * Students table has no institute_id; relationship is via enrollments→classes→institutes.
      */
     public function getStudentCount(int $instituteId): int
     {
-        $sql = "SELECT COUNT(*) AS cnt FROM students WHERE institute_id = :iid";
+        $sql = "SELECT COUNT(DISTINCT e.student_id) AS cnt
+                FROM enrollments e
+                INNER JOIN classes c ON e.class_id = c.id
+                WHERE c.institute_id = :iid AND e.enrollment_status = 'active'";
         return (int) $this->query($sql, [':iid' => $instituteId])->fetch()['cnt'];
     }
 }

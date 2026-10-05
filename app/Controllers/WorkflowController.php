@@ -116,29 +116,38 @@ class WorkflowController extends BaseController
     }
 
     /**
-     * Workflow history view.
+     * Workflow history view with filters.
      */
     public function history(): void
     {
         AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+            AuthMiddleware::ROLE_COORDINATOR,
+        ]);
 
-        $entityId   = (int) ($_GET['entity_id'] ?? 0);
-        $entityType = $_GET['entity_type'] ?? '';
+        $filters = [
+            'type'      => $_GET['type'] ?? '',
+            'status'    => $_GET['status'] ?? '',
+            'date_from' => $_GET['date_from'] ?? '',
+            'date_to'   => $_GET['date_to'] ?? '',
+        ];
 
-        $history = [];
-        if ($entityId > 0 && $entityType !== '') {
-            try {
-                $history = $this->workflowModel->getHistory($entityId, $entityType);
-            } catch (\Throwable $e) {
-                error_log('Workflow history error: ' . $e->getMessage());
-            }
+        // Remove empty filters for the query
+        $activeFilters = array_filter($filters, fn($v) => $v !== '');
+
+        $workflows = [];
+        try {
+            $workflows = $this->workflowModel->getFilteredHistory($activeFilters);
+        } catch (\Throwable $e) {
+            error_log('Workflow history error: ' . $e->getMessage());
         }
 
         $this->view('workflows/history', [
             'pageTitle'  => 'Workflow History',
-            'history'    => $history,
-            'entityId'   => $entityId,
-            'entityType' => $entityType,
+            'workflows'  => $workflows,
+            'filters'    => $filters,
         ]);
     }
 

@@ -177,6 +177,10 @@ class StudentController extends BaseController
         }
 
         // Generate student display ID and set defaults
+        // Remove institute_id — it's not a column on the students table;
+        // the relationship is via enrollments→classes→institutes.
+        unset($data['institute_id']);
+
         $data['student_id_display'] = $this->studentModel->generateStudentId();
         $data['status'] = 'active';
         $data['created_by'] = (int) session_get('user_id');
@@ -263,11 +267,31 @@ class StudentController extends BaseController
             $student['guardian_email'] = ''; // parents table has no email column
         }
 
+        // Get workflow history for this student
+        $workflows = [];
+        try {
+            $workflowModel = new \Workflow();
+            $workflows = $workflowModel->getHistory((int) $id, 'student');
+        } catch (\Throwable $e) {
+            error_log('Workflow history fetch failed: ' . $e->getMessage());
+        }
+
+        // Get audit trail for this student
+        $auditTrail = [];
+        try {
+            $auditLogModel = new \AuditLog();
+            $auditTrail = $auditLogModel->getByEntity('student', (int) $id);
+        } catch (\Throwable $e) {
+            error_log('Audit trail fetch failed: ' . $e->getMessage());
+        }
+
         $this->view('students/show', [
             'pageTitle'   => $student['full_name'] ?? 'Student Details',
             'student'     => $student,
             'enrollments' => $student['enrollments'] ?? [],
             'payments'    => $payments,
+            'workflows'   => $workflows,
+            'auditTrail'  => $auditTrail,
         ]);
     }
 
@@ -299,15 +323,31 @@ class StudentController extends BaseController
             $instituteModel = new \Institute();
             $institutes = $instituteModel->all('name ASC');
 
-            // Load classes for the student's institute
-            if (!empty($student['institute_id'])) {
-                $classModel = new \ClassModel();
-                $classes = $classModel->getByInstitute((int) $student['institute_id']);
-            }
-
-            // Load current enrollments
+            // Load current enrollments (includes institute info via class join)
             $enrollmentModel = new \Enrollment();
             $enrollments = $enrollmentModel->getByStudent((int) $id);
+
+            // Derive institute_id from the student's first active enrollment's class
+            // (students table has no institute_id column; relationship is via enrollments→classes)
+            $instituteId = null;
+            foreach ($enrollments as $enr) {
+                if (($enr['enrollment_status'] ?? '') === 'active' && !empty($enr['class_id'])) {
+                    // Get the class to find institute_id
+                    $classModel = new \ClassModel();
+                    $cls = $classModel->find((int) $enr['class_id']);
+                    if ($cls && !empty($cls['institute_id'])) {
+                        $instituteId = (int) $cls['institute_id'];
+                        break;
+                    }
+                }
+            }
+            $student['institute_id'] = $instituteId;
+
+            // Load classes for the derived institute
+            if ($instituteId) {
+                $classModel = $classModel ?? new \ClassModel();
+                $classes = $classModel->getByInstitute($instituteId);
+            }
         } catch (\Throwable $e) {
             error_log('Failed to load edit form data: ' . $e->getMessage());
         }
@@ -394,6 +434,8 @@ class StudentController extends BaseController
             $this->redirect(BASE_URL . "/students/{$id}/edit");
         }
 
+        // Remove institute_id — not a column on the students table
+        unset($data['institute_id']);
         $data['updated_at'] = date('Y-m-d H:i:s');
 
         try {
@@ -419,7 +461,9 @@ class StudentController extends BaseController
     }
 
     /**
-     * Delete a student (soft delete via workflow or hard delete).
+     * Initiate student deletion via approval workflow.
+     *
+     * DB workflow type ENUM: 'deactivation', 'deletion', 'temp_activation'
      */
     public function delete(string $id): void
     {
@@ -437,29 +481,127 @@ class StudentController extends BaseController
             return;
         }
 
-        // Initiate deletion workflow instead of immediate delete
         try {
             $workflowModel = new \Workflow();
             $user = $this->getCurrentUser();
-            $workflowModel->create([
-                'type'            => 'student_deletion',
-                'entity_type'     => 'student',
-                'entity_id'       => (int) $id,
-                'initiated_by'    => (int) ($user['id'] ?? 0),
-                'reason'          => trim($_POST['reason'] ?? 'No reason provided'),
-                'status'          => 'pending',
-                'created_at'      => date('Y-m-d H:i:s'),
-            ]);
+            $reason = trim($_POST['reason'] ?? 'No reason provided');
+
+            // Use createWorkflow() to properly create steps.
+            // Default: single-step approval by super_admin.
+            $workflowModel->createWorkflow(
+                'deletion',
+                (int) $id,
+                (int) ($user['id'] ?? 0),
+                $user['role'] ?? 'admin',
+                [['approver_id' => (int) ($user['id'] ?? 0), 'approver_role' => 'super_admin', 'order' => 1]],
+                $reason
+            );
 
             $this->logAudit('request_delete_student', 'student', (int) $id, [
                 'name'   => $student['full_name'],
-                'reason' => trim($_POST['reason'] ?? ''),
+                'reason' => $reason,
             ]);
 
             $this->flash('info', 'Student deletion request submitted for approval.');
         } catch (\Throwable $e) {
             error_log('Delete workflow failed: ' . $e->getMessage());
             $this->flash('error', 'Failed to submit deletion request.');
+        }
+
+        $this->redirect(BASE_URL . '/students/' . $id);
+    }
+
+    /**
+     * Initiate student deactivation via approval workflow.
+     */
+    public function deactivate(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+            AuthMiddleware::ROLE_COORDINATOR,
+            AuthMiddleware::ROLE_STAFF,
+        ]);
+        verifyCsrfToken();
+
+        $student = $this->studentModel->find((int) $id);
+        if (!$student) {
+            $this->flash('error', 'Student not found.');
+            $this->redirect(BASE_URL . '/students');
+            return;
+        }
+
+        if (($student['status'] ?? '') !== 'active') {
+            $this->flash('error', 'Only active students can be deactivated.');
+            $this->redirect(BASE_URL . '/students/' . $id);
+            return;
+        }
+
+        try {
+            $workflowModel = new \Workflow();
+            $user = $this->getCurrentUser();
+            $reason = trim($_POST['reason'] ?? 'No reason provided');
+
+            $workflowModel->createWorkflow(
+                'deactivation',
+                (int) $id,
+                (int) ($user['id'] ?? 0),
+                $user['role'] ?? 'staff',
+                [['approver_id' => (int) ($user['id'] ?? 0), 'approver_role' => 'admin', 'order' => 1]],
+                $reason
+            );
+
+            $this->logAudit('request_deactivate_student', 'student', (int) $id, [
+                'name'   => $student['full_name'],
+                'reason' => $reason,
+            ]);
+
+            $this->flash('info', 'Deactivation request submitted for approval.');
+        } catch (\Throwable $e) {
+            error_log('Deactivation workflow failed: ' . $e->getMessage());
+            $this->flash('error', 'Failed to submit deactivation request.');
+        }
+
+        $this->redirect(BASE_URL . '/students/' . $id);
+    }
+
+    /**
+     * Reactivate a deactivated student (direct action, no workflow).
+     */
+    public function reactivate(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+        verifyCsrfToken();
+
+        $student = $this->studentModel->find((int) $id);
+        if (!$student) {
+            $this->flash('error', 'Student not found.');
+            $this->redirect(BASE_URL . '/students');
+            return;
+        }
+
+        if (($student['status'] ?? '') !== 'deactivated') {
+            $this->flash('error', 'Only deactivated students can be reactivated.');
+            $this->redirect(BASE_URL . '/students/' . $id);
+            return;
+        }
+
+        try {
+            $this->studentModel->reactivate((int) $id);
+
+            $this->logAudit('reactivate_student', 'student', (int) $id, [
+                'name' => $student['full_name'],
+            ]);
+
+            $this->flash('success', 'Student reactivated successfully.');
+        } catch (\Throwable $e) {
+            error_log('Student reactivation failed: ' . $e->getMessage());
+            $this->flash('error', 'Failed to reactivate student.');
         }
 
         $this->redirect(BASE_URL . '/students/' . $id);
