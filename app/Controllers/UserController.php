@@ -347,7 +347,7 @@ class UserController extends BaseController
         } catch (\Throwable $e) {
             error_log('User update error: ' . $e->getMessage());
             $this->flash('error', 'Failed to update user.');
-            $this->redirect("/users/{$id}/edit");
+            $this->redirect(BASE_URL . "/users/{$id}/edit");
         }
     }
 

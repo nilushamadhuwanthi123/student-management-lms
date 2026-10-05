@@ -190,7 +190,7 @@ class InstituteController extends BaseController
         } catch (\Throwable $e) {
             error_log('Institute update error: ' . $e->getMessage());
             $this->flash('error', 'Failed to update institute.');
-            $this->redirect("/institutes/{$id}/edit");
+            $this->redirect(BASE_URL . "/institutes/{$id}/edit");
         }
     }
 
