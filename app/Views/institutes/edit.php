@@ -13,14 +13,14 @@ $coordinators = $coordinators ?? [];
         <p class="text-sm text-muted">Update campus contact details and assigned coordinator</p>
     </div>
     <div class="page-header__actions">
-        <a href="/institutes" class="btn btn--ghost">
+        <a href="<?= BASE_URL ?>/institutes" class="btn btn--ghost">
             &larr; Back to Institutes
         </a>
     </div>
 </div>
 
 <div class="card" style="max-width:800px;">
-    <form method="POST" action="/institutes/<?= (int) $institute['id'] ?>/edit">
+    <form method="POST" action="<?= BASE_URL ?>/institutes/<?= (int) $institute['id'] ?>/edit">
         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
         <!-- Institute Name* -->
@@ -78,7 +78,7 @@ $coordinators = $coordinators ?? [];
         </div>
 
         <div class="d-flex justify-end gap-1 mt-4 pt-2" style="border-top:1px solid var(--border);">
-            <a href="/institutes" class="btn btn--ghost">Cancel</a>
+            <a href="<?= BASE_URL ?>/institutes" class="btn btn--ghost">Cancel</a>
             <button type="submit" class="btn btn--primary">
                 Save Changes
             </button>

@@ -7,6 +7,7 @@
 
 $workflows    = $workflows ?? [];
 $pendingCount = $pendingCount ?? count($workflows);
+$baseUrl      = defined('BASE_URL') ? BASE_URL : '';
 ?>
 
 <div class="page-header">
@@ -35,14 +36,14 @@ $pendingCount = $pendingCount ?? count($workflows);
                 </div>
                 <?php if (!empty($wf['current_step'])): ?>
                     <div class="text-sm text-muted">
-                        Current step: <strong><?= htmlspecialchars($wf['current_step'], ENT_QUOTES, 'UTF-8') ?></strong>
+                        Current step: <strong><?= (int) $wf['current_step'] ?>/<?= (int) ($wf['total_steps'] ?? 1) ?></strong>
                         <?php if (!empty($wf['current_approver'])): ?>
                             (awaiting <?= htmlspecialchars($wf['current_approver'], ENT_QUOTES, 'UTF-8') ?>)
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>
                 <div class="approval-card__actions">
-                    <form method="POST" action="/workflows/<?= (int) $wf['id'] ?>/approve" style="display:inline;">
+                    <form method="POST" action="<?= $baseUrl ?>/workflows/<?= (int) $wf['id'] ?>/approve" style="display:inline;">
                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                         <button type="submit" class="btn btn--primary btn--sm" onclick="return confirm('Approve this workflow?')">
                             Approve
@@ -91,7 +92,7 @@ $pendingCount = $pendingCount ?? count($workflows);
 
 <script>
 function openRejectModal(workflowId, studentName) {
-    document.getElementById('rejectForm').action = '/workflows/' + workflowId + '/reject';
+    document.getElementById('rejectForm').action = '<?= $baseUrl ?>/workflows/' + workflowId + '/reject';
     document.getElementById('rejectStudentName').textContent = studentName;
     document.getElementById('reject_reason').value = '';
     openModal('rejectModal');

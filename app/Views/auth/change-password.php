@@ -12,7 +12,7 @@
 
 <div class="card" style="max-width: 500px;">
     <div class="card-body">
-        <form action="/change-password" method="POST" novalidate>
+        <form action="<?= BASE_URL ?>/change-password" method="POST" novalidate>
             <?= csrfField() ?>
 
             <div class="form-group">
@@ -39,7 +39,7 @@
 
             <div class="form-actions" style="margin-top: 1.5rem;">
                 <button type="submit" class="btn btn--primary">Update Password</button>
-                <a href="/dashboard" class="btn btn--secondary">Cancel</a>
+                <a href="<?= BASE_URL ?>/dashboard" class="btn btn--secondary">Cancel</a>
             </div>
         </form>
     </div>

@@ -22,7 +22,7 @@
             <p class="text-sm text-muted">Daily, weekly, and monthly attendance tracking, present rates, check-in timestamps, and red flag alert summaries.</p>
         </div>
         <div class="mt-3 pt-2" style="border-top:1px solid var(--border);">
-            <a href="/reports/attendance" class="btn btn--primary btn--sm" style="width:100%; text-align:center;">
+            <a href="<?= BASE_URL ?>/reports/attendance" class="btn btn--primary btn--sm" style="width:100%; text-align:center;">
                 View Attendance Reports &rarr;
             </a>
         </div>
@@ -36,7 +36,7 @@
             <p class="text-sm text-muted">Tuition batch rosters, active student headcounts, venue capacity allocations, and teacher schedules.</p>
         </div>
         <div class="mt-3 pt-2" style="border-top:1px solid var(--border);">
-            <a href="/reports/classes" class="btn btn--primary btn--sm" style="width:100%; text-align:center;">
+            <a href="<?= BASE_URL ?>/reports/classes" class="btn btn--primary btn--sm" style="width:100%; text-align:center;">
                 View Class Reports &rarr;
             </a>
         </div>
@@ -50,7 +50,7 @@
             <p class="text-sm text-muted">Directory breakdown of Admins, Coordinators, Staff, and Teachers with active/inactive statuses and branch assignments.</p>
         </div>
         <div class="mt-3 pt-2" style="border-top:1px solid var(--border);">
-            <a href="/reports/users" class="btn btn--primary btn--sm" style="width:100%; text-align:center;">
+            <a href="<?= BASE_URL ?>/reports/users" class="btn btn--primary btn--sm" style="width:100%; text-align:center;">
                 View User Reports &rarr;
             </a>
         </div>
@@ -64,7 +64,7 @@
             <p class="text-sm text-muted">Financial reconciliation, monthly collections vs arrears, teacher revenue splits, and institute earnings breakdown.</p>
         </div>
         <div class="mt-3 pt-2" style="border-top:1px solid var(--border);">
-            <a href="/reports/payments" class="btn btn--primary btn--sm" style="width:100%; text-align:center;">
+            <a href="<?= BASE_URL ?>/reports/payments" class="btn btn--primary btn--sm" style="width:100%; text-align:center;">
                 View Payment Reports &rarr;
             </a>
         </div>
@@ -78,7 +78,7 @@
             <p class="text-sm text-muted">Active, inactive, and auto-deactivated student tracking, grace period risks, and enrollment retention audits.</p>
         </div>
         <div class="mt-3 pt-2" style="border-top:1px solid var(--border);">
-            <a href="/reports/students" class="btn btn--primary btn--sm" style="width:100%; text-align:center;">
+            <a href="<?= BASE_URL ?>/reports/students" class="btn btn--primary btn--sm" style="width:100%; text-align:center;">
                 View Student Status Reports &rarr;
             </a>
         </div>

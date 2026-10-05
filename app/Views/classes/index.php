@@ -17,7 +17,7 @@ $filters    = $filters ?? [];
         <p class="text-sm text-muted">Manage academic classes, assigned teachers, weekly schedules, and revenue splits</p>
     </div>
     <div class="page-header__actions">
-        <a href="/classes/create" class="btn btn--primary">
+        <a href="<?= BASE_URL ?>/classes/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             + Create Class
         </a>
@@ -27,7 +27,7 @@ $filters    = $filters ?? [];
 <div class="card mb-3">
     <!-- Filter Toolbar -->
     <div class="table-toolbar">
-        <form method="GET" action="/classes" style="display:flex; flex-wrap:wrap; gap:0.75rem; width:100%; align-items:center;">
+        <form method="GET" action="<?= BASE_URL ?>/classes" style="display:flex; flex-wrap:wrap; gap:0.75rem; width:100%; align-items:center;">
             <!-- Search classes -->
             <div style="flex:1; min-width:200px;">
                 <input 
@@ -65,7 +65,7 @@ $filters    = $filters ?? [];
             </select>
 
             <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-            <a href="/classes" class="btn btn--ghost btn--sm">Reset</a>
+            <a href="<?= BASE_URL ?>/classes" class="btn btn--ghost btn--sm">Reset</a>
         </form>
     </div>
 
@@ -197,18 +197,18 @@ $filters    = $filters ?? [];
                             <!-- 13. ACTIONS (Edit, Activate/Deactivate, Delete) -->
                             <td style="text-align:right;">
                                 <div class="d-flex gap-1 justify-end items-center">
-                                    <a href="/classes/<?= (int) $c['id'] ?>/edit" class="btn btn--ghost btn--xs" title="Edit Class">
+                                    <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/edit" class="btn btn--ghost btn--xs" title="Edit Class">
                                         Edit
                                     </a>
 
-                                    <form method="POST" action="/classes/<?= (int) $c['id'] ?>/toggle-status" style="margin:0;">
+                                    <form method="POST" action="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/toggle-status" style="margin:0;">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                         <button type="submit" class="btn <?= $status === 'active' ? 'btn--secondary' : 'btn--primary' ?> btn--xs">
                                             <?= $status === 'active' ? 'Deactivate' : 'Activate' ?>
                                         </button>
                                     </form>
 
-                                    <form method="POST" action="/classes/<?= (int) $c['id'] ?>/delete" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete class <?= htmlspecialchars($c['class_name'], ENT_QUOTES, 'UTF-8') ?>?');">
+                                    <form method="POST" action="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/delete" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete class <?= htmlspecialchars($c['class_name'], ENT_QUOTES, 'UTF-8') ?>?');">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                         <button type="submit" class="btn btn--danger btn--xs" title="Delete Class">
                                             Delete

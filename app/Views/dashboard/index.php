@@ -26,7 +26,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     </div>
     <?php if (in_array($role, ['super_admin', 'admin'])): ?>
     <div>
-        <a href="/settings/dashboard-items" class="btn btn--ghost btn--sm">
+        <a href="<?= BASE_URL ?>/settings/dashboard-items" class="btn btn--ghost btn--sm">
             &#9881; Configure Dashboard Items
         </a>
     </div>
@@ -261,7 +261,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     <div class="card">
         <div class="d-flex justify-between items-center mb-2">
             <h3 style="font-size:1rem; margin:0;">Active Classes Directory</h3>
-            <a href="/classes" class="text-xs text-primary font-bold">View All &rarr;</a>
+            <a href="<?= BASE_URL ?>/classes" class="text-xs text-primary font-bold">View All &rarr;</a>
         </div>
         <div class="table-wrapper">
             <table class="data-table" style="font-size:0.8125rem;">
@@ -308,7 +308,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
                                 <strong><?= ucfirst(str_replace('_', ' ', $wf['type'])) ?>:</strong> 
                                 <?= htmlspecialchars($wf['student_name'] ?? 'Student', ENT_QUOTES, 'UTF-8') ?>
                             </span>
-                            <a href="/workflows" class="badge badge--danger" style="font-size:0.65rem;">Review</a>
+                            <a href="<?= BASE_URL ?>/workflows" class="badge badge--danger" style="font-size:0.65rem;">Review</a>
                         </div>
                     <?php endforeach; ?>
                 </div>

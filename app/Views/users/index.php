@@ -130,7 +130,7 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
         <p class="text-sm text-muted">Manage Admins, Coordinators, Staff, and Teachers (Students managed separately)</p>
     </div>
     <div class="page-header__actions">
-        <a href="/users/create" class="btn btn--primary">
+        <a href="<?= BASE_URL ?>/users/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             + Create User
         </a>
@@ -192,7 +192,7 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
     <div>
         <!-- Cascading Filters Form (Document 1 Page 4) -->
         <div class="card mb-3">
-            <form method="GET" action="/users" id="userFilterForm" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto; gap: 0.75rem; align-items: flex-end;">
+            <form method="GET" action="<?= BASE_URL ?>/users" id="userFilterForm" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto; gap: 0.75rem; align-items: flex-end;">
                 <!-- i. Search by name or email -->
                 <div>
                     <label class="form-label text-xs">Search Name / Email / ID</label>
@@ -247,7 +247,7 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
                 <!-- Filter & Reset Buttons -->
                 <div class="d-flex gap-1">
                     <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-                    <a href="/users" class="btn btn--ghost btn--sm">Reset</a>
+                    <a href="<?= BASE_URL ?>/users" class="btn btn--ghost btn--sm">Reset</a>
                 </div>
             </form>
         </div>
@@ -359,17 +359,17 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
 
                             <div class="user-card__footer">
                                 <div class="d-flex gap-1 flex-wrap">
-                                    <a href="/users/<?= (int) $u['id'] ?>/edit" class="btn btn--ghost btn--xs">
+                                    <a href="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/edit" class="btn btn--ghost btn--xs">
                                         Edit
                                     </a>
-                                    <a href="/users/<?= (int) $u['id'] ?>/id-card" target="_blank" class="btn btn--ghost btn--xs">
+                                    <a href="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/id-card" target="_blank" class="btn btn--ghost btn--xs">
                                         ID Card
                                     </a>
                                 </div>
 
                                 <div class="d-flex gap-1 items-center">
                                     <!-- Toggle Active / Inactive -->
-                                    <form method="POST" action="/users/<?= (int) $u['id'] ?>/toggle-status" style="margin:0;">
+                                    <form method="POST" action="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/toggle-status" style="margin:0;">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                         <button type="submit" class="btn <?= $status === 'active' ? 'btn--secondary' : 'btn--primary' ?> btn--xs">
                                             <?= $status === 'active' ? 'Inactive' : 'Activate' ?>
@@ -378,7 +378,7 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
 
                                     <!-- Delete Button -->
                                     <?php if ($u['role'] !== 'super_admin'): ?>
-                                    <form method="POST" action="/users/<?= (int) $u['id'] ?>/delete" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete user <?= htmlspecialchars($u['full_name'], ENT_QUOTES, 'UTF-8') ?>?');">
+                                    <form method="POST" action="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/delete" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete user <?= htmlspecialchars($u['full_name'], ENT_QUOTES, 'UTF-8') ?>?');">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                         <button type="submit" class="btn btn--danger btn--xs">
                                             Delete

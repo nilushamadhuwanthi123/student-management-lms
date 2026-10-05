@@ -16,7 +16,7 @@ $filters = $filters ?? [];
         <p class="text-sm text-muted">Daily check-in logs, verification status, and red-flag alerts</p>
     </div>
     <div class="page-header__actions">
-        <a href="/attendance/qr" class="btn btn--primary">
+        <a href="<?= BASE_URL ?>/attendance/qr" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
             Launch QR Scan Terminal
         </a>
@@ -53,7 +53,7 @@ $filters = $filters ?? [];
 <div class="card mb-3">
     <!-- Filter Toolbar -->
     <div class="table-toolbar">
-        <form method="GET" action="/attendance" style="display:flex; flex-wrap:wrap; gap:0.75rem; width:100%; align-items:center;">
+        <form method="GET" action="<?= BASE_URL ?>/attendance" style="display:flex; flex-wrap:wrap; gap:0.75rem; width:100%; align-items:center;">
             <!-- Date Picker -->
             <div style="width:160px;">
                 <input type="date" name="date" class="form-control form-control--sm" value="<?= htmlspecialchars($date, ENT_QUOTES, 'UTF-8') ?>" onchange="this.form.submit()">
@@ -89,7 +89,7 @@ $filters = $filters ?? [];
             </div>
 
             <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-            <a href="/attendance" class="btn btn--ghost btn--sm">Today</a>
+            <a href="<?= BASE_URL ?>/attendance" class="btn btn--ghost btn--sm">Today</a>
         </form>
     </div>
 

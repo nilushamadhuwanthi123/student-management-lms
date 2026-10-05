@@ -6,7 +6,7 @@
  */
 ?>
 
-<form action="/login" method="POST" novalidate>
+<form action="<?= BASE_URL ?>/login" method="POST" novalidate>
     <?= csrfField() ?>
 
     <div class="form-group">

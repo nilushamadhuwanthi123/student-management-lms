@@ -17,7 +17,7 @@ $search       = $search ?? '';
         <p class="text-sm text-muted">Manage affiliated branch campuses, locations, and assigned coordinators</p>
     </div>
     <div class="page-header__actions">
-        <a href="/institutes/create" class="btn btn--primary">
+        <a href="<?= BASE_URL ?>/institutes/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             + Register Institute
         </a>
@@ -27,7 +27,7 @@ $search       = $search ?? '';
 <div class="card mb-3">
     <!-- Filter: Search by Institute Name -->
     <div class="table-toolbar">
-        <form method="GET" action="/institutes" style="display:flex; flex-wrap:wrap; gap:0.75rem; width:100%; align-items:center;">
+        <form method="GET" action="<?= BASE_URL ?>/institutes" style="display:flex; flex-wrap:wrap; gap:0.75rem; width:100%; align-items:center;">
             <div style="flex:1; min-width:240px; position:relative;">
                 <input 
                     type="text" 
@@ -39,7 +39,7 @@ $search       = $search ?? '';
             </div>
             <button type="submit" class="btn btn--primary btn--sm">Search</button>
             <?php if ($search !== ''): ?>
-                <a href="/institutes" class="btn btn--ghost btn--sm">Clear</a>
+                <a href="<?= BASE_URL ?>/institutes" class="btn btn--ghost btn--sm">Clear</a>
             <?php endif; ?>
         </form>
     </div>
@@ -102,18 +102,18 @@ $search       = $search ?? '';
                             </td>
                             <td style="text-align:right;">
                                 <div class="d-flex gap-1 justify-end items-center">
-                                    <a href="/institutes/<?= (int) $inst['id'] ?>/edit" class="btn btn--ghost btn--xs" title="Edit Institute">
+                                    <a href="<?= BASE_URL ?>/institutes/<?= (int) $inst['id'] ?>/edit" class="btn btn--ghost btn--xs" title="Edit Institute">
                                         Edit
                                     </a>
 
-                                    <form method="POST" action="/institutes/<?= (int) $inst['id'] ?>/toggle-status" style="margin:0;">
+                                    <form method="POST" action="<?= BASE_URL ?>/institutes/<?= (int) $inst['id'] ?>/toggle-status" style="margin:0;">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                         <button type="submit" class="btn <?= $status === 'active' ? 'btn--secondary' : 'btn--primary' ?> btn--xs">
                                             <?= $status === 'active' ? 'Deactivate' : 'Activate' ?>
                                         </button>
                                     </form>
 
-                                    <form method="POST" action="/institutes/<?= (int) $inst['id'] ?>/delete" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete institute <?= htmlspecialchars($inst['name'], ENT_QUOTES, 'UTF-8') ?>?');">
+                                    <form method="POST" action="<?= BASE_URL ?>/institutes/<?= (int) $inst['id'] ?>/delete" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete institute <?= htmlspecialchars($inst['name'], ENT_QUOTES, 'UTF-8') ?>?');">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                         <button type="submit" class="btn btn--danger btn--xs" title="Delete Institute">
                                             Delete

@@ -18,7 +18,7 @@ $totalStudents = $totalStudents ?? 0;
 <div class="page-header">
     <h1 class="page-header__title">Student Management</h1>
     <div class="page-header__actions">
-        <a href="/students/create" class="btn btn--primary">
+        <a href="<?= BASE_URL ?>/students/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Register New Student
         </a>
@@ -28,7 +28,7 @@ $totalStudents = $totalStudents ?? 0;
 <!-- Filters -->
 <div class="table-wrapper mb-3">
     <div class="table-toolbar">
-        <form method="GET" action="/students" style="display:flex;flex-wrap:wrap;gap:0.75rem;width:100%;align-items:center;">
+        <form method="GET" action="<?= BASE_URL ?>/students" style="display:flex;flex-wrap:wrap;gap:0.75rem;width:100%;align-items:center;">
             <input
                 type="text"
                 name="search"
@@ -59,7 +59,7 @@ $totalStudents = $totalStudents ?? 0;
                 <option value="deactivated" <?= ($filters['status'] ?? '') === 'deactivated' ? 'selected' : '' ?>>Deactivated</option>
             </select>
             <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-            <a href="/students" class="btn btn--ghost btn--sm">Clear</a>
+            <a href="<?= BASE_URL ?>/students" class="btn btn--ghost btn--sm">Clear</a>
         </form>
     </div>
 
@@ -130,13 +130,13 @@ $totalStudents = $totalStudents ?? 0;
                         </td>
                         <td>
                             <div class="d-flex gap-1">
-                                <a href="/students/<?= (int) $student['id'] ?>" class="btn btn--ghost btn--sm" data-tooltip="View">
+                                <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>" class="btn btn--ghost btn--sm" data-tooltip="View">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </a>
-                                <a href="/students/<?= (int) $student['id'] ?>/edit" class="btn btn--ghost btn--sm" data-tooltip="Edit">
+                                <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/edit" class="btn btn--ghost btn--sm" data-tooltip="Edit">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </a>
-                                <button type="button" class="btn btn--ghost btn--sm" data-tooltip="Delete" onclick="confirmAction('Are you sure you want to initiate deletion for this student?', function(){ window.location.href='/students/<?= (int) $student['id'] ?>/delete'; })">
+                                <button type="button" class="btn btn--ghost btn--sm" data-tooltip="Delete" onclick="confirmAction('Are you sure you want to initiate deletion for this student?', function(){ window.location.href='<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/delete'; })">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                                 </button>
                             </div>
@@ -150,7 +150,7 @@ $totalStudents = $totalStudents ?? 0;
                             <div class="empty-state__icon">&#128100;</div>
                             <div class="empty-state__title">No students found</div>
                             <div class="empty-state__text">Try adjusting your filters or register a new student.</div>
-                            <a href="/students/create" class="btn btn--primary btn--sm">Register New Student</a>
+                            <a href="<?= BASE_URL ?>/students/create" class="btn btn--primary btn--sm">Register New Student</a>
                         </div>
                     </td>
                 </tr>

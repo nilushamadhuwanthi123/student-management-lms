@@ -285,7 +285,7 @@ class ClassController extends BaseController
         } catch (\Throwable $e) {
             error_log('Class update error: ' . $e->getMessage());
             $this->flash('error', 'Failed to update class.');
-            $this->redirect("/classes/{$id}/edit");
+            $this->redirect(BASE_URL . "/classes/{$id}/edit");
         }
     }
 

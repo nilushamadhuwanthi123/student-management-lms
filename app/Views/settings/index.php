@@ -15,7 +15,7 @@ $settings = $settings ?? [];
 <div class="card" style="max-width:700px;">
     <h3 style="margin-bottom:1rem;">System Configuration</h3>
 
-    <form method="POST" action="/settings">
+    <form method="POST" action="<?= BASE_URL ?>/settings">
         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
         <div class="form-group">

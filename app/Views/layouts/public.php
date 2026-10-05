@@ -83,7 +83,7 @@
     </script>
 
     <!-- Base Design System -->
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
 
     <!-- Premium Public Overrides -->
     <style>
@@ -268,7 +268,7 @@
     <!-- Liquid-Glass Navbar -->
     <nav class="navbar navbar--liquid-glass" id="mainNav">
         <div class="nav-shimmer"></div>
-        <a href="/" class="navbar__brand font-body">
+        <a href="<?= BASE_URL ?>/" class="navbar__brand font-body">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
                 <rect width="32" height="32" rx="8" fill="var(--primary)"/>
                 <path d="M8 22V12l8-4 8 4v10l-8 4-8-4z" stroke="var(--text-inverse)" stroke-width="1.5" fill="none"/>
@@ -282,12 +282,12 @@
         </button>
 
         <ul class="navbar__links" id="navLinks">
-            <li><a href="/" class="<?= ($activePage ?? '') === 'home' ? 'active' : '' ?>">Home</a></li>
-            <li><a href="/about" class="<?= ($activePage ?? '') === 'about' ? 'active' : '' ?>">About</a></li>
-            <li><a href="/features" class="<?= ($activePage ?? '') === 'features' ? 'active' : '' ?>">Features</a></li>
-            <li><a href="/contact" class="<?= ($activePage ?? '') === 'contact' ? 'active' : '' ?>">Contact</a></li>
+            <li><a href="<?= BASE_URL ?>/" class="<?= ($activePage ?? '') === 'home' ? 'active' : '' ?>">Home</a></li>
+            <li><a href="<?= BASE_URL ?>/about" class="<?= ($activePage ?? '') === 'about' ? 'active' : '' ?>">About</a></li>
+            <li><a href="<?= BASE_URL ?>/features" class="<?= ($activePage ?? '') === 'features' ? 'active' : '' ?>">Features</a></li>
+            <li><a href="<?= BASE_URL ?>/contact" class="<?= ($activePage ?? '') === 'contact' ? 'active' : '' ?>">Contact</a></li>
             <li>
-                <a href="/login" class="inline-flex items-center px-5 py-2 rounded-full text-sm font-semibold
+                <a href="<?= BASE_URL ?>/login" class="inline-flex items-center px-5 py-2 rounded-full text-sm font-semibold
                     bg-[var(--primary)] text-[var(--text-inverse)] hover:bg-[var(--primary-hover)]
                     transition-all duration-300 btn-glow" style="text-transform:none;">
                     Login
@@ -338,10 +338,10 @@
                 <div>
                     <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4">Quick Links</h4>
                     <ul class="space-y-2">
-                        <li><a href="/" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">Home</a></li>
-                        <li><a href="/about" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">About Us</a></li>
-                        <li><a href="/features" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">Features</a></li>
-                        <li><a href="/contact" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">Contact</a></li>
+                        <li><a href="<?= BASE_URL ?>/" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">Home</a></li>
+                        <li><a href="<?= BASE_URL ?>/about" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">About Us</a></li>
+                        <li><a href="<?= BASE_URL ?>/features" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">Features</a></li>
+                        <li><a href="<?= BASE_URL ?>/contact" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">Contact</a></li>
                     </ul>
                 </div>
 
@@ -368,7 +368,7 @@
                 <div>
                     <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4">Get Started</h4>
                     <p class="text-sm mb-4" style="color: #7A8C83;">Ready to transform your institute?</p>
-                    <a href="/login" class="inline-flex items-center px-5 py-2.5 rounded-full text-sm font-semibold
+                    <a href="<?= BASE_URL ?>/login" class="inline-flex items-center px-5 py-2.5 rounded-full text-sm font-semibold
                         bg-[#0E6F58] text-white hover:bg-[#09503F] transition-all duration-300">
                         Login Now
                         <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
@@ -385,7 +385,7 @@
 
     <noscript><style>.reveal { opacity: 1; transform: none; }</style></noscript>
 
-    <script src="/assets/js/app.js"></script>
+    <script src="<?= BASE_URL ?>/assets/js/app.js"></script>
     <script>
     (function () {
         // ── Mobile nav toggle ──

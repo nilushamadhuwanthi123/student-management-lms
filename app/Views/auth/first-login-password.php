@@ -20,7 +20,7 @@
         Choose a strong password that you have not used before.
     </p>
 
-    <form action="/first-login-password" method="POST" novalidate>
+    <form action="<?= BASE_URL ?>/first-login-password" method="POST" novalidate>
         <?= csrfField() ?>
 
         <div class="form-group">

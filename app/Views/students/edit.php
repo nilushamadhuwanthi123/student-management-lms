@@ -37,7 +37,7 @@ foreach ($enrollments as $enr) {
     </div>
 <?php endif; ?>
 
-<form method="POST" action="/students/<?= (int) $student['id'] ?>" data-validate class="card" style="max-width:800px;">
+<form method="POST" action="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>" data-validate class="card" style="max-width:800px;">
     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
     <input type="hidden" name="_method" value="PUT">
 
@@ -166,7 +166,7 @@ foreach ($enrollments as $enr) {
     <!-- Submit -->
     <div class="d-flex gap-1" style="margin-top:1.5rem;">
         <button type="submit" class="btn btn--primary">Update Student</button>
-        <a href="/students/<?= (int) $student['id'] ?>" class="btn btn--ghost">Cancel</a>
+        <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>" class="btn btn--ghost">Cancel</a>
     </div>
 </form>
 

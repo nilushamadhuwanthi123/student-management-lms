@@ -9,15 +9,29 @@ declare(strict_types=1);
 // Define base path
 define('BASE_PATH', dirname(__DIR__));
 
+// Base URL for subfolder deployment (e.g. /student-management-lms)
+$_baseUrl = '';
+if (file_exists(BASE_PATH . '/.env')) {
+    $_envLines = file(BASE_PATH . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($_envLines as $_el) {
+        if (str_starts_with(trim($_el), 'APP_URL=')) {
+            $_baseUrl = trim(explode('=', $_el, 2)[1], " \t\n\r\0\x0B\"'");
+        }
+    }
+}
+$_parsedPath = $_baseUrl ? (parse_url($_baseUrl, PHP_URL_PATH) ?: '') : '';
+define('BASE_URL', rtrim($_parsedPath, '/'));
+
 // ──────────────────────────────────────────────────────────
-// Autoloader for app/ classes
+// Autoloader for app/ classes and global models
 // ──────────────────────────────────────────────────────────
 spl_autoload_register(function (string $class): void {
-    // Convert namespace to file path: App\Controllers\Foo => app/Controllers/Foo.php
+    $class = ltrim($class, '\\');
+
+    // Namespaced classes: App\Controllers\Foo => app/Controllers/Foo.php
     if (str_starts_with($class, 'App\\')) {
         $relativePath = str_replace('\\', '/', substr($class, 4));
         $filePath = BASE_PATH . '/app/' . $relativePath . '.php';
-
         if (file_exists($filePath)) {
             require_once $filePath;
             return;
@@ -37,6 +51,10 @@ spl_autoload_register(function (string $class): void {
 // ──────────────────────────────────────────────────────────
 require_once BASE_PATH . '/config/app.php';
 require_once BASE_PATH . '/config/database.php';
+
+// Create global PDO connection for controllers that use global $pdo
+$pdo = Database::connect();
+
 require_once BASE_PATH . '/config/session.php';
 require_once BASE_PATH . '/config/csrf.php';
 require_once BASE_PATH . '/config/security.php';
@@ -82,6 +100,24 @@ $router = require BASE_PATH . '/routes/web.php';
 // ──────────────────────────────────────────────────────────
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+
+// Strip query string
+if (($qPos = strpos($requestUri, '?')) !== false) {
+    $requestUri = substr($requestUri, 0, $qPos);
+}
+
+// Strip base path for subfolder deployment so routes match /login not /student-management-lms/public/login
+$basePath = BASE_URL . '/public';
+$basePaths = [$basePath, BASE_URL ?: '/'];
+foreach ($basePaths as $bp) {
+    if ($bp !== '' && $bp !== '/' && str_starts_with($requestUri, $bp)) {
+        $requestUri = substr($requestUri, strlen($bp));
+        break;
+    }
+}
+if ($requestUri === '' || $requestUri === false) {
+    $requestUri = '/';
+}
 
 // Match the route
 $match = $router->match($requestMethod, $requestUri);

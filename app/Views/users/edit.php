@@ -17,13 +17,13 @@ $roleColors      = $roleColors ?? \User::ROLE_COLORS;
         <p class="text-sm text-muted">User ID: <strong><?= htmlspecialchars($user['user_id_display'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong> &bull; Role: <strong><?= ucfirst($user['role'] ?? '') ?></strong></p>
     </div>
     <div class="page-header__actions">
-        <a href="/users" class="btn btn--ghost">
+        <a href="<?= BASE_URL ?>/users" class="btn btn--ghost">
             &larr; Back to Users
         </a>
     </div>
 </div>
 
-<form method="POST" action="/users/<?= (int) $user['id'] ?>/edit" enctype="multipart/form-data">
+<form method="POST" action="<?= BASE_URL ?>/users/<?= (int) $user['id'] ?>/edit" enctype="multipart/form-data">
     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
     <!-- 1. Profile Photo -->
@@ -169,11 +169,11 @@ $roleColors      = $roleColors ?? \User::ROLE_COLORS;
 
     <!-- Submit Buttons -->
     <div class="d-flex justify-between items-center mb-4">
-        <a href="/users/<?= (int) $user['id'] ?>/id-card" target="_blank" class="btn btn--secondary">
+        <a href="<?= BASE_URL ?>/users/<?= (int) $user['id'] ?>/id-card" target="_blank" class="btn btn--secondary">
             Print ID Card
         </a>
         <div class="d-flex gap-1">
-            <a href="/users" class="btn btn--ghost">Cancel</a>
+            <a href="<?= BASE_URL ?>/users" class="btn btn--ghost">Cancel</a>
             <button type="submit" class="btn btn--primary">
                 Save Changes
             </button>

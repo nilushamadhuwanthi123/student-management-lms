@@ -42,7 +42,7 @@ $breadcrumbs = [['Home', '/'], ['Contact', '#']];
                         <p class="text-sm" style="color: var(--text-muted);">Fill in the form below and we'll reply to your email within 24 business hours.</p>
                     </div>
 
-                    <form action="/contact" method="POST" class="space-y-5">
+                    <form action="<?= BASE_URL ?>/contact" method="POST" class="space-y-5">
                         <?= csrfField() ?>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

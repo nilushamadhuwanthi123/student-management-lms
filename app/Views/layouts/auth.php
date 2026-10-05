@@ -28,7 +28,7 @@
     </script>
 
     <!-- Base Design System -->
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
 
     <style>
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
@@ -165,7 +165,7 @@
         <div class="login-form-side">
             <div class="login-glass-card">
                 <!-- Back to home -->
-                <a href="/" class="inline-flex items-center gap-1 text-xs font-medium mb-6 transition-colors"
+                <a href="<?= BASE_URL ?>/" class="inline-flex items-center gap-1 text-xs font-medium mb-6 transition-colors"
                    style="color: var(--text-muted);">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
                     Back to Home

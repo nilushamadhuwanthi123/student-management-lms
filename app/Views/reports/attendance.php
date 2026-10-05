@@ -25,13 +25,13 @@ $rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
         <p class="text-sm text-muted">Period: <strong><?= date('d M Y', strtotime($startDate)) ?></strong> to <strong><?= date('d M Y', strtotime($endDate)) ?></strong></p>
     </div>
     <div class="page-header__actions d-flex gap-1">
-        <a href="/reports" class="btn btn--ghost btn--sm">
+        <a href="<?= BASE_URL ?>/reports" class="btn btn--ghost btn--sm">
             &larr; Reports Hub
         </a>
         <button type="button" class="btn btn--secondary btn--sm" onclick="window.print()">
             &#128424; Print Report
         </button>
-        <a href="/reports/attendance?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" class="btn btn--primary btn--sm">
+        <a href="<?= BASE_URL ?>/reports/attendance?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" class="btn btn--primary btn--sm">
             &#128190; Export to CSV
         </a>
     </div>
@@ -39,7 +39,7 @@ $rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
 
 <!-- Filters Bar -->
 <div class="card mb-3 no-print">
-    <form method="GET" action="/reports/attendance" style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:flex-end;">
+    <form method="GET" action="<?= BASE_URL ?>/reports/attendance" style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:flex-end;">
         <div>
             <label class="form-label text-xs">Start Date</label>
             <input type="date" name="start_date" class="form-control form-control--sm" value="<?= htmlspecialchars($startDate, ENT_QUOTES, 'UTF-8') ?>">
@@ -76,7 +76,7 @@ $rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
 
         <div class="d-flex gap-1">
             <button type="submit" class="btn btn--primary btn--sm">Apply Filters</button>
-            <a href="/reports/attendance" class="btn btn--ghost btn--sm">Reset</a>
+            <a href="<?= BASE_URL ?>/reports/attendance" class="btn btn--ghost btn--sm">Reset</a>
         </div>
     </form>
 </div>

@@ -153,8 +153,8 @@ $breadcrumbs = [['Home', '/'], ['About', '#']];
             Join institutions that have simplified their daily operations with EduManager's unified LMS &amp; student platform.
         </p>
         <div class="flex flex-wrap gap-4 justify-center">
-            <a href="/login" class="btn btn--primary btn--lg rounded-full font-semibold btn-glow">Access Portal &rarr;</a>
-            <a href="/contact" class="btn btn--secondary btn--lg rounded-full font-semibold">Speak with Us</a>
+            <a href="<?= BASE_URL ?>/login" class="btn btn--primary btn--lg rounded-full font-semibold btn-glow">Access Portal &rarr;</a>
+            <a href="<?= BASE_URL ?>/contact" class="btn btn--secondary btn--lg rounded-full font-semibold">Speak with Us</a>
         </div>
     </div>
 </section>

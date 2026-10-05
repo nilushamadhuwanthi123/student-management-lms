@@ -1,8 +1,8 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Redirect to public directory if accessing from root
-    RewriteBase /
+    # Subfolder deployment
+    RewriteBase /student-management-lms/public/
 
     # Serve existing files and directories directly
     RewriteCond %{REQUEST_FILENAME} !-f

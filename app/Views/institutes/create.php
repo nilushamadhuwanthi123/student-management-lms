@@ -14,14 +14,14 @@ $coordinators = $coordinators ?? [];
         <p class="text-sm text-muted">Add a new campus, education center, or branch to the LMS network</p>
     </div>
     <div class="page-header__actions">
-        <a href="/institutes" class="btn btn--ghost">
+        <a href="<?= BASE_URL ?>/institutes" class="btn btn--ghost">
             &larr; Back to Institutes
         </a>
     </div>
 </div>
 
 <div class="card" style="max-width:800px;">
-    <form method="POST" action="/institutes/create">
+    <form method="POST" action="<?= BASE_URL ?>/institutes/create">
         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
         <!-- Institute Name* -->
@@ -80,7 +80,7 @@ $coordinators = $coordinators ?? [];
         </div>
 
         <div class="d-flex justify-end gap-1 mt-4 pt-2" style="border-top:1px solid var(--border);">
-            <a href="/institutes" class="btn btn--ghost">Cancel</a>
+            <a href="<?= BASE_URL ?>/institutes" class="btn btn--ghost">Cancel</a>
             <button type="submit" class="btn btn--primary">
                 Save Institute
             </button>

@@ -9,6 +9,7 @@ $workflows   = $workflows ?? [];
 $filters     = $filters ?? [];
 $currentPage = $currentPage ?? 1;
 $totalPages  = $totalPages ?? 1;
+$baseUrl     = defined('BASE_URL') ? BASE_URL : '';
 ?>
 
 <div class="page-header">
@@ -18,7 +19,7 @@ $totalPages  = $totalPages ?? 1;
 <!-- Filters -->
 <div class="table-wrapper mb-3">
     <div class="table-toolbar">
-        <form method="GET" action="/workflows/history" style="display:flex;flex-wrap:wrap;gap:0.75rem;width:100%;align-items:center;">
+        <form method="GET" action="<?= $baseUrl ?>/workflows/history" style="display:flex;flex-wrap:wrap;gap:0.75rem;width:100%;align-items:center;">
             <select name="type" class="form-control" style="width:auto;min-width:150px;">
                 <option value="">All Types</option>
                 <option value="deletion" <?= ($filters['type'] ?? '') === 'deletion' ? 'selected' : '' ?>>Deletion</option>
@@ -33,7 +34,7 @@ $totalPages  = $totalPages ?? 1;
             <input type="date" name="date_from" class="form-control" style="width:auto;" placeholder="From" value="<?= htmlspecialchars($filters['date_from'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             <input type="date" name="date_to" class="form-control" style="width:auto;" placeholder="To" value="<?= htmlspecialchars($filters['date_to'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
             <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-            <a href="/workflows/history" class="btn btn--ghost btn--sm">Clear</a>
+            <a href="<?= $baseUrl ?>/workflows/history" class="btn btn--ghost btn--sm">Clear</a>
         </form>
     </div>
 
@@ -65,10 +66,10 @@ $totalPages  = $totalPages ?? 1;
                             <?php
                             $wfStatus = $wf['status'] ?? 'pending';
                             $wfBadge = match ($wfStatus) {
-                                'completed' => 'badge--success',
-                                'rejected'  => 'badge--danger',
-                                'pending'   => 'badge--pending',
-                                default     => 'badge--neutral',
+                                'completed', 'approved' => 'badge--success',
+                                'rejected'              => 'badge--danger',
+                                'pending'               => 'badge--pending',
+                                default                 => 'badge--neutral',
                             };
                             ?>
                             <span class="badge <?= $wfBadge ?>"><?= ucfirst(htmlspecialchars($wfStatus, ENT_QUOTES, 'UTF-8')) ?></span>
@@ -84,8 +85,16 @@ $totalPages  = $totalPages ?? 1;
                                 <div style="display:flex;flex-direction:column;gap:0.5rem;">
                                     <?php foreach ($wf['steps'] as $step): ?>
                                         <div class="d-flex items-center gap-1" style="padding:0.5rem;background:var(--surface);border-radius:var(--radius-sm);border:1px solid var(--border);">
-                                            <span class="badge <?= ($step['status'] ?? '') === 'approved' ? 'badge--success' : (($step['status'] ?? '') === 'rejected' ? 'badge--danger' : 'badge--neutral') ?>" style="min-width:70px;justify-content:center;">
-                                                <?= ucfirst(htmlspecialchars($step['status'] ?? 'pending', ENT_QUOTES, 'UTF-8')) ?>
+                                            <?php
+                                            $stepAction = $step['action'] ?? 'pending';
+                                            $stepBadge = match ($stepAction) {
+                                                'approved' => 'badge--success',
+                                                'rejected' => 'badge--danger',
+                                                default    => 'badge--neutral',
+                                            };
+                                            ?>
+                                            <span class="badge <?= $stepBadge ?>" style="min-width:70px;justify-content:center;">
+                                                <?= ucfirst(htmlspecialchars($stepAction, ENT_QUOTES, 'UTF-8')) ?>
                                             </span>
                                             <span class="text-sm font-medium"><?= htmlspecialchars($step['approver_role'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
                                             <?php if (!empty($step['approver_name'])): ?>
@@ -123,7 +132,10 @@ $totalPages  = $totalPages ?? 1;
     <!-- Pagination -->
     <?php if ($totalPages > 1): ?>
         <?php
-        $baseUrl = '/workflows/history?' . http_build_query(array_filter($filters));
+        // Use $paginationUrl to avoid conflict with the global BASE_URL / $baseUrl
+        $paginationUrl = $baseUrl . '/workflows/history?' . http_build_query(array_filter($filters));
+        // Re-assign for the pagination component which expects $baseUrl
+        $paginationBaseUrl = $paginationUrl;
         include __DIR__ . '/../components/pagination.php';
         ?>
     <?php endif; ?>

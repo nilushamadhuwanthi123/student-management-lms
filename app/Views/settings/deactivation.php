@@ -56,7 +56,7 @@ if (empty($options)) {
 <div class="card" style="max-width:900px;">
     <h3 style="margin-bottom:1rem;">Configure Deactivation Periods</h3>
 
-    <form method="POST" action="/settings/deactivation">
+    <form method="POST" action="<?= BASE_URL ?>/settings/deactivation">
         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
         <!-- Active Option Selector -->
