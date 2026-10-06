@@ -10,7 +10,7 @@ class Database
     public static function connect(): PDO
     {
         if (self::$instance === null) {
-            $host    = env('DB_HOST', 'localhost');
+            $host    = env('DB_HOST', '127.0.0.1');
             $port    = env('DB_PORT', '3306');
             $dbname  = env('DB_NAME', 'student_lms');
             $user    = env('DB_USER', 'root');

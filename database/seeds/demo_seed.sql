@@ -2,16 +2,15 @@
 -- Student Management LMS - Demo Seed Data
 -- Synthetic data with realistic Sri Lankan names
 -- All demo passwords: 'Demo@12345'
--- NOTE: The password_hash below is a PLACEHOLDER.
--- In production, generate using PHP: password_hash('Demo@12345', PASSWORD_DEFAULT)
+-- NOTE: These are DEMO credentials for local development only.
+-- Change every password before any production or client deployment.
 -- ============================================================================
 
 SET NAMES utf8mb4;
 SET time_zone = '+05:30';
 
--- Placeholder bcrypt hash for 'Demo@12345'
--- MUST be replaced with: password_hash('Demo@12345', PASSWORD_DEFAULT)
-SET @demo_hash = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
+-- Real bcrypt hash of 'Demo@12345' (verified with password_verify)
+SET @demo_hash = '$2y$10$hOZwUwyTLdDQz9VMi1XaoOV3P3OXxD5SSP4hr4oLf/04E6a0VqguS';
 
 -- ============================================================================
 -- Users: 2 Admins, 2 Coordinators, 3 Staff, 4 Teachers

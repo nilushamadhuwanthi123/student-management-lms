@@ -13,7 +13,7 @@ built on Core PHP with a custom MVC framework, MySQL, and XAMPP.
 - Student 360 view aggregating profile, enrollments, payments and attendance
 
 **Institutes & classes**
-- Multiple institutes/branches, each with a assigned coordinator
+- Multiple institutes/branches, each with an assigned coordinator
 - Classes belonging to an institute, with status toggling
 - User and role management, including printable ID cards
 
@@ -120,6 +120,26 @@ public/uploads/profiles/
 ```
 http://localhost/student-management-lms/
 ```
+
+## Demo Credentials
+
+The demo seed creates accounts for every role. Log in with the **User ID**, not
+the email address.
+
+| Role | User ID | Password |
+| --- | --- | --- |
+| Super Admin | `SA20260001` | `Demo@12345` |
+| Admin | `ADM20260001` | `Demo@12345` |
+| Coordinator | `CRD20260001` | `Demo@12345` |
+| Staff | `STF20260001` | `Demo@12345` |
+| Teacher | `TCH20260001` | `Demo@12345` |
+
+The super admin ships with status `pending_first_login`, so the first successful
+login forces it to set a new password before anything else is reachable.
+
+> **Before any production or client deployment:** change every one of these
+> passwords, and re-seed with your own data. These accounts exist for local
+> development only.
 
 ## Subfolder Deployment
 

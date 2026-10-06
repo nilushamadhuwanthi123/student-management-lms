@@ -455,7 +455,7 @@ VALUES (
     'System Super Admin',
     'superadmin@lms.lk',
     '+94771234567',
-    '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-    'active',
+    '$2y$10$hOZwUwyTLdDQz9VMi1XaoOV3P3OXxD5SSP4hr4oLf/04E6a0VqguS',
+    'pending_first_login',
     NOW()
 );
