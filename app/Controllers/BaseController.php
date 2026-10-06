@@ -71,8 +71,30 @@ class BaseController
      */
     protected function redirect(string $url): never
     {
-        header('Location: ' . $url);
+        header('Location: ' . $this->resolveUrl($url));
         exit;
+    }
+
+    /**
+     * Make a redirect target subfolder-safe.
+     *
+     * Root-relative paths ('/dashboard') are prefixed with BASE_URL so they stay
+     * inside the app when it is deployed under a subfolder. Absolute URLs and
+     * paths already carrying BASE_URL are returned untouched.
+     */
+    protected function resolveUrl(string $url): string
+    {
+        if ($url === '' || preg_match('#^(https?:)?//#i', $url)) {
+            return $url;
+        }
+
+        $base = defined('BASE_URL') ? rtrim((string) BASE_URL, '/') : '';
+
+        if ($base !== '' && ($url === $base || str_starts_with($url, $base . '/'))) {
+            return $url;
+        }
+
+        return $url[0] === '/' ? $base . $url : $url;
     }
 
     /**
