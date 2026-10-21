@@ -28,8 +28,8 @@
                 New Password <span class="required">*</span>
             </label>
             <div style="position: relative;">
-                <input type="password" id="new_password" name="password"
-                       class="form-control <?= !empty($errors['password']) ? 'is-invalid' : '' ?>"
+                <input type="password" id="new_password" name="new_password"
+                       class="form-control <?= !empty($errors['new_password']) ? 'is-invalid' : '' ?>"
                        placeholder="Minimum 8 characters"
                        autocomplete="new-password" required
                        style="padding-right: 2.75rem;">
@@ -40,8 +40,8 @@
                     <span class="pw-icon-hide" style="display:none;">&#128064;</span>
                 </button>
             </div>
-            <?php if (!empty($errors['password'])): ?>
-                <div class="form-feedback form-feedback--invalid"><?= htmlspecialchars($errors['password'], ENT_QUOTES, 'UTF-8') ?></div>
+            <?php if (!empty($errors['new_password'])): ?>
+                <div class="form-feedback form-feedback--invalid"><?= htmlspecialchars($errors['new_password'], ENT_QUOTES, 'UTF-8') ?></div>
             <?php endif; ?>
 
             <!-- Password Strength Indicator -->
@@ -61,8 +61,8 @@
                 Confirm Password <span class="required">*</span>
             </label>
             <div style="position: relative;">
-                <input type="password" id="confirm_password" name="password_confirmation"
-                       class="form-control <?= !empty($errors['password_confirmation']) ? 'is-invalid' : '' ?>"
+                <input type="password" id="confirm_password" name="new_password_confirmation"
+                       class="form-control <?= !empty($errors['new_password_confirmation']) ? 'is-invalid' : '' ?>"
                        placeholder="Re-enter your new password"
                        autocomplete="new-password" required
                        style="padding-right: 2.75rem;">
@@ -73,8 +73,8 @@
                     <span class="pw-icon-hide" style="display:none;">&#128064;</span>
                 </button>
             </div>
-            <?php if (!empty($errors['password_confirmation'])): ?>
-                <div class="form-feedback form-feedback--invalid"><?= htmlspecialchars($errors['password_confirmation'], ENT_QUOTES, 'UTF-8') ?></div>
+            <?php if (!empty($errors['new_password_confirmation'])): ?>
+                <div class="form-feedback form-feedback--invalid"><?= htmlspecialchars($errors['new_password_confirmation'], ENT_QUOTES, 'UTF-8') ?></div>
             <?php endif; ?>
         </div>
 
