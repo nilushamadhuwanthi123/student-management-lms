@@ -1,0 +1,160 @@
+<?php
+/**
+ * Class material, as the teacher sees it.
+ *
+ * Grouped by month because that is the unit the fee gate works in: a
+ * student who paid for October sees October's shelf. Showing the month
+ * prominently keeps the teacher's mental model and the student's the
+ * same one.
+ */
+
+$class     = $class ?? [];
+$materials = $materials ?? [];
+$months    = $months ?? [];
+$counts    = $counts ?? [];
+$types     = $types ?? [];
+$month     = $month ?? date('Y-m-01');
+
+$typeIcon = [
+    'recording' => '&#127909;',
+    'reading'   => '&#128196;',
+    'video'     => '&#127916;',
+    'link'      => '&#128279;',
+];
+?>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-header__title">Class material</h1>
+        <p class="text-sm text-muted">
+            <?= htmlspecialchars($class['class_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+            <?php if (!empty($class['institute_name'])): ?>
+                &middot; <?= htmlspecialchars($class['institute_name'], ENT_QUOTES, 'UTF-8') ?>
+            <?php endif; ?>
+        </p>
+    </div>
+    <div class="page-header__actions">
+        <a href="<?= BASE_URL ?>/classes" class="btn btn--ghost">&larr; Classes</a>
+        <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials/create?month=<?= urlencode($month) ?>"
+           class="btn btn--primary">+ Post material</a>
+    </div>
+</div>
+
+<!-- What is on the shelf overall -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-bottom:1.5rem;">
+    <?php foreach ($types as $key => $label): ?>
+        <div class="card" style="padding:1rem;">
+            <div style="font-size:1.5rem; line-height:1;"><?= $typeIcon[$key] ?? '&#128196;' ?></div>
+            <div style="font-size:1.75rem; font-weight:700; color:var(--primary); margin-top:.35rem;">
+                <?= (int) ($counts[$key] ?? 0) ?>
+            </div>
+            <div class="text-sm text-muted"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></div>
+        </div>
+    <?php endforeach; ?>
+</div>
+
+<div class="card">
+    <div class="card__header" style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+        <div>
+            <h3 style="margin:0;"><?= date('F Y', strtotime($month)) ?></h3>
+            <p class="text-sm text-muted" style="margin:.25rem 0 0;">
+                Students who have settled this month's fee can open everything below.
+            </p>
+        </div>
+
+        <form method="GET" action="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials"
+              style="display:flex; gap:.5rem; align-items:center;">
+            <label class="form-label" for="month" style="margin:0;">Month</label>
+            <select id="month" name="month" class="form-control" style="width:auto;"
+                    onchange="this.form.submit()">
+                <?php foreach ($months as $value => $label): ?>
+                    <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>"
+                        <?= $value === $month ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <noscript><button type="submit" class="btn btn--ghost btn--sm">Go</button></noscript>
+        </form>
+    </div>
+
+    <?php if ($materials === []): ?>
+        <div style="padding:3rem 1.5rem; text-align:center;">
+            <div style="font-size:2.5rem;">&#128230;</div>
+            <h4 style="margin:.75rem 0 .35rem;">Nothing posted for <?= date('F', strtotime($month)) ?> yet</h4>
+            <p class="text-sm text-muted" style="margin:0 0 1.25rem;">
+                Post the lesson recording, the notes and any video you want the class to have.
+            </p>
+            <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials/create?month=<?= urlencode($month) ?>"
+               class="btn btn--primary">Post the first item</a>
+        </div>
+    <?php else: ?>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Type</th>
+                        <th>Lesson date</th>
+                        <th class="text-right">Opened by</th>
+                        <th>Status</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($materials as $m): ?>
+                    <tr<?= $m['status'] === 'draft' ? ' style="opacity:.65;"' : '' ?>>
+                        <td>
+                            <div style="font-weight:600;">
+                                <?= $typeIcon[$m['material_type']] ?? '' ?>
+                                <?= htmlspecialchars($m['title'], ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                            <?php if (!empty($m['description'])): ?>
+                                <div class="text-sm text-muted" style="max-width:46ch;">
+                                    <?= htmlspecialchars($m['description'], ENT_QUOTES, 'UTF-8') ?>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (!empty($m['duration_minutes'])): ?>
+                                <div class="text-sm text-muted"><?= (int) $m['duration_minutes'] ?> min</div>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-sm"><?= htmlspecialchars($types[$m['material_type']] ?? $m['material_type'], ENT_QUOTES, 'UTF-8') ?></td>
+                        <td class="text-sm">
+                            <?= !empty($m['lesson_date']) ? date('j M Y', strtotime($m['lesson_date'])) : '&mdash;' ?>
+                        </td>
+                        <td class="text-right">
+                            <strong><?= (int) ($m['view_count'] ?? 0) ?></strong>
+                            <span class="text-sm text-muted">student<?= (int) ($m['view_count'] ?? 0) === 1 ? '' : 's' ?></span>
+                        </td>
+                        <td>
+                            <span class="badge" style="background:<?= $m['status'] === 'published' ? 'var(--success-light); color:var(--success)' : 'var(--warning-light); color:var(--warning)' ?>;">
+                                <?= ucfirst($m['status']) ?>
+                            </span>
+                        </td>
+                        <td class="text-right">
+                            <?php if (!empty($m['external_url'])): ?>
+                                <a href="<?= htmlspecialchars($m['external_url'], ENT_QUOTES, 'UTF-8') ?>"
+                                   target="_blank" rel="noopener noreferrer"
+                                   class="btn btn--ghost btn--sm">Open</a>
+                            <?php elseif (!empty($m['file_path'])): ?>
+                                <a href="<?= BASE_URL ?>/materials/<?= (int) $m['id'] ?>/download"
+                                   class="btn btn--ghost btn--sm">Download</a>
+                            <?php endif; ?>
+
+                            <form method="POST"
+                                  action="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials/<?= (int) $m['id'] ?>/archive"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Take this down? Students will stop seeing it.');">
+                                <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
+                                <button type="submit" class="btn btn--ghost btn--sm" style="color:var(--danger);">
+                                    Take down
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+</div>
