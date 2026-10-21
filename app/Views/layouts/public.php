@@ -40,15 +40,15 @@
                         danger: 'var(--danger)',
                     },
                     emerald: {
-                        DEFAULT: '#0E6F58',
-                        50: '#E8F5F0',
-                        100: '#D1EBE2',
-                        600: '#0E6F58',
-                        700: '#09503F',
+                        DEFAULT: '#1D4ED8',
+                        50: '#E8EEFC',
+                        100: '#D8E2F2',
+                        600: '#1D4ED8',
+                        700: '#1A3FAF',
                     },
                     teal: {
-                        DEFAULT: '#117C83',
-                        600: '#117C83',
+                        DEFAULT: '#2563EB',
+                        600: '#2563EB',
                     }
                 },
                 fontFamily: {
@@ -312,7 +312,7 @@
     </main>
 
     <!-- Premium Footer -->
-    <footer class="relative overflow-hidden" style="background: #0A0F0C;">
+    <footer class="relative overflow-hidden" style="background: #0B1220;">
         <!-- Subtle gradient accent -->
         <div class="absolute top-0 left-0 right-0 h-px" style="background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);"></div>
 
@@ -322,13 +322,13 @@
                 <div class="md:col-span-1">
                     <div class="flex items-center gap-2 mb-4">
                         <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                            <rect width="32" height="32" rx="8" fill="#0E6F58"/>
+                            <rect width="32" height="32" rx="8" fill="#1D4ED8"/>
                             <path d="M8 22V12l8-4 8 4v10l-8 4-8-4z" stroke="#fff" stroke-width="1.5" fill="none"/>
                             <path d="M16 12v10M8 12l8 4 8-4" stroke="#fff" stroke-width="1.5"/>
                         </svg>
                         <span class="text-white font-semibold text-lg tracking-tight font-body">EduManager</span>
                     </div>
-                    <p class="text-sm leading-relaxed" style="color: #7A8C83;">
+                    <p class="text-sm leading-relaxed" style="color: #8494AC;">
                         A comprehensive student management system designed to streamline
                         educational institute operations.
                     </p>
@@ -338,17 +338,17 @@
                 <div>
                     <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4">Quick Links</h4>
                     <ul class="space-y-2">
-                        <li><a href="<?= BASE_URL ?>/" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">Home</a></li>
-                        <li><a href="<?= BASE_URL ?>/about" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">About Us</a></li>
-                        <li><a href="<?= BASE_URL ?>/features" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">Features</a></li>
-                        <li><a href="<?= BASE_URL ?>/contact" class="text-sm hover:text-white transition-colors" style="color: #7A8C83;">Contact</a></li>
+                        <li><a href="<?= BASE_URL ?>/" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">Home</a></li>
+                        <li><a href="<?= BASE_URL ?>/about" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">About Us</a></li>
+                        <li><a href="<?= BASE_URL ?>/features" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">Features</a></li>
+                        <li><a href="<?= BASE_URL ?>/contact" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">Contact</a></li>
                     </ul>
                 </div>
 
                 <!-- Contact -->
                 <div>
                     <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4">Contact</h4>
-                    <ul class="space-y-2 text-sm" style="color: #7A8C83;">
+                    <ul class="space-y-2 text-sm" style="color: #8494AC;">
                         <li class="flex items-center gap-2">
                             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
                             info@edumanager.com
@@ -367,9 +367,9 @@
                 <!-- Social / CTA -->
                 <div>
                     <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4">Get Started</h4>
-                    <p class="text-sm mb-4" style="color: #7A8C83;">Ready to transform your institute?</p>
+                    <p class="text-sm mb-4" style="color: #8494AC;">Ready to transform your institute?</p>
                     <a href="<?= BASE_URL ?>/login" class="inline-flex items-center px-5 py-2.5 rounded-full text-sm font-semibold
-                        bg-[#0E6F58] text-white hover:bg-[#09503F] transition-all duration-300">
+                        bg-[#1D4ED8] text-white hover:bg-[#1A3FAF] transition-all duration-300">
                         Login Now
                         <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                     </a>
@@ -377,8 +377,8 @@
             </div>
 
             <!-- Bottom bar -->
-            <div class="border-t pt-6 text-center" style="border-color: #1A2420;">
-                <p class="text-xs" style="color: #4A5E52;">&copy; <?= date('Y') ?> EduManager. All rights reserved.</p>
+            <div class="border-t pt-6 text-center" style="border-color: #141E31;">
+                <p class="text-xs" style="color: #3D5273;">&copy; <?= date('Y') ?> EduManager. All rights reserved.</p>
             </div>
         </div>
     </footer>

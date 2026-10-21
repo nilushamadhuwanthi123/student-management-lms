@@ -69,11 +69,11 @@ $breadcrumbs = [['Home', '/'], ['Features', '#']];
                             <span class="text-xs uppercase font-bold text-blue-500">Coordinator</span>
                             <div class="font-bold text-lg mt-1" style="color: var(--text);">Branch Hub</div>
                         </div>
-                        <div class="p-4 rounded-xl border text-center" style="border-top: 4px solid #10b981; background: var(--bg);">
+                        <div class="p-4 rounded-xl border text-center" style="border-top: 4px solid #2563EB; background: var(--bg);">
                             <span class="text-xs uppercase font-bold text-emerald-500">Staff</span>
                             <div class="font-bold text-lg mt-1" style="color: var(--text);">Operations</div>
                         </div>
-                        <div class="p-4 rounded-xl border text-center" style="border-top: 4px solid #8b5cf6; background: var(--bg);">
+                        <div class="p-4 rounded-xl border text-center" style="border-top: 4px solid #2563EB; background: var(--bg);">
                             <span class="text-xs uppercase font-bold text-purple-500">Teacher</span>
                             <div class="font-bold text-lg mt-1" style="color: var(--text);">Class &amp; Attendance</div>
                         </div>

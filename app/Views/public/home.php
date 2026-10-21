@@ -17,7 +17,7 @@
             </video>
         -->
         <!-- Animated gradient fallback -->
-        <div class="absolute inset-0" style="background: linear-gradient(135deg, #0A1F18 0%, #0E6F58 35%, #117C83 65%, #0A1F18 100%); background-size: 400% 400%; animation: gradientShift 12s ease infinite;"></div>
+        <div class="absolute inset-0" style="background: linear-gradient(135deg, #15307E 0%, #1D4ED8 35%, #2563EB 65%, #15307E 100%); background-size: 400% 400%; animation: gradientShift 12s ease infinite;"></div>
         <!-- Subtle pattern overlay -->
         <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 40px 40px;"></div>
     </div>
@@ -38,7 +38,7 @@
             style="font-size: clamp(2.25rem, 5vw, 3.75rem); letter-spacing: -0.02em;">
             Transform Your<br>
             <span class="relative inline-block">
-                <span style="background: linear-gradient(135deg, #68DAB2, #5AC8CF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Educational</span>
+                <span style="background: linear-gradient(135deg, #7AA8FF, #93B8FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Educational</span>
             </span>
             Management
         </h1>
@@ -50,7 +50,7 @@
 
         <div class="reveal flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="<?= BASE_URL ?>/login" class="inline-flex items-center px-8 py-3.5 rounded-full text-sm font-semibold
-                bg-[#0E6F58] text-white hover:bg-[#09503F] transition-all duration-300
+                bg-[#1D4ED8] text-white hover:bg-[#1A3FAF] transition-all duration-300
                 shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 btn-glow">
                 Get Started
                 <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>

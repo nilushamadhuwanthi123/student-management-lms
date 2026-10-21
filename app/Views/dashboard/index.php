@@ -48,16 +48,16 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
 
     <!-- 2. Today's Attendance -->
     <?php if ($canSee('today_attendance')): ?>
-    <div class="kpi-card animate-slide-up delay-2" style="border-left: 4px solid #10b981;">
+    <div class="kpi-card animate-slide-up delay-2" style="border-left: 4px solid #2563EB;">
         <span class="kpi-card__label">Today's Attendance</span>
-        <span class="kpi-card__value" style="color:#059669;"><?= number_format((int) ($widgets['today_attendance'] ?? 0)) ?></span>
+        <span class="kpi-card__value" style="color:#1D4ED8;"><?= number_format((int) ($widgets['today_attendance'] ?? 0)) ?></span>
         <span class="text-xs text-muted"><?= date('l, d M Y') ?></span>
     </div>
     <?php endif; ?>
 
     <!-- 3. Active Classes -->
     <?php if ($canSee('active_classes')): ?>
-    <div class="kpi-card animate-slide-up delay-3" style="border-left: 4px solid #0d9488;">
+    <div class="kpi-card animate-slide-up delay-3" style="border-left: 4px solid #2563EB;">
         <span class="kpi-card__label">Active Classes</span>
         <span class="kpi-card__value"><?= number_format((int) ($widgets['active_classes'] ?? 0)) ?></span>
         <span class="text-xs text-muted">Across all institutes</span>
@@ -77,7 +77,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
 <div class="kpi-grid mb-3">
     <!-- 4. Today's Revenue -->
     <?php if ($canSee('today_revenue')): ?>
-    <div class="kpi-card animate-slide-up" style="border-left: 4px solid #059669;">
+    <div class="kpi-card animate-slide-up" style="border-left: 4px solid #1D4ED8;">
         <span class="kpi-card__label">Today's Revenue</span>
         <span class="kpi-card__value">Rs. <?= number_format((float) ($widgets['today_revenue'] ?? 0), 2) ?></span>
         <span class="text-xs text-muted">Collected today</span>
@@ -86,7 +86,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
 
     <!-- 5. Monthly Revenue -->
     <?php if ($canSee('monthly_revenue')): ?>
-    <div class="kpi-card animate-slide-up" style="border-left: 4px solid #4f46e5;">
+    <div class="kpi-card animate-slide-up" style="border-left: 4px solid #1D4ED8;">
         <span class="kpi-card__label">Monthly Revenue</span>
         <span class="kpi-card__value">Rs. <?= number_format((float) ($widgets['monthly_revenue'] ?? 0), 2) ?></span>
         <span class="text-xs text-muted"><?= date('F Y') ?></span>
@@ -104,7 +104,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
 
     <!-- 13 & 14. New Students (Today & This Month) -->
     <?php if ($canSee('today_new_students') || $canSee('this_month_new_students')): ?>
-    <div class="kpi-card animate-slide-up" style="border-left: 4px solid #f59e0b;">
+    <div class="kpi-card animate-slide-up" style="border-left: 4px solid #F5B301;">
         <span class="kpi-card__label">New Admissions</span>
         <div class="d-flex items-center gap-2">
             <?php if ($canSee('today_new_students')): ?>
@@ -143,7 +143,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
             ?>
                 <div style="display:flex; flex-direction:column; align-items:center; flex:1; gap:0.25rem;">
                     <span class="text-xs font-bold" style="color:var(--primary);"><?= $t['present'] ?></span>
-                    <div style="width:24px; height:<?= $barHeight ?>px; background:linear-gradient(180deg, var(--primary) 0%, #a5b4fc 100%); border-radius:4px 4px 0 0;"></div>
+                    <div style="width:24px; height:<?= $barHeight ?>px; background:linear-gradient(180deg, var(--primary) 0%, #B4C5E0 100%); border-radius:4px 4px 0 0;"></div>
                     <span class="text-xs text-muted" style="margin-top:0.25rem;"><?= $t['day'] ?></span>
                 </div>
             <?php endforeach; ?>
@@ -163,7 +163,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
                 <span class="badge badge--success font-bold" style="font-size:0.9rem;"><?= $attOverview['rate'] ?>%</span>
             </div>
             <div style="width:100%; height:8px; background:var(--surface-sunken); border-radius:4px; overflow:hidden;">
-                <div style="width:<?= min(100, $attOverview['rate']) ?>%; height:100%; background:#10b981; border-radius:4px;"></div>
+                <div style="width:<?= min(100, $attOverview['rate']) ?>%; height:100%; background:#2563EB; border-radius:4px;"></div>
             </div>
             <div class="d-flex justify-between text-xs text-muted mt-1">
                 <span>Present: <strong><?= $attOverview['present'] ?></strong></span>

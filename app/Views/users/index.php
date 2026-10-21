@@ -151,25 +151,25 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
 
         <div style="display:flex; flex-direction:column; gap: 0.75rem;">
             <!-- Admins -->
-            <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background: #f5f3ff; border-radius: var(--radius-sm); border-left: 4px solid #6366f1;">
-                <span style="font-weight: 600; color: #4338ca;">Admins</span>
-                <span class="badge" style="background:#6366f1; color:#fff;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background: #F4F7FC; border-radius: var(--radius-sm); border-left: 4px solid #2563EB;">
+                <span style="font-weight: 600; color: #1A3FAF;">Admins</span>
+                <span class="badge" style="background:#2563EB; color:#fff;">
                     <?= $kpi['admins']['active'] ?? 0 ?> / <?= $kpi['admins']['total'] ?? 0 ?>
                 </span>
             </div>
 
             <!-- Coordinators -->
-            <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background: #f0fdfa; border-radius: var(--radius-sm); border-left: 4px solid #0d9488;">
-                <span style="font-weight: 600; color: #0f766e;">Coordinators</span>
-                <span class="badge" style="background:#0d9488; color:#fff;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background: #E8EEFC; border-radius: var(--radius-sm); border-left: 4px solid #2563EB;">
+                <span style="font-weight: 600; color: #1A3FAF;">Coordinators</span>
+                <span class="badge" style="background:#2563EB; color:#fff;">
                     <?= $kpi['coordinators']['active'] ?? 0 ?> / <?= $kpi['coordinators']['total'] ?? 0 ?>
                 </span>
             </div>
 
             <!-- Staff -->
-            <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background: #fffbeb; border-radius: var(--radius-sm); border-left: 4px solid #d97706;">
-                <span style="font-weight: 600; color: #b45309;">Staff</span>
-                <span class="badge" style="background:#d97706; color:#fff;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background: #FFF8E6; border-radius: var(--radius-sm); border-left: 4px solid #D99A00;">
+                <span style="font-weight: 600; color: #8A5B00;">Staff</span>
+                <span class="badge" style="background:#D99A00; color:#fff;">
                     <?= $kpi['staff']['active'] ?? 0 ?> / <?= $kpi['staff']['total'] ?? 0 ?>
                 </span>
             </div>
