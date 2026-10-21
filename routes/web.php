@@ -216,6 +216,53 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/classes/{id}/toggle-status', ['App\Controllers\ClassController', 'toggleStatus']);
     $router->post('/classes/{id}/delete', ['App\Controllers\ClassController', 'delete']);
 
+    // The teaching hub: material and quizzes both hang off a class, so
+    // this is the one page that makes either reachable without knowing
+    // a class id by heart.
+    $router->get('/teaching', ['App\Controllers\TeachingController', 'index']);
+
+    // ---- LMS: class material ----
+    // Nested under the class because material has no meaning apart from
+    // one, and the class id in the path is what the ownership check reads.
+    $router->get('/classes/{classId}/materials', ['App\Controllers\MaterialController', 'index']);
+    $router->get('/classes/{classId}/materials/create', ['App\Controllers\MaterialController', 'create']);
+    $router->post('/classes/{classId}/materials/create', ['App\Controllers\MaterialController', 'store']);
+    $router->post('/classes/{classId}/materials/{id}/archive', ['App\Controllers\MaterialController', 'archive']);
+
+    // Downloads are flat: the file is served by its own id, and the
+    // controller re-derives the class so the link cannot assert one.
+    $router->get('/materials/{id}/download', ['App\Controllers\MaterialController', 'download']);
+
+    // ---- LMS: quizzes (teacher side) ----
+    $router->get('/classes/{classId}/quizzes', ['App\Controllers\QuizController', 'index']);
+    $router->get('/classes/{classId}/quizzes/create', ['App\Controllers\QuizController', 'create']);
+    $router->post('/classes/{classId}/quizzes/create', ['App\Controllers\QuizController', 'store']);
+    $router->get('/classes/{classId}/quizzes/{id}', ['App\Controllers\QuizController', 'show']);
+    $router->get('/classes/{classId}/quizzes/{id}/results', ['App\Controllers\QuizController', 'results']);
+    $router->post('/classes/{classId}/quizzes/{id}/questions', ['App\Controllers\QuizController', 'addQuestion']);
+    $router->post('/classes/{classId}/quizzes/{id}/questions/{questionId}/delete', ['App\Controllers\QuizController', 'deleteQuestion']);
+    $router->post('/classes/{classId}/quizzes/{id}/publish', ['App\Controllers\QuizController', 'publish']);
+
+    // ---- Student portal ----
+    // Everything under /my is about the student in the session. No route
+    // here takes a student id, so there is no identifier to tamper with.
+    $router->get('/my/classes', ['App\Controllers\StudentPortalController', 'classes']);
+    $router->get('/my/classes/{classId}', ['App\Controllers\StudentPortalController', 'classDetail']);
+    $router->get('/my/materials/{id}/open', ['App\Controllers\StudentPortalController', 'openMaterial']);
+    $router->get('/my/marks', ['App\Controllers\StudentPortalController', 'marks']);
+    $router->get('/my/progress', ['App\Controllers\StudentPortalController', 'progress']);
+    $router->get('/my/quizzes/{quizId}/sit', ['App\Controllers\StudentPortalController', 'sitQuiz']);
+    $router->post('/my/quizzes/answer', ['App\Controllers\StudentPortalController', 'saveAnswer']);
+    $router->post('/my/quizzes/submit', ['App\Controllers\StudentPortalController', 'submitQuiz']);
+    $router->get('/my/quizzes/{attemptId}/result', ['App\Controllers\StudentPortalController', 'quizResult']);
+
+    // ---- Parent portal ----
+    // Likewise /family: the child is resolved from the guardian's own
+    // row, never from the request.
+    $router->get('/family', ['App\Controllers\ParentPortalController', 'overview']);
+    $router->get('/family/marks', ['App\Controllers\ParentPortalController', 'marks']);
+    $router->get('/family/fees', ['App\Controllers\ParentPortalController', 'fees']);
+
     // Students
     $router->get('/students', ['App\Controllers\StudentController', 'index']);
     $router->get('/students/create', ['App\Controllers\StudentController', 'create']);
