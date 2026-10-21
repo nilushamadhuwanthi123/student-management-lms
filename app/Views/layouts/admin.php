@@ -326,6 +326,23 @@ $notificationCount = $notificationCount ?? 0;
             </a>
             <?php endif; ?>
 
+            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff'])): ?>
+            <!-- WhatsApp: fee chasing, which is an office job rather than a teaching one -->
+            <div class="sidebar__nav-group">
+                <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'whatsapp' ? 'active open' : '' ?>" data-toggle-sub="whatsapp-sub">
+                    <span style="display:flex;align-items:center;gap:0.75rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+                        WhatsApp
+                    </span>
+                    <span class="chevron">&#9654;</span>
+                </a>
+                <div class="sidebar__sub-links <?= $activePage === 'whatsapp' ? 'open' : '' ?>" id="whatsapp-sub">
+                    <a href="<?= BASE_URL ?>/whatsapp/reminders" class="sidebar__sub-link">Fee Reminders</a>
+                    <a href="<?= BASE_URL ?>/whatsapp/log" class="sidebar__sub-link">Message Log</a>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>
             <!-- Students -->
             <div class="sidebar__nav-group">
@@ -419,6 +436,9 @@ $notificationCount = $notificationCount ?? 0;
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'reports' ? 'open' : '' ?>" id="reports-sub">
                     <a href="<?= BASE_URL ?>/reports" class="sidebar__sub-link <?= $activeSubPage === 'hub' ? 'active' : '' ?>">All Reports</a>
+                    <?php if (in_array($userRole, ['super_admin', 'admin'])): ?>
+                        <a href="<?= BASE_URL ?>/reports/insights" class="sidebar__sub-link <?= $activeSubPage === 'insights' ? 'active' : '' ?>">Branch Insights</a>
+                    <?php endif; ?>
                     <a href="<?= BASE_URL ?>/reports/attendance" class="sidebar__sub-link <?= $activeSubPage === 'attendance' ? 'active' : '' ?>">Attendance Report</a>
                     <a href="<?= BASE_URL ?>/reports/classes" class="sidebar__sub-link <?= $activeSubPage === 'classes' ? 'active' : '' ?>">Class &amp; Enrollment</a>
                     <a href="<?= BASE_URL ?>/reports/users" class="sidebar__sub-link <?= $activeSubPage === 'users' ? 'active' : '' ?>">Users &amp; Staff</a>
