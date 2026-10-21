@@ -243,6 +243,19 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/classes/{classId}/quizzes/{id}/questions/{questionId}/delete', ['App\Controllers\QuizController', 'deleteQuestion']);
     $router->post('/classes/{classId}/quizzes/{id}/publish', ['App\Controllers\QuizController', 'publish']);
 
+    // Money and marks across every branch, for whoever owns the place.
+    // Above the coordinator line on purpose: a branch coordinator has no
+    // business reading another branch's takings.
+    $router->get('/reports/insights', ['App\Controllers\InsightsController', 'index']);
+
+    // ---- WhatsApp ----
+    // Nothing is sent server-side: these compose the message, log the
+    // attempt, and hand the teacher a click-to-chat link.
+    $router->get('/whatsapp/reminders', ['App\Controllers\WhatsAppController', 'reminders']);
+    $router->get('/whatsapp/log', ['App\Controllers\WhatsAppController', 'log']);
+    $router->post('/whatsapp/queue', ['App\Controllers\WhatsAppController', 'queue']);
+    $router->post('/whatsapp/confirm', ['App\Controllers\WhatsAppController', 'confirm']);
+
     // ---- Student portal ----
     // Everything under /my is about the student in the session. No route
     // here takes a student id, so there is no identifier to tamper with.
