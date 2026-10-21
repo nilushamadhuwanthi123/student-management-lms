@@ -32,7 +32,7 @@ class AuthMiddleware
         if (!self::isAuthenticated()) {
             session_flash('error', 'Please log in to access this page.');
             session_set('intended_url', $_SERVER['REQUEST_URI']);
-            header('Location: /login');
+            header('Location: ' . BASE_URL . '/login');
             exit;
         }
 
@@ -61,7 +61,7 @@ class AuthMiddleware
             session_destroy_all();
             session_start();
             session_flash('error', 'Your session has expired due to inactivity. Please log in again.');
-            header('Location: /login');
+            header('Location: ' . BASE_URL . '/login');
             exit;
         }
 
@@ -84,7 +84,7 @@ class AuthMiddleware
                 session_destroy_all();
                 session_start();
                 session_flash('error', 'Your session has been invalidated for security reasons.');
-                header('Location: /login');
+                header('Location: ' . BASE_URL . '/login');
                 exit;
             }
         }
@@ -105,7 +105,7 @@ class AuthMiddleware
         if (!in_array($userRole, $roles, true)) {
             http_response_code(403);
             session_flash('error', 'You do not have permission to access this page.');
-            header('Location: /dashboard');
+            header('Location: ' . BASE_URL . '/dashboard');
             exit;
         }
     }
@@ -185,7 +185,7 @@ class AuthMiddleware
                     'error',
                     'Your account has been deactivated. Please contact the administration for assistance.'
                 );
-                header('Location: /login');
+                header('Location: ' . BASE_URL . '/login');
                 exit;
             }
         }
@@ -247,7 +247,7 @@ class AuthMiddleware
     public static function requireGuest(): void
     {
         if (self::isAuthenticated()) {
-            header('Location: /dashboard');
+            header('Location: ' . BASE_URL . '/dashboard');
             exit;
         }
     }
