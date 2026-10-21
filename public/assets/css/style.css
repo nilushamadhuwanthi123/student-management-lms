@@ -1,6 +1,6 @@
 /* ============================================================
-   Student Management System — Design System
-   Premium glassmorphism UI with emerald/teal accent palette
+   Student Management System â€” Design System
+   Blue / yellow / white palette on white surfaces
    ============================================================ */
 
 /* ---------- 1. CUSTOM PROPERTIES (LIGHT / DARK) ---------- */
@@ -8,39 +8,47 @@
 :root,
 [data-theme="light"] {
   /* Backgrounds */
-  --bg:              #F6F8F7;
+  --bg:              #F4F7FC;
   --surface:         #FFFFFF;
   --surface-raised:  #FFFFFF;
-  --surface-sunken:  #EEF2EF;
+  --surface-sunken:  #EAF0FA;
 
   /* Text */
-  --text:            #202622;
-  --text-secondary:  #57615C;
-  --text-muted:      #8A9590;
+  --text:            #0F172A;
+  --text-secondary:  #475569;
+  --text-muted:      #8494AC;
   --text-inverse:    #FFFFFF;
 
-  /* Brand */
-  --primary:         #0E6F58;
-  --primary-hover:   #09503F;
-  --primary-light:   rgba(14,111,88,0.08);
-  --secondary:       #117C83;
-  --secondary-light: rgba(17,124,131,0.08);
-  --accent:          #0E6F58;
+  /* Brand â€” blue primary, yellow accent, white surfaces */
+  --primary:         #1D4ED8;
+  --primary-hover:   #1A3FAF;
+  --primary-light:   rgba(29,78,216,0.08);
+  --primary-deep:    #15307E;
+  --secondary:       #2563EB;
+  --secondary-light: rgba(37,99,235,0.08);
 
-  /* Semantic */
-  --success:         #16704A;
-  --success-light:   rgba(22,112,74,0.10);
+  /* Yellow is the accent, never body text: #F5B301 on white fails
+     contrast, so --accent-text carries the readable amber. */
+  --accent:          #F5B301;
+  --accent-hover:    #D99A00;
+  --accent-light:    rgba(245,179,1,0.14);
+  --accent-text:     #8A5B00;
+
+  /* Semantic â€” kept distinct from the brand so status still reads
+     as status rather than decoration. */
+  --success:         #15803D;
+  --success-light:   rgba(21,128,61,0.10);
   --warning:         #8A5B00;
-  --warning-light:   rgba(138,91,0,0.10);
+  --warning-light:   rgba(245,179,1,0.16);
   --danger:          #B42318;
   --danger-light:    rgba(180,35,24,0.10);
-  --info:            #117C83;
-  --info-light:      rgba(17,124,131,0.10);
+  --info:            #1D4ED8;
+  --info-light:      rgba(29,78,216,0.10);
 
   /* Border & Dividers */
-  --border:          #D7E1DB;
-  --border-strong:   #B5C4BC;
-  --divider:         #E5EBE8;
+  --border:          #D8E2F2;
+  --border-strong:   #B4C5E0;
+  --divider:         #E6EDF8;
 
   /* Glass */
   --glass-bg:        rgba(255,255,255,0.78);
@@ -48,13 +56,13 @@
   --glass-blur:      16px;
 
   /* Shadows */
-  --shadow-sm:       0 1px 2px rgba(32,38,34,0.05);
-  --shadow-md:       0 4px 12px rgba(32,38,34,0.08);
-  --shadow-lg:       0 8px 24px rgba(32,38,34,0.10);
-  --shadow-xl:       0 16px 48px rgba(32,38,34,0.12);
+  --shadow-sm:       0 1px 2px rgba(15,23,42,0.05);
+  --shadow-md:       0 4px 12px rgba(15,23,42,0.08);
+  --shadow-lg:       0 8px 24px rgba(15,23,42,0.10);
+  --shadow-xl:       0 16px 48px rgba(15,23,42,0.12);
 
   /* Focus ring */
-  --ring:            rgba(14,111,88,0.35);
+  --ring:            rgba(29,78,216,0.35);
 
   /* Misc */
   --radius-sm:       6px;
@@ -64,41 +72,125 @@
   --radius-full:     9999px;
   --transition:      0.2s ease;
   --sidebar-width:   250px;
+  --sidebar-width-collapsed: 72px;
+}
+
+/* ---------- 1b. COLLAPSED SIDEBAR ----------
+   The layout already sizes itself from --sidebar-width, so collapsing is
+   a matter of changing that one number: the main column follows on its
+   own and nothing needs a second measurement kept in step with it. */
+
+html[data-sidebar="collapsed"] {
+  --sidebar-width: var(--sidebar-width-collapsed);
+}
+
+html[data-sidebar="collapsed"] .sidebar__link,
+html[data-sidebar="collapsed"] .sidebar__link--has-sub {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* The label is hidden, not removed: a screen reader still reads it, and
+   the title attribute gives a sighted user the same word on hover. */
+html[data-sidebar="collapsed"] .sidebar__link > span:not(.chevron),
+html[data-sidebar="collapsed"] .sidebar__link-label,
+html[data-sidebar="collapsed"] .sidebar__section,
+html[data-sidebar="collapsed"] .sidebar__sub-links,
+html[data-sidebar="collapsed"] .sidebar__brand-text,
+html[data-sidebar="collapsed"] .chevron {
+  display: none;
+}
+
+/* A link's own text node cannot be hidden by a selector, so collapsed
+   links lose their font size instead and the icon is restored to its. */
+html[data-sidebar="collapsed"] .sidebar__link {
+  font-size: 0;
+  gap: 0;
+}
+html[data-sidebar="collapsed"] .sidebar__link svg {
+  font-size: 1rem;
+  flex: 0 0 auto;
+}
+
+html[data-sidebar="collapsed"] .sidebar__header {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.sidebar-collapse-btn {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition), color var(--transition);
+  flex: 0 0 auto;
+}
+.sidebar-collapse-btn:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.sidebar-collapse-btn svg { transition: transform var(--transition); }
+html[data-sidebar="collapsed"] .sidebar-collapse-btn svg { transform: rotate(180deg); }
+
+/* Collapsing is a desktop affordance. On a phone the sidebar is a
+   drawer that is already either open or gone, and a third state would
+   only be a way to make it unusable. */
+@media (min-width: 993px) {
+  .sidebar-collapse-btn { display: inline-flex; }
+}
+@media (max-width: 992px) {
+  html[data-sidebar="collapsed"] { --sidebar-width: 250px; }
 }
 
 [data-theme="dark"] {
-  --bg:              #101512;
-  --surface:         #19201B;
-  --surface-raised:  #222B25;
-  --surface-sunken:  #0C100E;
+  --bg:              #0B1220;
+  --surface:         #141E31;
+  --surface-raised:  #1C2940;
+  --surface-sunken:  #070D18;
 
-  --text:            #F1F5F2;
-  --text-secondary:  #A7B6AE;
-  --text-muted:      #6D7E75;
-  --text-inverse:    #102019;
+  --text:            #EEF3FB;
+  --text-secondary:  #A8B8D4;
+  --text-muted:      #70819E;
+  --text-inverse:    #0B1220;
 
-  --primary:         #68DAB2;
-  --primary-hover:   #8BE7C8;
-  --primary-light:   rgba(104,218,178,0.12);
-  --secondary:       #5AC8CF;
-  --secondary-light: rgba(90,200,207,0.12);
-  --accent:          #68DAB2;
+  /* On dark the blue has to lift off the background, so the lighter
+     tints lead and the deep navy is only a surface. */
+  --primary:         #7AA8FF;
+  --primary-hover:   #9CC0FF;
+  --primary-light:   rgba(122,168,255,0.14);
+  --primary-deep:    #1C2940;
+  --secondary:       #93B8FF;
+  --secondary-light: rgba(147,184,255,0.14);
+
+  --accent:          #FBC63A;
+  --accent-hover:    #FDD469;
+  --accent-light:    rgba(251,198,58,0.16);
+  --accent-text:     #FBC63A;
 
   --success:         #4ADE80;
-  --success-light:   rgba(74,222,128,0.12);
-  --warning:         #FACC15;
-  --warning-light:   rgba(250,204,21,0.12);
+  --success-light:   rgba(74,222,128,0.14);
+  --warning:         #FBC63A;
+  --warning-light:   rgba(251,198,58,0.16);
   --danger:          #F87171;
-  --danger-light:    rgba(248,113,113,0.12);
-  --info:            #5AC8CF;
-  --info-light:      rgba(90,200,207,0.12);
+  --danger-light:    rgba(248,113,113,0.14);
+  --info:            #7AA8FF;
+  --info-light:      rgba(122,168,255,0.14);
 
-  --border:          #34443A;
-  --border-strong:   #4A5E52;
-  --divider:         #283029;
+  --border:          #2A3A54;
+  --border-strong:   #3D5273;
+  --divider:         #1F2C42;
 
-  --glass-bg:        rgba(25,32,27,0.88);
-  --glass-border:    rgba(52,68,58,0.50);
+  --glass-bg:        rgba(20,30,49,0.88);
+  --glass-border:    rgba(42,58,84,0.50);
   --glass-blur:      16px;
 
   --shadow-sm:       0 1px 2px rgba(0,0,0,0.25);
@@ -106,7 +198,7 @@
   --shadow-lg:       0 8px 24px rgba(0,0,0,0.40);
   --shadow-xl:       0 16px 48px rgba(0,0,0,0.50);
 
-  --ring:            rgba(104,218,178,0.40);
+  --ring:            rgba(122,168,255,0.40);
 }
 
 /* ---------- 2. RESET & BASE ---------- */
@@ -481,15 +573,15 @@ p { margin-bottom: 1em; color: var(--text-secondary); }
 /* ---------- 10. FOOTER ---------- */
 
 .footer {
-  background: #0F1410;
-  color: #C5D0CA;
+  background: #0B1220;
+  color: #A8B8D4;
   padding: 3rem 1rem 1.5rem;
   margin-top: auto;
 }
 
-[data-theme="dark"] .footer { background: #090C0A; }
+[data-theme="dark"] .footer { background: #070D18; }
 
-.footer a { color: #A7B6AE; }
+.footer a { color: #A8B8D4; }
 .footer a:hover { color: #FFFFFF; }
 
 .footer__grid {
@@ -512,11 +604,11 @@ p { margin-bottom: 1em; color: var(--text-secondary); }
 }
 
 .footer__bottom {
-  border-top: 1px solid #253028;
+  border-top: 1px solid #2A3A54;
   padding-top: 1.5rem;
   text-align: center;
   font-size: 0.8125rem;
-  color: #6D7E75;
+  color: #70819E;
 }
 
 /* ---------- 11. LOGIN PAGE ---------- */

@@ -49,11 +49,11 @@ $avgPerClass = ($totClasses > 0) ? round($totStudents / $totClasses, 1) : 0;
         <span class="kpi-card__label">Active Classes</span>
         <span class="kpi-card__value"><?= $totClasses ?></span>
     </div>
-    <div class="kpi-card" style="border-left: 4px solid #10b981;">
+    <div class="kpi-card" style="border-left: 4px solid #2563EB;">
         <span class="kpi-card__label">Total Enrolled Students</span>
-        <span class="kpi-card__value" style="color:#059669;"><?= $totStudents ?></span>
+        <span class="kpi-card__value" style="color:#1D4ED8;"><?= $totStudents ?></span>
     </div>
-    <div class="kpi-card" style="border-left: 4px solid #0d9488;">
+    <div class="kpi-card" style="border-left: 4px solid #2563EB;">
         <span class="kpi-card__label">Average per Class</span>
         <span class="kpi-card__value"><?= $avgPerClass ?></span>
     </div>

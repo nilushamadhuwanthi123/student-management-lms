@@ -48,13 +48,13 @@ $deactivatedCount = (int) ($stats['deactivated_count'] ?? 0);
         <span class="kpi-card__label">Total Registered</span>
         <span class="kpi-card__value"><?= $totalCount ?></span>
     </div>
-    <div class="kpi-card" style="border-left: 4px solid #10b981;">
+    <div class="kpi-card" style="border-left: 4px solid #2563EB;">
         <span class="kpi-card__label">Active Students</span>
-        <span class="kpi-card__value" style="color:#059669;"><?= $activeCount ?></span>
+        <span class="kpi-card__value" style="color:#1D4ED8;"><?= $activeCount ?></span>
     </div>
-    <div class="kpi-card" style="border-left: 4px solid #f59e0b;">
+    <div class="kpi-card" style="border-left: 4px solid #F5B301;">
         <span class="kpi-card__label">Inactive</span>
-        <span class="kpi-card__value" style="color:#d97706;"><?= $inactiveCount ?></span>
+        <span class="kpi-card__value" style="color:#D99A00;"><?= $inactiveCount ?></span>
     </div>
     <div class="kpi-card" style="border-left: 4px solid #ef4444;">
         <span class="kpi-card__label">Deactivated / Red-Flagged</span>

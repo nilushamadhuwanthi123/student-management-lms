@@ -81,9 +81,9 @@ $role          = $currentUser['role'] ?? 'user';
                 $badgeStyle = match ($type) {
                     'deactivation' => 'background:#fee2e2; color:#991b1b; border:1px solid #fecaca;',
                     'deletion'     => 'background:#fef2f2; color:#b91c1c; border:1px solid #f87171;',
-                    'warning'      => 'background:#fffbeb; color:#b45309; border:1px solid #fde68a;',
+                    'warning'      => 'background:#FFF8E6; color:#8A5B00; border:1px solid #FBE39B;',
                     'payment'      => 'background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;',
-                    'system'       => 'background:#f5f3ff; color:#6d28d9; border:1px solid #ddd6fe;',
+                    'system'       => 'background:#F4F7FC; color:#1A3FAF; border:1px solid #D8E2F2;',
                     default        => 'background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;',
                 };
             ?>

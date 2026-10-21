@@ -56,15 +56,15 @@ $status = $status ?? '';
         <span class="kpi-card__label">Total Staff / Teachers</span>
         <span class="kpi-card__value"><?= (int) ($kpi['total'] ?? 0) ?></span>
     </div>
-    <div class="kpi-card" style="border-left: 4px solid #10b981;">
+    <div class="kpi-card" style="border-left: 4px solid #2563EB;">
         <span class="kpi-card__label">Active Users</span>
-        <span class="kpi-card__value" style="color:#059669;"><?= (int) ($kpi['active_users'] ?? 0) ?></span>
+        <span class="kpi-card__value" style="color:#1D4ED8;"><?= (int) ($kpi['active_users'] ?? 0) ?></span>
     </div>
     <div class="kpi-card" style="border-left: 4px solid #2563eb;">
         <span class="kpi-card__label">Teachers (Active/Tot)</span>
         <span class="kpi-card__value"><?= $kpi['teachers']['active'] ?? 0 ?> / <?= $kpi['teachers']['total'] ?? 0 ?></span>
     </div>
-    <div class="kpi-card" style="border-left: 4px solid #0d9488;">
+    <div class="kpi-card" style="border-left: 4px solid #2563EB;">
         <span class="kpi-card__label">Coordinators (Active/Tot)</span>
         <span class="kpi-card__value"><?= $kpi['coordinators']['active'] ?? 0 ?> / <?= $kpi['coordinators']['total'] ?? 0 ?></span>
     </div>

@@ -37,9 +37,9 @@ $totInstituteSplit = $totInstituteSplit ?? 0.0;
 
 <!-- KPI Cards -->
 <div class="kpi-grid mb-3" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:1rem;">
-    <div class="kpi-card" style="border-left: 4px solid #10b981;">
+    <div class="kpi-card" style="border-left: 4px solid #2563EB;">
         <span class="kpi-card__label">Total Collected (<?= htmlspecialchars($month, ENT_QUOTES, 'UTF-8') ?>)</span>
-        <span class="kpi-card__value" style="color:#059669;">Rs. <?= number_format($totCollected, 2) ?></span>
+        <span class="kpi-card__value" style="color:#1D4ED8;">Rs. <?= number_format($totCollected, 2) ?></span>
     </div>
     <div class="kpi-card" style="border-left: 4px solid #ef4444;">
         <span class="kpi-card__label">Total Pending / Overdue</span>
@@ -49,9 +49,9 @@ $totInstituteSplit = $totInstituteSplit ?? 0.0;
         <span class="kpi-card__label">Teacher Net Share</span>
         <span class="kpi-card__value" style="color:#2563eb;">Rs. <?= number_format($totTeacherSplit, 2) ?></span>
     </div>
-    <div class="kpi-card" style="border-left: 4px solid #8b5cf6;">
+    <div class="kpi-card" style="border-left: 4px solid #2563EB;">
         <span class="kpi-card__label">Institute Gross Share</span>
-        <span class="kpi-card__value" style="color:#7c3aed;">Rs. <?= number_format($totInstituteSplit, 2) ?></span>
+        <span class="kpi-card__value" style="color:#1D4ED8;">Rs. <?= number_format($totInstituteSplit, 2) ?></span>
     </div>
 </div>
 
@@ -88,20 +88,20 @@ $totInstituteSplit = $totInstituteSplit ?? 0.0;
                             <td><?= htmlspecialchars($row['teacher_name'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars($row['institute_name'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
                             <td style="text-align:center;"><span class="badge badge--neutral"><?= (int) $row['enrolled_students'] ?></span></td>
-                            <td style="text-align:right; font-weight:600; color:#059669;">Rs. <?= number_format($col, 2) ?></td>
+                            <td style="text-align:right; font-weight:600; color:#1D4ED8;">Rs. <?= number_format($col, 2) ?></td>
                             <td style="text-align:right; color:#dc2626;">Rs. <?= number_format((float) $row['total_pending'], 2) ?></td>
                             <td style="text-align:center;"><span class="badge badge--info"><?= (int)$split ?>% / <?= (100 - (int)$split) ?>%</span></td>
                             <td style="text-align:right; font-weight:600; color:#2563eb;">Rs. <?= number_format($tShare, 2) ?></td>
-                            <td style="text-align:right; font-weight:600; color:#7c3aed;">Rs. <?= number_format($iShare, 2) ?></td>
+                            <td style="text-align:right; font-weight:600; color:#1D4ED8;">Rs. <?= number_format($iShare, 2) ?></td>
                         </tr>
                     <?php endforeach; ?>
                     <tr style="background:#f8fafc; font-weight:bold; border-top:2px solid var(--border);">
                         <td colspan="4" style="text-align:right;">Totals:</td>
-                        <td style="text-align:right; color:#059669;">Rs. <?= number_format($totCollected, 2) ?></td>
+                        <td style="text-align:right; color:#1D4ED8;">Rs. <?= number_format($totCollected, 2) ?></td>
                         <td style="text-align:right; color:#dc2626;">Rs. <?= number_format($totPending, 2) ?></td>
                         <td></td>
                         <td style="text-align:right; color:#2563eb;">Rs. <?= number_format($totTeacherSplit, 2) ?></td>
-                        <td style="text-align:right; color:#7c3aed;">Rs. <?= number_format($totInstituteSplit, 2) ?></td>
+                        <td style="text-align:right; color:#1D4ED8;">Rs. <?= number_format($totInstituteSplit, 2) ?></td>
                     </tr>
                 <?php else: ?>
                     <tr><td colspan="9" class="text-center text-muted">No payment records found for <?= htmlspecialchars($month, ENT_QUOTES, 'UTF-8') ?>.</td></tr>

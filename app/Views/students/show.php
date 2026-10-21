@@ -44,7 +44,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
 @media (max-width: 900px) { .s360-grid { grid-template-columns: 1fr; } }
 
 .s360-profile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-.s360-profile__header { background: linear-gradient(135deg, var(--primary), #6366f1); padding: 2rem 1.5rem 1.5rem; text-align: center; color: #fff; }
+.s360-profile__header { background: linear-gradient(135deg, var(--primary), #2563EB); padding: 2rem 1.5rem 1.5rem; text-align: center; color: #fff; }
 .s360-profile__avatar { width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-size: 2rem; font-weight: 700; color: #fff; border: 3px solid rgba(255,255,255,0.4); overflow: hidden; }
 .s360-profile__avatar img { width: 100%; height: 100%; object-fit: cover; }
 .s360-profile__name { font-size: 1.125rem; font-weight: 700; margin-bottom: 0.25rem; }
@@ -84,7 +84,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
 
 .risk-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600; }
 .risk-badge--safe { background: #dcfce7; color: #166534; }
-.risk-badge--grace { background: #fef9c3; color: #854d0e; }
+.risk-badge--grace { background: #FDF3D6; color: #8A5B00; }
 .risk-badge--high_risk { background: #fee2e2; color: #991b1b; }
 .risk-badge--deactivated { background: #fecaca; color: #7f1d1d; }
 .risk-badge--temporary_access { background: #dbeafe; color: #1e40af; }

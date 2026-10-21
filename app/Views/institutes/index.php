@@ -64,7 +64,7 @@ $search       = $search ?? '';
                         <tr>
                             <td>
                                 <div style="display:flex; align-items:center; gap:0.75rem;">
-                                    <div class="avatar avatar--sm" style="background:#e0e7ff; color:#3730a3; font-weight:700;">
+                                    <div class="avatar avatar--sm" style="background:#E8EEFC; color:#15307E; font-weight:700;">
                                         &#127979;
                                     </div>
                                     <div>

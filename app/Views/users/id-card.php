@@ -5,8 +5,8 @@
 $user = $user ?? [];
 $role = $user['role'] ?? 'staff';
 $cfg = $roleColors[$role] ?? [
-    'primary' => '#4f46e5',
-    'bg'      => '#eef2ff',
+    'primary' => '#1D4ED8',
+    'bg'      => '#F4F7FC',
     'label'   => ucfirst($role),
 ];
 ?>

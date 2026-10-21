@@ -48,7 +48,7 @@
             display: none;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, #0A1F18 0%, #0E6F58 50%, #117C83 100%);
+            background: linear-gradient(135deg, #15307E 0%, #1D4ED8 50%, #2563EB 100%);
         }
 
         @media (min-width: 1024px) {

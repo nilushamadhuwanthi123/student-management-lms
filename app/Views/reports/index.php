@@ -15,7 +15,7 @@
 
 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem;">
     <!-- 1. Attendance Reports -->
-    <div class="card" style="border-top:4px solid #10b981; display:flex; flex-direction:column; justify-content:space-between;">
+    <div class="card" style="border-top:4px solid #2563EB; display:flex; flex-direction:column; justify-content:space-between;">
         <div>
             <div style="font-size:2rem; margin-bottom:0.5rem;">&#128197;</div>
             <h3 style="margin-bottom:0.4rem;">Attendance Reports</h3>
@@ -29,7 +29,7 @@
     </div>
 
     <!-- 2. Class Reports -->
-    <div class="card" style="border-top:4px solid #0d9488; display:flex; flex-direction:column; justify-content:space-between;">
+    <div class="card" style="border-top:4px solid #2563EB; display:flex; flex-direction:column; justify-content:space-between;">
         <div>
             <div style="font-size:2rem; margin-bottom:0.5rem;">&#128218;</div>
             <h3 style="margin-bottom:0.4rem;">Class &amp; Enrollment Reports</h3>
@@ -43,7 +43,7 @@
     </div>
 
     <!-- 3. User Reports -->
-    <div class="card" style="border-top:4px solid #6366f1; display:flex; flex-direction:column; justify-content:space-between;">
+    <div class="card" style="border-top:4px solid #2563EB; display:flex; flex-direction:column; justify-content:space-between;">
         <div>
             <div style="font-size:2rem; margin-bottom:0.5rem;">&#128101;</div>
             <h3 style="margin-bottom:0.4rem;">User &amp; Staff Reports</h3>
@@ -57,7 +57,7 @@
     </div>
 
     <!-- 4. Payment Summary Reports -->
-    <div class="card" style="border-top:4px solid #4f46e5; display:flex; flex-direction:column; justify-content:space-between;">
+    <div class="card" style="border-top:4px solid #1D4ED8; display:flex; flex-direction:column; justify-content:space-between;">
         <div>
             <div style="font-size:2rem; margin-bottom:0.5rem;">&#128176;</div>
             <h3 style="margin-bottom:0.4rem;">Payment Summary Reports</h3>

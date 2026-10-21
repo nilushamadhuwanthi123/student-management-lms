@@ -88,15 +88,15 @@ $rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
         <span class="kpi-card__value"><?= number_format($totLogged) ?></span>
     </div>
 
-    <div class="kpi-card" style="border-left: 4px solid #10b981;">
+    <div class="kpi-card" style="border-left: 4px solid #2563EB;">
         <span class="kpi-card__label">Present Total</span>
-        <span class="kpi-card__value" style="color:#059669;"><?= number_format($totPresent) ?></span>
+        <span class="kpi-card__value" style="color:#1D4ED8;"><?= number_format($totPresent) ?></span>
         <span class="text-xs text-muted"><?= $rate ?>% Average Rate</span>
     </div>
 
-    <div class="kpi-card" style="border-left: 4px solid #f59e0b;">
+    <div class="kpi-card" style="border-left: 4px solid #F5B301;">
         <span class="kpi-card__label">Late Arrivals</span>
-        <span class="kpi-card__value" style="color:#d97706;"><?= number_format($totLate) ?></span>
+        <span class="kpi-card__value" style="color:#D99A00;"><?= number_format($totLate) ?></span>
     </div>
 
     <div class="kpi-card" style="border-left: 4px solid var(--danger);">
