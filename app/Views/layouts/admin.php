@@ -236,7 +236,16 @@ $notificationCount = $notificationCount ?? 0;
                 <path d="M8 22V12l8-4 8 4v10l-8 4-8-4z" stroke="var(--text-inverse)" stroke-width="1.5" fill="none"/>
                 <path d="M16 12v10M8 12l8 4 8-4" stroke="var(--text-inverse)" stroke-width="1.5"/>
             </svg>
-            <span>EduManager</span>
+            <span class="sidebar__brand-text">EduManager</span>
+
+            <button type="button" class="sidebar-collapse-btn" id="sidebarCollapse"
+                    aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar"
+                    style="margin-left:auto;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+            </button>
         </div>
 
         <nav class="sidebar__nav">
@@ -269,6 +278,51 @@ $notificationCount = $notificationCount ?? 0;
             <a href="<?= BASE_URL ?>/classes" class="sidebar__link <?= $activePage === 'classes' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 Classes
+            </a>
+            <?php endif; ?>
+
+            <?php
+            // The learner-facing areas. A student and a guardian never see
+            // the staff navigation at all, so these are grouped first and
+            // the rest of the sidebar is skipped for them entirely.
+            $userType = session_get('user_type');
+            ?>
+
+            <?php if ($userType === 'student'): ?>
+            <a href="<?= BASE_URL ?>/my/classes" class="sidebar__link <?= $activePage === 'my-classes' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                My Classes
+            </a>
+            <a href="<?= BASE_URL ?>/my/marks" class="sidebar__link <?= $activePage === 'my-marks' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                My Marks
+            </a>
+            <a href="<?= BASE_URL ?>/my/progress" class="sidebar__link <?= $activePage === 'my-progress' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                My Progress
+            </a>
+            <?php endif; ?>
+
+            <?php if ($userType === 'parent'): ?>
+            <a href="<?= BASE_URL ?>/family" class="sidebar__link <?= $activePage === 'family' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                My Child
+            </a>
+            <a href="<?= BASE_URL ?>/family/marks" class="sidebar__link <?= $activePage === 'family-marks' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                Marks
+            </a>
+            <a href="<?= BASE_URL ?>/family/fees" class="sidebar__link <?= $activePage === 'family-fees' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                Fees
+            </a>
+            <?php endif; ?>
+
+            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>
+            <!-- Teaching: material and quizzes, both per class -->
+            <a href="<?= BASE_URL ?>/teaching" class="sidebar__link <?= $activePage === 'teaching' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                Teaching
             </a>
             <?php endif; ?>
 
@@ -432,6 +486,15 @@ $notificationCount = $notificationCount ?? 0;
             var saved = localStorage.getItem('theme');
             if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
         } catch (e) {}
+
+        // Restore the sidebar width alongside it, for the same reason:
+        // reading it later would mean the sidebar renders wide and then
+        // snaps narrow on every page load.
+        try {
+            if (localStorage.getItem('sidebarCollapsed') === '1') {
+                document.documentElement.setAttribute('data-sidebar', 'collapsed');
+            }
+        } catch (e) {}
         syncThemeIcons();
 
         // Observe data-theme changes
@@ -453,6 +516,51 @@ $notificationCount = $notificationCount ?? 0;
                 overlay.classList.remove('active');
             });
         }
+
+        // Sidebar collapse (desktop). The state lives on <html> so the
+        // CSS variable it changes applies before anything paints, and is
+        // remembered per browser -- a teacher who works collapsed should
+        // not have to collapse it again on every page.
+        (function () {
+            var collapseBtn = document.getElementById('sidebarCollapse');
+            if (!collapseBtn) { return; }
+
+            var root = document.documentElement;
+
+            function apply(collapsed) {
+                if (collapsed) {
+                    root.setAttribute('data-sidebar', 'collapsed');
+                } else {
+                    root.removeAttribute('data-sidebar');
+                }
+                collapseBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+                collapseBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+                collapseBtn.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+
+                // Collapsed links show only an icon, so each one needs its
+                // own tooltip to stay identifiable.
+                document.querySelectorAll('.sidebar__link').forEach(function (link) {
+                    if (collapsed) {
+                        if (!link.dataset.label) {
+                            link.dataset.label = (link.textContent || '').trim();
+                        }
+                        link.title = link.dataset.label;
+                    } else {
+                        link.removeAttribute('title');
+                    }
+                });
+            }
+
+            collapseBtn.addEventListener('click', function () {
+                var next = root.getAttribute('data-sidebar') !== 'collapsed';
+                apply(next);
+                try {
+                    localStorage.setItem('sidebarCollapsed', next ? '1' : '0');
+                } catch (e) { /* private browsing: the choice just will not stick */ }
+            });
+
+            apply(root.getAttribute('data-sidebar') === 'collapsed');
+        })();
 
         // Sidebar sub-nav toggling
         document.querySelectorAll('[data-toggle-sub]').forEach(function (link) {
