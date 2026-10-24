@@ -315,13 +315,16 @@ foreach ($firstNames as $n => $first) {
         );
     }
 
-    // Each student takes the class for their grade at one branch, and a
-    // third of them take a second class as well.
+    // Each student takes the class for their own grade, at one branch.
+    //
+    // An earlier version gave every third student a second class picked
+    // four places along the list -- which landed them in a different
+    // grade, a Grade 6 child also sitting Grade 10 science. One teacher
+    // teaches one grade to each child, and the portal is built on a
+    // student seeing only their own grade, so the demo must not invent
+    // the opposite.
     $primary = $classList[$n % count($classList)];
     $picks = [$primary];
-    if ($n % 3 === 0) {
-        $picks[] = $classList[($n + 4) % count($classList)];
-    }
 
     foreach (array_unique($picks) as $classId) {
         // Roughly one in ten is on a free card; the gate must let them
