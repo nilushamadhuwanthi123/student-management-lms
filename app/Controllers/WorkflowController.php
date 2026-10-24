@@ -56,6 +56,8 @@ class WorkflowController extends BaseController
     public function approve(string $id): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as the Workflows inbox; ids from students and users can collide
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
         verifyCsrfToken();
 
         $userId = (int) session_get('user_id');
@@ -86,6 +88,8 @@ class WorkflowController extends BaseController
     public function reject(string $id): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as the Workflows inbox; ids from students and users can collide
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
         verifyCsrfToken();
 
         $userId = (int) session_get('user_id');
@@ -121,6 +125,8 @@ class WorkflowController extends BaseController
     public function history(): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as the Workflows inbox
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
 
         $filters = [
             'type'        => trim($_GET['type'] ?? ''),

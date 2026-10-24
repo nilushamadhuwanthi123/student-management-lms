@@ -401,6 +401,17 @@ class UserController extends BaseController
     public function idCard(string $id): void
     {
         AuthMiddleware::requireAuth();
+
+        // access: role-checked -- admins may print anyone's card, and a
+        // member of staff may print their own. Checking user_type as well
+        // as the id matters: a student's session id is a students.id and
+        // can equal a staff member's users.id.
+        $isOwnCard = session_get('user_type') === 'user'
+            && (int) session_get('user_id') === (int) $id;
+        if (!$isOwnCard) {
+            AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN]);
+        }
+
         $user = $this->userModel->find((int) $id);
         if (!$user) {
             $this->flash('error', 'User not found.');
@@ -449,6 +460,19 @@ class UserController extends BaseController
     public function profile(): void
     {
         AuthMiddleware::requireAuth();
+
+        // access: role-checked -- this page reads the staff table by the
+        // session id. For a student that id is a students.id, so student
+        // number 11 was being shown staff member 11's profile. Students
+        // and parents go to their own pages instead.
+        $userType = session_get('user_type');
+        if ($userType === 'student') {
+            $this->redirect('/my/home');
+        }
+        if ($userType === 'parent') {
+            $this->redirect('/family');
+        }
+
         $currentUser = $this->getCurrentUser();
         $user = $this->userModel->find((int) ($currentUser['id'] ?? 0));
 

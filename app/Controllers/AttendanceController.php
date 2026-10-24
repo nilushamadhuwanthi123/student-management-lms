@@ -89,6 +89,8 @@ class AttendanceController extends BaseController
     public function scan(): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as Attendance; a student could otherwise mark attendance
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF, AuthMiddleware::ROLE_TEACHER]);
 
         $rawInput = file_get_contents('php://input');
         $data = json_decode($rawInput, true);
@@ -127,6 +129,8 @@ class AttendanceController extends BaseController
     public function markManual(): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as Attendance
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF, AuthMiddleware::ROLE_TEACHER]);
         verifyCsrfToken();
 
         $studentId = (int) ($_POST['student_id'] ?? 0);
