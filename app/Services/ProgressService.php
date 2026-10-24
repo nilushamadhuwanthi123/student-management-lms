@@ -37,7 +37,10 @@ class ProgressService
     private const WEIGHT_ENGAGEMENT = 0.15;
 
     /** Lower bound => label. Read highest-first. */
-    private const LEVELS = [
+    // Public so the motivation page can say "6 points to Excellent" from
+    // the same thresholds that decide the level, rather than a copy that
+    // could drift from them.
+    public const LEVELS = [
         85 => ['label' => 'Excellent',       'tone' => 'success'],
         70 => ['label' => 'Strong',          'tone' => 'success'],
         55 => ['label' => 'Steady',          'tone' => 'info'],

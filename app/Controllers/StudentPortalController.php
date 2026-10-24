@@ -337,7 +337,7 @@ class StudentPortalController extends BaseController
         $progress = new ProgressService();
 
         $this->view('portal/marks', [
-            'pageTitle' => 'My marks',
+            'pageTitle' => t('My marks'),
             'attempts'  => $stmt->fetchAll(PDO::FETCH_ASSOC),
             'progress'  => $progress->forStudent($studentId),
         ], 'layouts/admin');
@@ -366,10 +366,15 @@ class StudentPortalController extends BaseController
         }
         unset($class);
 
+        $overall = $service->forStudent($studentId);
+
         $this->view('portal/progress', [
-            'pageTitle' => 'My progress',
-            'overall'   => $service->forStudent($studentId),
-            'classes'   => $classes,
+            'pageTitle'  => t('My progress'),
+            'overall'    => $overall,
+            'classes'    => $classes,
+            // Streaks, achievements, next steps -- all from this student's
+            // own record, never compared with anyone else's.
+            'motivation' => (new \App\Services\MotivationService())->forStudent($studentId, $overall),
         ], 'layouts/admin');
     }
 
