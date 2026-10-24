@@ -267,6 +267,14 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     // A student's own home page, instead of the institute dashboard.
     $router->get('/my/home', ['App\Controllers\StudentHomeController', 'index']);
 
+    // A student's profile, receipts and downloadable reports. Whose
+    // record it is comes from the session; a parent gets their own
+    // child's receipts and reports. No route here takes a student id.
+    $router->get('/my/profile', ['App\Controllers\StudentProfileController', 'profile']);
+    $router->get('/my/receipts/{id}', ['App\Controllers\StudentProfileController', 'receipt']);
+    $router->get('/my/report', ['App\Controllers\StudentProfileController', 'report']);
+    $router->get('/my/report.csv', ['App\Controllers\StudentProfileController', 'reportCsv']);
+
     // The study assistant. Answers come from the asker's own records;
     // who they are about is decided from the session, never the question.
     $router->post('/assistant/ask', ['App\Controllers\AssistantController', 'ask']);
