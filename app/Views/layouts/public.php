@@ -83,7 +83,7 @@
     </script>
 
     <!-- Base Design System -->
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=<?= @filemtime(BASE_PATH . '/public/assets/css/style.css') ?: 1 ?>">
 
     <!-- Premium Public Overrides -->
     <style>
@@ -385,7 +385,7 @@
 
     <noscript><style>.reveal { opacity: 1; transform: none; }</style></noscript>
 
-    <script src="<?= BASE_URL ?>/assets/js/app.js"></script>
+    <script src="<?= BASE_URL ?>/assets/js/app.js?v=<?= @filemtime(BASE_PATH . '/public/assets/js/app.js') ?: 1 ?>"></script>
     <script>
     (function () {
         // ── Mobile nav toggle ──

@@ -27,7 +27,7 @@ $notificationCount = $notificationCount ?? 0;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle ?? 'EduManager', ENT_QUOTES, 'UTF-8') ?> - EduManager</title>
     <?php if (function_exists('csrfMeta')): ?><?= csrfMeta() ?><?php endif; ?>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=<?= @filemtime(BASE_PATH . '/public/assets/css/style.css') ?: 1 ?>">
     <style>
         .navbar-admin {
             padding-left: calc(var(--sidebar-width) + 1.5rem);
@@ -175,7 +175,7 @@ $notificationCount = $notificationCount ?? 0;
 
     <!-- Navbar -->
     <nav class="navbar navbar--solid navbar-admin">
-        <button type="button" class="sidebar-toggle-mobile" id="sidebarToggle" aria-label="Toggle sidebar">
+        <button type="button" class="sidebar-toggle-mobile" id="sidebarToggle" aria-label="Show or hide the menu" title="Show or hide the menu">
             &#9776;
         </button>
 
@@ -289,45 +289,58 @@ $notificationCount = $notificationCount ?? 0;
             // the staff navigation at all, so these are grouped first and
             // the rest of the sidebar is skipped for them entirely.
             $userType = session_get('user_type');
+
+            // The current page, from the URL rather than from $activePage:
+            // the portal pages never set $activePage, so no student link was
+            // ever highlighted. The path is taken relative to BASE_URL so the
+            // subfolder install works the same as a root one.
+            $basePath = rtrim((string) (parse_url(BASE_URL, PHP_URL_PATH) ?? ''), '/');
+            $herePath = (string) (parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/');
+            if ($basePath !== '' && str_starts_with($herePath, $basePath)) {
+                $herePath = substr($herePath, strlen($basePath));
+            }
+            $herePath = '/' . trim($herePath, '/');
+            $isHere = static fn (string $p, bool $exact = false): bool =>
+                $herePath === $p || (!$exact && str_starts_with($herePath, $p . '/'));
             ?>
 
             <?php if ($userType === 'student'): ?>
-            <a href="<?= BASE_URL ?>/my/home" class="sidebar__link <?= $activePage === 'my-home' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>/my/home" class="sidebar__link <?= $isHere('/my/home') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 My Home
             </a>
-            <a href="<?= BASE_URL ?>/my/classes" class="sidebar__link <?= $activePage === 'my-classes' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>/my/classes" class="sidebar__link <?= ($isHere('/my/classes') || $isHere('/my/quizzes') || $isHere('/my/materials')) ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 My Classes
             </a>
-            <a href="<?= BASE_URL ?>/my/marks" class="sidebar__link <?= $activePage === 'my-marks' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>/my/marks" class="sidebar__link <?= $isHere('/my/marks') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
                 My Marks
             </a>
-            <a href="<?= BASE_URL ?>/my/progress" class="sidebar__link <?= $activePage === 'my-progress' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>/my/progress" class="sidebar__link <?= $isHere('/my/progress') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                 My Progress
             </a>
-            <a href="<?= BASE_URL ?>/my/calendar" class="sidebar__link <?= $activePage === 'my-calendar' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>/my/calendar" class="sidebar__link <?= $isHere('/my/calendar') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 My Calendar
             </a>
             <?php endif; ?>
 
             <?php if ($userType === 'parent'): ?>
-            <a href="<?= BASE_URL ?>/family" class="sidebar__link <?= $activePage === 'family' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>/family" class="sidebar__link <?= $isHere('/family', true) ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 My Child
             </a>
-            <a href="<?= BASE_URL ?>/family/marks" class="sidebar__link <?= $activePage === 'family-marks' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>/family/marks" class="sidebar__link <?= $isHere('/family/marks') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
                 Marks
             </a>
-            <a href="<?= BASE_URL ?>/family/fees" class="sidebar__link <?= $activePage === 'family-fees' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>/family/fees" class="sidebar__link <?= $isHere('/family/fees') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
                 Fees
             </a>
-            <a href="<?= BASE_URL ?>/family/calendar" class="sidebar__link <?= $activePage === 'family-calendar' ? 'active' : '' ?>">
+            <a href="<?= BASE_URL ?>/family/calendar" class="sidebar__link <?= $isHere('/family/calendar') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 Calendar
             </a>
@@ -511,7 +524,7 @@ $notificationCount = $notificationCount ?? 0;
         </main>
     </div>
 
-    <script src="<?= BASE_URL ?>/assets/js/app.js"></script>
+    <script src="<?= BASE_URL ?>/assets/js/app.js?v=<?= @filemtime(BASE_PATH . '/public/assets/js/app.js') ?: 1 ?>"></script>
     <script>
     (function () {
         // Theme icon sync
@@ -548,6 +561,13 @@ $notificationCount = $notificationCount ?? 0;
 
         if (sidebarToggle && sidebar && overlay) {
             sidebarToggle.addEventListener('click', function () {
+                // On a desktop the same button slides the sidebar to its
+                // icon rail and back; on a phone it opens the drawer.
+                var collapse = document.getElementById('sidebarCollapse');
+                if (window.innerWidth > 1024 && collapse) {
+                    collapse.click();
+                    return;
+                }
                 sidebar.classList.toggle('open');
                 overlay.classList.toggle('active');
             });

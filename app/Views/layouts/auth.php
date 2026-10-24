@@ -28,7 +28,7 @@
     </script>
 
     <!-- Base Design System -->
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=<?= @filemtime(BASE_PATH . '/public/assets/css/style.css') ?: 1 ?>">
 
     <style>
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
