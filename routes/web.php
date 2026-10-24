@@ -259,6 +259,13 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/calendar/events/{id}/cancel', ['App\Controllers\CalendarController', 'cancel']);
     $router->post('/calendar/reminders/run', ['App\Controllers\CalendarController', 'runReminders']);
     $router->get('/my/calendar', ['App\Controllers\CalendarController', 'mine']);
+
+    // A student's own home page, instead of the institute dashboard.
+    $router->get('/my/home', ['App\Controllers\StudentHomeController', 'index']);
+
+    // The study assistant. Answers come from the asker's own records;
+    // who they are about is decided from the session, never the question.
+    $router->post('/assistant/ask', ['App\Controllers\AssistantController', 'ask']);
     $router->get('/family/calendar', ['App\Controllers\CalendarController', 'family']);
 
     // ---- WhatsApp ----

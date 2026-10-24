@@ -251,11 +251,14 @@ $notificationCount = $notificationCount ?? 0;
         <nav class="sidebar__nav">
             <div class="sidebar__section">Main</div>
 
-            <!-- Dashboard -->
+            <!-- Dashboard: the institute's, so staff only. Students and parents
+                 have their own home pages further down. -->
+            <?php if (!in_array(session_get('user_type'), ['student', 'parent'], true)): ?>
             <a href="<?= BASE_URL ?>/dashboard" class="sidebar__link <?= $activePage === 'dashboard' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 Dashboard
             </a>
+            <?php endif; ?>
 
             <?php if (in_array($userRole, ['super_admin', 'admin'])): ?>
             <!-- All Users (Admins, Coordinators, Staff, Teachers) -->
@@ -289,6 +292,10 @@ $notificationCount = $notificationCount ?? 0;
             ?>
 
             <?php if ($userType === 'student'): ?>
+            <a href="<?= BASE_URL ?>/my/home" class="sidebar__link <?= $activePage === 'my-home' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                My Home
+            </a>
             <a href="<?= BASE_URL ?>/my/classes" class="sidebar__link <?= $activePage === 'my-classes' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 My Classes
@@ -617,5 +624,9 @@ $notificationCount = $notificationCount ?? 0;
         });
     })();
     </script>
+
+    <?php if (in_array(session_get('user_type'), ['student', 'parent'], true)): ?>
+        <?php require BASE_PATH . '/app/Views/partials/assistant.php'; ?>
+    <?php endif; ?>
 </body>
 </html>
