@@ -341,8 +341,18 @@ class QuizController extends BaseController
 
         $this->quizzes->update((int) $id, ['quiz_status' => $target]);
 
+        // Announce it once, on the way to published. Pulling a quiz back
+        // to draft and publishing it again does not re-announce: the
+        // dispatch guard is keyed on the quiz, not on the button press,
+        // so the class is told about a quiz exactly once.
+        $announced = ['sent' => 0];
+        if ($target === 'published') {
+            $announced = (new \App\Services\AnnouncementService())->quizPublished((int) $id);
+        }
+
         $this->flash('success', match ($target) {
-            'published' => 'Published. The class can sit it inside the window.',
+            'published' => 'Published. The class can sit it inside the window.'
+                . ($announced['sent'] > 0 ? " {$announced['sent']} students and guardians notified." : ''),
             'draft'     => 'Pulled back to draft. Students can no longer see it.',
             default     => 'Closed. No further attempts will be accepted.',
         });
