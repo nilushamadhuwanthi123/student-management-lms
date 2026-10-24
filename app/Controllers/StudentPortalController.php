@@ -73,11 +73,22 @@ class StudentPortalController extends BaseController
         }
         unset($class);
 
+        // Per-class detail for the panels: next session, this month's
+        // folder, quizzes and standing. Keyed on the session's student.
+        $overview = (new \App\Services\ClassOverviewService())->forStudent(
+            $studentId,
+            $month,
+            array_map(static fn (array $c): int => (int) $c['id'], $classes),
+            $openMap
+        );
+
         $this->view('portal/classes', [
-            'pageTitle' => 'My classes',
-            'classes'   => $classes,
-            'month'     => $month,
-            'months'    => $this->monthOptions(),
+            'pageTitle'  => 'My classes',
+            'activePage' => 'my-classes',
+            'classes'    => $classes,
+            'overview'   => $overview,
+            'month'      => $month,
+            'months'     => $this->monthOptions(),
         ], 'layouts/admin');
     }
 

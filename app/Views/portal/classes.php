@@ -1,38 +1,118 @@
 <?php
 /**
- * The student's own classes.
+ * The student's own classes, each as a full panel.
  *
  * A locked class is shown, not hidden. Hiding it would leave a student
  * who has not paid wondering whether they were removed from the class
- * altogether; showing it locked, with the reason and the amount, tells
- * them exactly what to do about it.
+ * altogether; showing it locked, with the amount and with a count of
+ * exactly what is waiting behind the lock, tells them what to do and
+ * why it is worth doing.
  */
 
-$classes = $classes ?? [];
-$months  = $months ?? [];
-$month   = $month ?? date('Y-m-01');
+$classes  = $classes ?? [];
+$months   = $months ?? [];
+$month    = $month ?? date('Y-m-01');
+$overview = $overview ?? [];
+$monthLabel = date('F Y', strtotime($month));
+$isCurrentMonth = $month === date('Y-m-01');
+
+$e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 
 $openCount = count(array_filter($classes, static fn (array $c): bool => $c['is_open']));
+$allNew = 0; $allQuizzes = 0;
+foreach ($overview as $o) {
+    $allNew += (int) $o['library']['unopened'];
+    $allQuizzes += count($o['quizzes']['open']);
+}
+
+$kinds = [
+    'recording' => ['Recordings', '&#127909;'],
+    'video'     => ['Videos', '&#127916;'],
+    'reading'   => ['Notes', '&#128196;'],
+    'link'      => ['Links', '&#128279;'],
+];
+
+$dayLabel = static function (array $s): string {
+    $d = new DateTimeImmutable($s['date']);
+    $diff = (int) (new DateTimeImmutable('today'))->diff($d)->format('%r%a');
+    return $diff === 0 ? 'Today' : ($diff === 1 ? 'Tomorrow' : $d->format('D j M'));
+};
+
+$barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v >= 70 ? 'var(--success)' : ($v >= 50 ? 'var(--accent)' : 'var(--danger)'));
 ?>
+
+<style>
+.mc-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:.85rem; margin-bottom:1.5rem; }
+.mc-sum { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:.9rem 1rem; display:flex; gap:.75rem; align-items:center; }
+.mc-sum__icon { width:40px; height:40px; border-radius:11px; display:grid; place-items:center; font-size:1.15rem; background:var(--surface-sunken); }
+.mc-sum__n { font-size:1.35rem; font-weight:700; line-height:1.1; }
+.mc-sum__l { font-size:.78rem; color:var(--text-muted); }
+
+.mc-panel { background:var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden; margin-bottom:1.5rem; }
+.mc-head { padding:1.25rem 1.4rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap;
+  background:linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%); color:#fff; position:relative; overflow:hidden; }
+.mc-head::after { content:""; position:absolute; right:-40px; top:-70px; width:190px; height:190px; border-radius:50%; background:var(--accent); opacity:.16; }
+.mc-panel--locked .mc-head { background:linear-gradient(135deg, #475569 0%, #1e293b 100%); }
+.mc-head h2 { margin:0; font-size:1.3rem; color:#fff; }
+.mc-head__meta { font-size:.85rem; opacity:.88; margin-top:.2rem; }
+.mc-avatar { width:46px; height:46px; border-radius:50%; background:var(--accent); color:#1a1300; font-weight:800;
+  display:grid; place-items:center; font-size:1.1rem; flex:0 0 46px; position:relative; z-index:1; }
+.mc-status { margin-left:auto; position:relative; z-index:1; font-size:.8rem; font-weight:700; padding:.35rem .8rem; border-radius:999px; background:rgba(255,255,255,.16); }
+.mc-status--ok { background:rgba(21,128,61,.9); }
+.mc-status--due { background:var(--accent); color:#1a1300; }
+
+.mc-body { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); }
+@media (max-width: 1100px) { .mc-body { grid-template-columns:1fr 1fr; } }
+@media (max-width: 700px)  { .mc-body { grid-template-columns:1fr; } }
+.mc-col { padding:1.15rem 1.3rem; border-right:1px solid var(--border); border-top:1px solid var(--border); }
+.mc-col:last-child { border-right:none; }
+.mc-col h4 { margin:0 0 .75rem; font-size:.78rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); }
+
+.mc-count { font-size:1.6rem; font-weight:800; color:var(--primary); line-height:1; }
+.mc-chips { display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.6rem; }
+.mc-chip { font-size:.75rem; padding:.22rem .55rem; border-radius:7px; background:var(--surface-sunken); color:var(--text-secondary); }
+.mc-chip--now { background:rgba(29,78,216,.10); color:var(--primary); font-weight:600; }
+.mc-test { margin-top:.85rem; padding:.6rem .7rem; border-radius:10px; background:rgba(180,35,24,.07); border-left:3px solid var(--danger); font-size:.83rem; }
+
+.mc-lib { display:grid; grid-template-columns:1fr 1fr; gap:.45rem; }
+.mc-lib__item { display:flex; align-items:center; gap:.45rem; font-size:.83rem; padding:.45rem .55rem; border-radius:9px; background:var(--surface-sunken); }
+.mc-lib__item strong { margin-left:auto; }
+.mc-continue { display:flex; gap:.6rem; align-items:center; margin-top:.8rem; padding:.65rem .75rem; border-radius:11px;
+  border:1px dashed var(--primary); text-decoration:none; color:inherit; }
+.mc-continue:hover { background:rgba(29,78,216,.05); }
+.mc-new { font-size:.7rem; font-weight:700; color:#1a1300; background:var(--accent); border-radius:999px; padding:.1rem .45rem; }
+
+.mc-stand__row { display:flex; justify-content:space-between; font-size:.82rem; color:var(--text-secondary); }
+.mc-bar { height:7px; border-radius:6px; background:var(--surface-sunken); overflow:hidden; margin:.25rem 0 .65rem; }
+.mc-bar > span { display:block; height:100%; border-radius:6px; }
+.mc-level { display:inline-block; font-size:.78rem; font-weight:700; padding:.2rem .6rem; border-radius:999px; background:rgba(29,78,216,.10); color:var(--primary); margin-bottom:.7rem; }
+
+.mc-quiz { display:flex; gap:.55rem; align-items:center; padding:.5rem 0; border-top:1px solid var(--border); font-size:.84rem; }
+.mc-quiz:first-of-type { border-top:none; }
+.mc-quiz__t { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mc-score { font-weight:700; }
+
+.mc-lockbox { margin:0 1.3rem 1.2rem; padding:.9rem 1rem; border-radius:12px; background:rgba(245,179,1,.14); border:1px solid rgba(245,179,1,.45); }
+.mc-foot { display:flex; gap:.6rem; flex-wrap:wrap; padding:1rem 1.3rem; border-top:1px solid var(--border); background:var(--bg); }
+.mc-foot .btn { flex:0 0 auto; }
+.mc-muted { color:var(--text-muted); font-size:.85rem; margin:0; }
+</style>
 
 <div class="page-header">
     <div>
         <h1 class="page-header__title">My classes</h1>
-        <p class="text-sm text-muted">
-            <?= $openCount ?> of <?= count($classes) ?> open for <?= date('F Y', strtotime($month)) ?>
-        </p>
+        <p class="text-sm text-muted"><?= $openCount ?> of <?= count($classes) ?> open for <?= $e($monthLabel) ?></p>
     </div>
     <div class="page-header__actions">
         <form method="GET" action="<?= BASE_URL ?>/my/classes" style="display:flex; gap:.5rem; align-items:center;">
-            <select name="month" class="form-control" style="width:auto;" onchange="this.form.submit()">
+            <select name="month" class="form-control" style="width:auto;" onchange="this.form.submit()" aria-label="Month">
                 <?php foreach ($months as $value => $label): ?>
-                    <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $value === $month ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
-                    </option>
+                    <option value="<?= $e($value) ?>" <?= $value === $month ? 'selected' : '' ?>><?= $e($label) ?></option>
                 <?php endforeach; ?>
             </select>
             <noscript><button type="submit" class="btn btn--ghost btn--sm">Go</button></noscript>
         </form>
+        <a href="<?= BASE_URL ?>/my/calendar" class="btn btn--ghost">Calendar</a>
         <a href="<?= BASE_URL ?>/my/progress" class="btn btn--ghost">My progress</a>
     </div>
 </div>
@@ -44,71 +124,214 @@ $openCount = count(array_filter($classes, static fn (array $c): bool => $c['is_o
         <p class="text-sm text-muted" style="margin:0;">Speak to the office to be added to a class.</p>
     </div>
 <?php else: ?>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:1.25rem;">
-        <?php foreach ($classes as $c):
-            $open = (bool) $c['is_open'];
-            $gate = $c['gate'];
-            $days = !empty($c['schedule_days']) ? (json_decode($c['schedule_days'], true) ?: []) : [];
-        ?>
-            <div class="card" style="display:flex; flex-direction:column; <?= $open ? '' : 'border-color:var(--warning);' ?>">
-                <div class="card__body" style="flex:1;">
-                    <div style="display:flex; justify-content:space-between; gap:.75rem; align-items:flex-start;">
-                        <div>
-                            <h3 style="margin:0 0 .25rem; font-size:1.05rem;">
-                                <?= htmlspecialchars($c['class_name'], ENT_QUOTES, 'UTF-8') ?>
-                            </h3>
-                            <div class="text-sm text-muted">
-                                <?= htmlspecialchars($c['grade'] ?? '', ENT_QUOTES, 'UTF-8') ?>
-                                <?php if (!empty($c['institute_name'])): ?>
-                                    &middot; <?= htmlspecialchars($c['institute_name'], ENT_QUOTES, 'UTF-8') ?>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <span class="badge" style="white-space:nowrap; background:<?= $open ? 'var(--success-light); color:var(--success)' : 'var(--warning-light); color:var(--warning)' ?>;">
-                            <?= $open ? 'Open' : 'Locked' ?>
-                        </span>
-                    </div>
 
-                    <?php if ($days !== [] || !empty($c['start_time'])): ?>
-                        <div class="text-sm text-muted" style="margin-top:.75rem;">
-                            <?= htmlspecialchars(implode(', ', $days), ENT_QUOTES, 'UTF-8') ?>
-                            <?php if (!empty($c['start_time'])): ?>
-                                &middot; <?= date('g:i a', strtotime($c['start_time'])) ?>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
+<div class="mc-summary">
+    <div class="mc-sum"><div class="mc-sum__icon">&#128218;</div>
+        <div><div class="mc-sum__n"><?= $openCount ?>/<?= count($classes) ?></div><div class="mc-sum__l">Classes open this month</div></div></div>
+    <div class="mc-sum"><div class="mc-sum__icon">&#10024;</div>
+        <div><div class="mc-sum__n"><?= $allNew ?></div><div class="mc-sum__l">Not opened yet</div></div></div>
+    <div class="mc-sum"><div class="mc-sum__icon">&#9997;&#65039;</div>
+        <div><div class="mc-sum__n" style="color:<?= $allQuizzes ? 'var(--danger)' : 'var(--success)' ?>;"><?= $allQuizzes ?></div><div class="mc-sum__l">Quizzes to sit now</div></div></div>
+</div>
 
-                    <?php if (!empty($c['teacher_name'])): ?>
-                        <div class="text-sm text-muted">
-                            with <?= htmlspecialchars($c['teacher_name'], ENT_QUOTES, 'UTF-8') ?>
-                        </div>
-                    <?php endif; ?>
+<?php foreach ($classes as $c):
+    $id = (int) $c['id'];
+    $open = (bool) $c['is_open'];
+    $gate = $c['gate'];
+    $o = $overview[$id] ?? null;
+    $lib = $o['library'] ?? ['counts' => [], 'total' => 0, 'unopened' => 0, 'next' => null];
+    $qz = $o['quizzes'] ?? ['open' => [], 'upcoming' => 0, 'done' => [], 'missed' => 0];
+    $st = $o['standing'] ?? ['has_data' => false];
+    $days = !empty($c['schedule_days']) ? (json_decode($c['schedule_days'], true) ?: []) : [];
+    $teacherInitial = mb_strtoupper(mb_substr(trim((string) ($c['teacher_name'] ?? 'T')), 0, 1));
 
-                    <?php if (!$open): ?>
-                        <div style="margin-top:1rem; padding:.75rem .875rem; background:var(--warning-light); border-radius:var(--radius-sm); border-left:3px solid var(--warning);">
-                            <div class="text-sm" style="color:var(--warning); font-weight:600;">
-                                <?= htmlspecialchars($gate['message'], ENT_QUOTES, 'UTF-8') ?>
-                            </div>
-                            <?php if ($gate['amount_due'] !== null && $gate['amount_due'] > 0): ?>
-                                <div class="text-sm text-muted" style="margin-top:.25rem;">
-                                    Rs. <?= number_format((float) $gate['amount_due'], 2) ?> due
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php elseif ($gate['reason'] === 'free_card'): ?>
-                        <div class="text-sm" style="margin-top:1rem; color:var(--success);">
-                            Open on a free card
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <div class="card__footer">
-                    <a href="<?= BASE_URL ?>/my/classes/<?= (int) $c['id'] ?>?month=<?= urlencode($month) ?>"
-                       class="btn <?= $open ? 'btn--primary' : 'btn--ghost' ?>" style="width:100%;">
-                        <?= $open ? 'Open class' : 'See what is locked' ?>
-                    </a>
-                </div>
+    if ($gate['reason'] === 'free_card') { $statusClass = 'mc-status--ok'; $statusText = 'Free card'; }
+    elseif ($open) { $statusClass = 'mc-status--ok'; $statusText = '&#10003; ' . $e(date('F', strtotime($month))) . ' paid'; }
+    elseif ($gate['reason'] === 'not_generated') { $statusClass = ''; $statusText = 'Fee not issued yet'; }
+    else { $statusClass = 'mc-status--due'; $statusText = '&#128274; Rs. ' . number_format((float) $gate['amount_due'], 0) . ' due'; }
+?>
+<section class="mc-panel <?= $open ? '' : 'mc-panel--locked' ?>" aria-label="<?= $e($c['class_name']) ?>">
+    <header class="mc-head">
+        <div class="mc-avatar" title="<?= $e($c['teacher_name'] ?? '') ?>"><?= $e($teacherInitial) ?></div>
+        <div style="position:relative; z-index:1; min-width:0;">
+            <h2><?= $e($c['class_name']) ?></h2>
+            <div class="mc-head__meta">
+                <?= $e($c['teacher_name'] ?? '') ?>
+                <?= !empty($c['institute_name']) ? ' &middot; ' . $e($c['institute_name']) : '' ?>
+                <?= !empty($c['room']) ? ' &middot; ' . $e($c['room']) : '' ?>
+                <?= $days ? ' &middot; ' . $e(implode(' & ', $days)) : '' ?>
+                <?= !empty($c['start_time']) ? ' ' . $e(date('g:i a', strtotime($c['start_time']))) : '' ?>
+                <?= !empty($c['end_time']) ? '&ndash;' . $e(date('g:i a', strtotime($c['end_time']))) : '' ?>
             </div>
-        <?php endforeach; ?>
+        </div>
+        <span class="mc-status <?= $statusClass ?>"><?= $statusText ?></span>
+    </header>
+
+    <?php if (!$open): ?>
+        <div class="mc-lockbox" style="margin-top:1.1rem;">
+            <strong><?= $e($gate['message']) ?></strong>
+            <?php if ($lib['total'] > 0 || count($qz['open']) + $qz['upcoming'] > 0): ?>
+                <div class="text-sm" style="margin-top:.3rem;">
+                    Waiting behind the lock for <?= $e($monthLabel) ?>:
+                    <?php
+                    $waiting = [];
+                    foreach ($kinds as $k => [$label]) {
+                        if (!empty($lib['counts'][$k])) { $waiting[] = $lib['counts'][$k] . ' ' . strtolower($label); }
+                    }
+                    $lockedQuizzes = count($qz['open']) + $qz['upcoming'];
+                    if ($lockedQuizzes) { $waiting[] = $lockedQuizzes . ' ' . ($lockedQuizzes === 1 ? 'quiz' : 'quizzes'); }
+                    echo $e(implode(', ', $waiting));
+                    ?>.
+                    The class itself still runs &mdash; come along as usual.
+                </div>
+            <?php else: ?>
+                <div class="text-sm" style="margin-top:.3rem;">The class itself still runs &mdash; come along as usual.</div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="mc-body">
+        <!-- When -->
+        <div class="mc-col">
+            <h4>Next class</h4>
+            <?php if (!empty($o['next'])): $n = $o['next']; ?>
+                <div class="mc-count" data-countdown="<?= $e(str_replace(' ', 'T', $n['starts_at'])) ?>"
+                     data-now="<?= $e(date('Y-m-d\TH:i:s')) ?>">&nbsp;</div>
+                <div class="text-sm" style="margin-top:.3rem;"><?= $e($dayLabel($n)) ?> at <?= $e($n['start_time']) ?><?= ($n['event_type'] ?? '') === 'extra_class' ? ' &middot; extra class' : '' ?></div>
+                <?php if (count($o['week']) > 1): ?>
+                    <div class="mc-chips" aria-label="Sessions in the next 7 days">
+                        <?php foreach ($o['week'] as $i => $s): ?>
+                            <span class="mc-chip <?= $i === 0 ? 'mc-chip--now' : '' ?>"><?= $e((new DateTimeImmutable($s['date']))->format('D j')) ?> &middot; <?= $e($s['start_time']) ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            <?php else: ?>
+                <p class="mc-muted">No sessions in the next 7 days.</p>
+            <?php endif; ?>
+
+            <?php if (!empty($o['test'])): $t = $o['test']; ?>
+                <div class="mc-test">
+                    <strong>&#128221; <?= $e($t['title']) ?></strong><br>
+                    <?= $e($dayLabel($t)) ?><?= $t['start_time'] ? ' at ' . $e($t['start_time']) : '' ?>
+                    <?php if (!empty($t['syllabus'])): ?><br><span class="text-muted">Covers: <?= $e($t['syllabus']) ?></span><?php endif; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- This month's folder -->
+        <div class="mc-col">
+            <h4><?= $e(date('F', strtotime($month))) ?> folder
+                <?php if ($open && $lib['unopened'] > 0): ?><span class="mc-new" style="margin-left:.35rem;"><?= (int) $lib['unopened'] ?> new</span><?php endif; ?>
+            </h4>
+            <?php if ($lib['total'] === 0): ?>
+                <p class="mc-muted">Nothing posted for <?= $e(date('F', strtotime($month))) ?> yet.</p>
+            <?php else: ?>
+                <div class="mc-lib">
+                    <?php foreach ($kinds as $k => [$label, $icon]): if (empty($lib['counts'][$k])) { continue; } ?>
+                        <div class="mc-lib__item"><span><?= $icon ?></span><?= $label ?><strong><?= (int) $lib['counts'][$k] ?></strong></div>
+                    <?php endforeach; ?>
+                </div>
+                <?php if ($open && $lib['next'] !== null): $nx = $lib['next']; ?>
+                    <a class="mc-continue" href="<?= BASE_URL ?>/my/materials/<?= (int) $nx['id'] ?>/open">
+                        <span style="font-size:1.2rem;"><?= $kinds[$nx['material_type']][1] ?? '&#128196;' ?></span>
+                        <span style="min-width:0;">
+                            <span class="text-sm text-muted">Up next for you</span><br>
+                            <strong style="font-size:.88rem;"><?= $e($nx['title']) ?></strong>
+                        </span>
+                        <span style="margin-left:auto; font-weight:700; color:var(--primary);">&rarr;</span>
+                    </a>
+                <?php elseif ($open): ?>
+                    <p class="mc-muted" style="margin-top:.7rem;">&#10003; You've opened everything in this folder.</p>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
+
+        <!-- How I'm doing -->
+        <div class="mc-col">
+            <h4>How I'm doing here</h4>
+            <?php if (empty($st['has_data'])): ?>
+                <p class="mc-muted">Your standing appears once there are marks or attendance in this class.</p>
+            <?php else: ?>
+                <span class="mc-level"><?= $e($st['level']) ?> &middot; <?= round((float) $st['score']) ?>/100</span>
+                <?php foreach ([
+                    ['Average mark', $st['marks']['quizzes_taken'] > 0 ? (float) $st['marks']['average_percentage'] : null, $st['marks']['quizzes_taken'] . ' quiz' . ($st['marks']['quizzes_taken'] == 1 ? '' : 'zes')],
+                    ['Attendance', $st['attendance']['sessions_recorded'] > 0 ? (float) $st['attendance']['rate'] : null, $st['attendance']['sessions_recorded'] . ' sessions'],
+                    ['Material opened', $st['engagement']['materials_total'] > 0 ? (float) $st['engagement']['rate'] : null, $st['engagement']['materials_total'] . ' items'],
+                ] as [$label, $value, $basis]): ?>
+                    <div class="mc-stand__row"><span><?= $label ?> <span class="text-muted" style="font-size:.75rem;">(<?= $e($basis) ?>)</span></span>
+                        <strong><?= $value !== null ? round($value) . '%' : '&ndash;' ?></strong></div>
+                    <div class="mc-bar"><span style="width:<?= $value !== null ? min(100, max(0, $value)) : 0 ?>%; background:<?= $barTone($value) ?>;"></span></div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+
+            <h4 style="margin-top:.6rem;">Quizzes &middot; <?= $e(date('F', strtotime($month))) ?></h4>
+            <?php if (!$qz['open'] && !$qz['done'] && !$qz['upcoming'] && !$qz['missed']): ?>
+                <p class="mc-muted">No quizzes this month.</p>
+            <?php else: ?>
+                <?php foreach ($qz['open'] as $q): ?>
+                    <div class="mc-quiz">
+                        <span>&#10067;</span>
+                        <span class="mc-quiz__t" title="<?= $e($q['title']) ?>"><?= $e($q['title']) ?></span>
+                        <?php if ($open): ?>
+                            <a class="btn btn--primary btn--sm" href="<?= BASE_URL ?>/my/quizzes/<?= (int) $q['id'] ?>/sit">Start</a>
+                        <?php else: ?>
+                            <span class="text-muted">&#128274;</span>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+                <?php foreach (array_slice($qz['done'], 0, 3) as $q): $pct = $q['best'] !== null ? (float) $q['best'] : null; ?>
+                    <div class="mc-quiz">
+                        <span>&#10003;</span>
+                        <span class="mc-quiz__t" title="<?= $e($q['title']) ?>"><?= $e($q['title']) ?></span>
+                        <span class="mc-score" style="color:<?= $barTone($pct) ?>;"><?= $pct !== null ? round($pct) . '%' : 'Marking' ?></span>
+                    </div>
+                <?php endforeach; ?>
+                <?php if ($qz['upcoming'] || $qz['missed']): ?>
+                    <div class="text-sm text-muted" style="margin-top:.4rem;">
+                        <?= $qz['upcoming'] ? (int) $qz['upcoming'] . ' coming later this month' : '' ?>
+                        <?= $qz['upcoming'] && $qz['missed'] ? ' &middot; ' : '' ?>
+                        <?= $qz['missed'] ? '<span style="color:var(--danger);">' . (int) $qz['missed'] . ' missed</span>' : '' ?>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
     </div>
+
+    <footer class="mc-foot">
+        <a href="<?= BASE_URL ?>/my/classes/<?= $id ?>?month=<?= urlencode($month) ?>" class="btn <?= $open ? 'btn--primary' : 'btn--ghost' ?>">
+            <?= $open ? 'Open class' : 'See what is locked' ?>
+        </a>
+        <a href="<?= BASE_URL ?>/my/calendar" class="btn btn--ghost">Calendar</a>
+        <a href="<?= BASE_URL ?>/my/marks" class="btn btn--ghost">All marks</a>
+        <button type="button" class="btn btn--ghost" data-ask="When is my next class?">&#129302; Ask the assistant</button>
+    </footer>
+</section>
+<?php endforeach; ?>
+
 <?php endif; ?>
+
+<script>
+// Countdown per class. Measured from the server's clock at render time
+// plus elapsed browser time, so a laptop with a wrong clock still counts
+// down correctly.
+(function () {
+    var started = Date.now();
+    var els = document.querySelectorAll('[data-countdown]');
+    function render() {
+        els.forEach(function (el) {
+            var ms = new Date(el.getAttribute('data-countdown')).getTime()
+                   - (new Date(el.getAttribute('data-now')).getTime() + (Date.now() - started));
+            if (ms <= 0) { el.textContent = 'Now'; return; }
+            var m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+            el.textContent = d > 0 ? 'in ' + d + 'd ' + h + 'h' : (h > 0 ? 'in ' + h + 'h ' + mm + 'm' : 'in ' + mm + ' min');
+        });
+    }
+    render();
+    setInterval(render, 30000);
+})();
+document.querySelectorAll('[data-ask]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        if (window.StudyAssistant) window.StudyAssistant.ask(btn.getAttribute('data-ask'));
+    });
+});
+</script>
