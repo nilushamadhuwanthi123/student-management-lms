@@ -153,7 +153,7 @@ class MaterialController extends BaseController
             ? ContentAccessService::normaliseMonth($data['month_year'])
             : ContentAccessService::normaliseMonth();
 
-        $this->materials->create([
+        $materialId = $this->materials->create([
             'class_id'        => $classId,
             'title'           => $data['title'],
             'material_type'   => $data['material_type'],
@@ -171,7 +171,19 @@ class MaterialController extends BaseController
             'uploaded_by'     => (int) session_get('user_id'),
         ]);
 
-        $this->flash('success', 'Posted to ' . $this->e($class['class_name']) . '.');
+        // Tell the class it is there. Uploading something nobody hears
+        // about is the failure this whole module exists to prevent.
+        // Drafts announce nothing -- AnnouncementService checks the
+        // status itself, so a draft saved on Friday wakes no one.
+        $announced = (new \App\Services\AnnouncementService())->materialPublished($materialId);
+
+        $this->flash(
+            'success',
+            'Posted to ' . $this->e($class['class_name']) . '.'
+            . ($announced['sent'] > 0
+                ? " {$announced['sent']} students and guardians have been notified."
+                : '')
+        );
         $this->redirect("/classes/{$classId}/materials?month=" . urlencode($month));
     }
 

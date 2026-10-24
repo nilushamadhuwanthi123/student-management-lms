@@ -248,6 +248,19 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     // business reading another branch's takings.
     $router->get('/reports/insights', ['App\Controllers\InsightsController', 'index']);
 
+    // The calendar. Class times are read from each class's own schedule
+    // and quizzes from their open and close times, so neither is stored
+    // twice; only one-off entries (tests, exams, cancellations) are
+    // written here. Role checks live in the controller because the three
+    // audiences differ: staff see every branch, a student only their own
+    // enrolled classes, a parent only their child's.
+    $router->get('/calendar', ['App\Controllers\CalendarController', 'index']);
+    $router->post('/calendar/events', ['App\Controllers\CalendarController', 'store']);
+    $router->post('/calendar/events/{id}/cancel', ['App\Controllers\CalendarController', 'cancel']);
+    $router->post('/calendar/reminders/run', ['App\Controllers\CalendarController', 'runReminders']);
+    $router->get('/my/calendar', ['App\Controllers\CalendarController', 'mine']);
+    $router->get('/family/calendar', ['App\Controllers\CalendarController', 'family']);
+
     // ---- WhatsApp ----
     // Nothing is sent server-side: these compose the message, log the
     // attempt, and hand the teacher a click-to-chat link.
