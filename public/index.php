@@ -57,6 +57,7 @@ $pdo = Database::connect();
 
 require_once BASE_PATH . '/config/session.php';
 require_once BASE_PATH . '/config/csrf.php';
+require_once BASE_PATH . '/config/lang.php';
 require_once BASE_PATH . '/config/security.php';
 
 // ──────────────────────────────────────────────────────────

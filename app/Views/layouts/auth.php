@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="<?= lang_current() ?>" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -121,6 +121,11 @@
     </style>
 </head>
 <body>
+    <!-- English / Sinhala, available before signing in -->
+    <div class="lang-switch lang-switch--floating" role="group" aria-label="Language / භාෂාව">
+        <a href="<?= lang_switch_url('en') ?>" class="<?= lang_current() === 'en' ? 'is-on' : '' ?>" lang="en" hreflang="en">EN</a>
+        <a href="<?= lang_switch_url('si') ?>" class="<?= lang_current() === 'si' ? 'is-on' : '' ?>" lang="si" hreflang="si">සිං</a>
+    </div>
 
     <!-- Theme Toggle -->
     <div class="fixed top-4 right-4 z-50">

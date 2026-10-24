@@ -171,6 +171,10 @@ $router->get('/login', ['App\Controllers\AuthController', 'showLogin']);
 $router->post('/login', ['App\Controllers\AuthController', 'login']);
 $router->get('/logout', ['App\Controllers\AuthController', 'logout']);
 $router->post('/logout', ['App\Controllers\AuthController', 'logout']);
+
+// English / Sinhala. Outside the auth group on purpose: the login page
+// is where a student first needs it.
+$router->get('/lang/{code}', ['App\Controllers\LanguageController', 'switch']);
 $router->get('/first-login-password', ['App\Controllers\AuthController', 'showFirstLoginPassword']);
 $router->post('/first-login-password', ['App\Controllers\AuthController', 'updateFirstLoginPassword']);
 
