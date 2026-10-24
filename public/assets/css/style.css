@@ -1953,3 +1953,29 @@ body {
 .btn--primary:hover { background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%); }
 
 .page-header__title { letter-spacing: -0.01em; }
+
+/* ============================================================
+   31. ENGLISH / SINHALA
+   ------------------------------------------------------------
+   Sinhala fonts are added after the Latin ones, so English keeps
+   its look and only Sinhala letters fall through to them. Iskoola
+   Pota and Nirmala UI ship with Windows, so this works on the
+   office machines with no internet. */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+               "Noto Sans Sinhala", "Iskoola Pota", "Nirmala UI", sans-serif;
+}
+html[lang="si"] body { line-height: 1.6; }
+
+.lang-switch {
+  display: inline-flex; align-items: center; padding: 3px; gap: 2px;
+  border: 1px solid var(--border); border-radius: 999px; background: var(--surface);
+}
+.lang-switch a {
+  min-width: 40px; text-align: center; padding: 0.3rem 0.65rem; border-radius: 999px;
+  font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-decoration: none;
+  transition: background var(--transition), color var(--transition);
+}
+.lang-switch a:hover { color: var(--primary); }
+.lang-switch a.is-on { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25); }
+.lang-switch--floating { position: fixed; top: 16px; right: 16px; z-index: 50; box-shadow: var(--shadow-md); }

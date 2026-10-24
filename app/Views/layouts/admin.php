@@ -21,7 +21,7 @@ $userRoleLabel = ucwords(str_replace('_', ' ', $userRole));
 $notificationCount = $notificationCount ?? 0;
 ?>
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="<?= lang_current() ?>" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -186,6 +186,14 @@ $notificationCount = $notificationCount ?? 0;
         </div>
 
         <div class="navbar__right">
+            <?php if (in_array(session_get('user_type'), ['student', 'parent'], true)): ?>
+            <!-- English / Sinhala -->
+            <div class="lang-switch" role="group" aria-label="Language / භාෂාව">
+                <a href="<?= lang_switch_url('en') ?>" class="<?= lang_current() === 'en' ? 'is-on' : '' ?>" lang="en" hreflang="en" aria-current="<?= lang_current() === 'en' ? 'true' : 'false' ?>">EN</a>
+                <a href="<?= lang_switch_url('si') ?>" class="<?= lang_current() === 'si' ? 'is-on' : '' ?>" lang="si" hreflang="si" aria-current="<?= lang_current() === 'si' ? 'true' : 'false' ?>">සිං</a>
+            </div>
+            <?php endif; ?>
+
             <!-- Theme Toggle -->
             <button type="button" class="theme-toggle-btn" data-toggle="theme" aria-label="Toggle theme">
                 <span class="theme-icon-light">&#9790;</span>
@@ -208,17 +216,23 @@ $notificationCount = $notificationCount ?? 0;
                     </div>
                     <div class="user-dropdown-trigger__info">
                         <div class="user-dropdown-trigger__name"><?= $userName ?></div>
-                        <div class="user-dropdown-trigger__role"><?= htmlspecialchars($userRoleLabel, ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="user-dropdown-trigger__role"><?= te((string) $userRoleLabel) ?></div>
                     </div>
                     <span style="font-size:0.625rem; color:var(--text-muted);">&#9660;</span>
                 </button>
                 <div class="dropdown__menu">
-                    <a href="<?= BASE_URL ?>/profile" class="dropdown__item">Profile</a>
-                    <a href="<?= BASE_URL ?>/settings" class="dropdown__item">Settings</a>
+                    <?php if (session_get('user_type') === 'student'): ?>
+                        <a href="<?= BASE_URL ?>/my/profile" class="dropdown__item"><?= te('My Profile') ?></a>
+                    <?php elseif (session_get('user_type') === 'parent'): ?>
+                        <a href="<?= BASE_URL ?>/family" class="dropdown__item"><?= te('My Child') ?></a>
+                    <?php else: ?>
+                        <a href="<?= BASE_URL ?>/profile" class="dropdown__item">Profile</a>
+                        <a href="<?= BASE_URL ?>/settings" class="dropdown__item">Settings</a>
+                    <?php endif; ?>
                     <div class="dropdown__divider"></div>
                     <form method="POST" action="<?= BASE_URL ?>/logout" style="margin:0;">
                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
-                        <button type="submit" class="dropdown__item dropdown__item--danger" style="width:100%;">Logout</button>
+                        <button type="submit" class="dropdown__item dropdown__item--danger" style="width:100%;"><?= te('Logout') ?></button>
                     </form>
                 </div>
             </div>
@@ -249,7 +263,7 @@ $notificationCount = $notificationCount ?? 0;
         </div>
 
         <nav class="sidebar__nav">
-            <div class="sidebar__section">Main</div>
+            <div class="sidebar__section"><?= te('Main') ?></div>
 
             <!-- Dashboard: the institute's, so staff only. Students and parents
                  have their own home pages further down. -->
@@ -307,42 +321,42 @@ $notificationCount = $notificationCount ?? 0;
             <?php if ($userType === 'student'): ?>
             <a href="<?= BASE_URL ?>/my/home" class="sidebar__link <?= $isHere('/my/home') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                My Home
+                <?= te('My Home') ?>
             </a>
             <a href="<?= BASE_URL ?>/my/classes" class="sidebar__link <?= ($isHere('/my/classes') || $isHere('/my/quizzes') || $isHere('/my/materials')) ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                My Classes
+                <?= te('My Classes') ?>
             </a>
             <a href="<?= BASE_URL ?>/my/marks" class="sidebar__link <?= $isHere('/my/marks') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-                My Marks
+                <?= te('My Marks') ?>
             </a>
             <a href="<?= BASE_URL ?>/my/progress" class="sidebar__link <?= $isHere('/my/progress') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                My Progress
+                <?= te('My Progress') ?>
             </a>
             <a href="<?= BASE_URL ?>/my/calendar" class="sidebar__link <?= $isHere('/my/calendar') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                My Calendar
+                <?= te('My Calendar') ?>
             </a>
             <?php endif; ?>
 
             <?php if ($userType === 'parent'): ?>
             <a href="<?= BASE_URL ?>/family" class="sidebar__link <?= $isHere('/family', true) ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                My Child
+                <?= te('My Child') ?>
             </a>
             <a href="<?= BASE_URL ?>/family/marks" class="sidebar__link <?= $isHere('/family/marks') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-                Marks
+                <?= te('Marks') ?>
             </a>
             <a href="<?= BASE_URL ?>/family/fees" class="sidebar__link <?= $isHere('/family/fees') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-                Fees
+                <?= te('Fees') ?>
             </a>
             <a href="<?= BASE_URL ?>/family/calendar" class="sidebar__link <?= $isHere('/family/calendar') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Calendar
+                <?= te('Calendar') ?>
             </a>
             <?php endif; ?>
 
@@ -451,7 +465,7 @@ $notificationCount = $notificationCount ?? 0;
             <!-- Messages Inbox -->
             <a href="<?= BASE_URL ?>/messages" class="sidebar__link <?= $activePage === 'messages' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                Messages
+                <?= te('Messages') ?>
                 <?php if ($notificationCount > 0): ?>
                     <span class="badge badge--danger text-xs" style="margin-left:auto; border-radius:9999px; padding:0.15rem 0.45rem;"><?= (int) $notificationCount ?></span>
                 <?php endif; ?>
