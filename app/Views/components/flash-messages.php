@@ -29,8 +29,11 @@ $flashTypes = [
                     &#8505;
                 <?php endif; ?>
             </span>
-            <span class="flash__text"><?= htmlspecialchars((string) $message, ENT_QUOTES, 'UTF-8') ?></span>
-            <button type="button" class="flash__dismiss" onclick="this.parentElement.remove()" aria-label="Dismiss">&times;</button>
+            <?php // te() translates a fixed message and escapes it, exactly as before.
+                  // A message already built with values (t('Welcome back, {name}!'))
+                  // has no dictionary entry and passes through unchanged. ?>
+            <span class="flash__text"><?= function_exists('te') ? te((string) $message) : htmlspecialchars((string) $message, ENT_QUOTES, 'UTF-8') ?></span>
+            <button type="button" class="flash__dismiss" onclick="this.parentElement.remove()" aria-label="<?= function_exists('te') ? te('Dismiss') : 'Dismiss' ?>">&times;</button>
         </div>
     <?php endif; ?>
 <?php endforeach; ?>
