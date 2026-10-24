@@ -61,8 +61,39 @@ function validateCsrfToken(?string $token): bool
 }
 
 /**
+ * The page a refused form should go back to, or null if it is not safe.
+ *
+ * Only a same-host address is accepted. The Referer header is supplied
+ * by the client, so trusting it as-is would turn this into an open
+ * redirect: a forged form on another site could bounce someone off
+ * this one to anywhere it liked.
+ */
+function csrfSafeReturnUrl(string $referer): ?string
+{
+    if ($referer === '') {
+        return null;
+    }
+
+    $parts = parse_url($referer);
+    $host = $parts['host'] ?? null;
+
+    if ($host === null || !isset($_SERVER['HTTP_HOST'])) {
+        return null;
+    }
+
+    $refererHost = strtolower($host . (isset($parts['port']) ? ':' . $parts['port'] : ''));
+
+    if ($refererHost !== strtolower($_SERVER['HTTP_HOST'])) {
+        return null;
+    }
+
+    return ($parts['path'] ?? '/') . (isset($parts['query']) ? '?' . $parts['query'] : '');
+}
+
+/**
  * Validate the CSRF token from the current POST request.
- * Terminates with 403 if invalid.
+ * A stale browser form is sent back to a fresh copy of its page;
+ * anything else that fails is refused with 403.
  */
 function verifyCsrfToken(): void
 {
@@ -70,6 +101,30 @@ function verifyCsrfToken(): void
         $token = $_POST['_csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
 
         if (!validateCsrfToken($token)) {
+            // An expired token on an ordinary form is nearly always a page
+            // left open too long: the login page opened in a tab this
+            // morning and submitted this evening. A bare 403 with no way
+            // back strands the user, and pressing Back re-serves the same
+            // stale form, so it fails again however many times they try.
+            //
+            // So a browser form is sent back to a fresh copy of the page it
+            // came from, with the reason, and simply works on the next
+            // submit. The protection is unchanged -- nothing in the stale
+            // POST is acted on. Script calls (fetch with the header, or
+            // asking for JSON) still get the 403, since a redirect would
+            // be meaningless to them.
+            $isScript = isset($_SERVER['HTTP_X_CSRF_TOKEN'])
+                || strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest'
+                || str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
+
+            $back = csrfSafeReturnUrl($_SERVER['HTTP_REFERER'] ?? '');
+
+            if (!$isScript && $back !== null && function_exists('session_flash')) {
+                session_flash('error', 'That page had been open for a while, so it has been refreshed. Please try again.');
+                header('Location: ' . $back, true, 303);
+                exit;
+            }
+
             http_response_code(403);
             exit('Invalid or expired CSRF token. Please refresh the page and try again.');
         }
