@@ -66,7 +66,7 @@ class AuthController extends BaseController
 
         if (!$rateCheck['allowed']) {
             $minutes = (int) ceil(($rateCheck['retryAfter'] ?? 900) / 60);
-            $this->flash('error', "Too many login attempts. Please try again in {$minutes} minutes.");
+            $this->flash('error', t('Too many login attempts. Please try again in {n} minutes.', ['n' => $minutes]));
             $this->redirect('/login');
         }
 
@@ -141,7 +141,9 @@ class AuthController extends BaseController
         $intended = session_get('intended_url') ?? '/dashboard';
         session_set('intended_url', null);
 
-        $this->flash('success', 'Welcome back, ' . $this->e($displayName) . '!');
+        // Not escaped here: the flash component escapes on output, and
+        // escaping twice showed names with "&" as "&amp;".
+        $this->flash('success', t('Welcome back, {name}!', ['name' => $displayName]));
         $this->redirect($intended);
     }
 

@@ -121,16 +121,10 @@
     </style>
 </head>
 <body>
-    <!-- English / Sinhala, available before signing in -->
-    <div class="lang-switch lang-switch--floating" role="group" aria-label="Language / භාෂාව">
-        <a href="<?= lang_switch_url('en') ?>" class="<?= lang_current() === 'en' ? 'is-on' : '' ?>" lang="en" hreflang="en">EN</a>
-        <a href="<?= lang_switch_url('si') ?>" class="<?= lang_current() === 'si' ? 'is-on' : '' ?>" lang="si" hreflang="si">සිං</a>
-    </div>
-
     <!-- Theme Toggle -->
     <div class="fixed top-4 right-4 z-50">
         <button type="button" class="p-2 rounded-full transition-all duration-300 hover:bg-black/5"
-                id="themeToggle" aria-label="Toggle dark mode" title="Toggle theme"
+                id="themeToggle" aria-label="<?= te('Toggle dark mode') ?>" title="<?= te('Toggle dark mode') ?>"
                 style="color: var(--text-muted);">
             <span class="theme-icon-light">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"/></svg>
@@ -154,11 +148,10 @@
                     </svg>
                 </div>
                 <h2 class="font-display text-white text-3xl font-bold mb-4 leading-tight">
-                    Empowering Education,<br>One Institute at a Time
+                    <?= te('Empowering Education,') ?><br><?= te('One Institute at a Time') ?>
                 </h2>
                 <p class="text-white/60 text-sm leading-relaxed">
-                    Streamline enrollment, automate workflows, and gain real-time insights
-                    into every aspect of your institution.
+                    <?= te('Streamline enrollment, automate workflows, and gain real-time insights into every aspect of your institution.') ?>
                 </p>
                 <!-- Decorative circles -->
                 <div class="absolute -bottom-20 -left-20 w-60 h-60 rounded-full border border-white/5"></div>
@@ -169,12 +162,20 @@
         <!-- Right: Login Form -->
         <div class="login-form-side">
             <div class="login-glass-card">
-                <!-- Back to home -->
-                <a href="<?= BASE_URL ?>/" class="inline-flex items-center gap-1 text-xs font-medium mb-6 transition-colors"
-                   style="color: var(--text-muted);">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
-                    Back to Home
-                </a>
+                <!-- Back to home, and the English / Sinhala switch where it is
+                     easy to find -- it used to float in the corner under the
+                     dark-mode button and was half hidden. -->
+                <div class="flex items-center justify-between gap-3 mb-6">
+                    <a href="<?= BASE_URL ?>/" class="inline-flex items-center gap-1 text-xs font-medium transition-colors"
+                       style="color: var(--text-muted);">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+                        <?= te('Back to Home') ?>
+                    </a>
+                    <div class="lang-switch" role="group" aria-label="Language / භාෂාව">
+                        <a href="<?= lang_switch_url('en') ?>" class="<?= lang_current() === 'en' ? 'is-on' : '' ?>" lang="en" hreflang="en">EN</a>
+                        <a href="<?= lang_switch_url('si') ?>" class="<?= lang_current() === 'si' ? 'is-on' : '' ?>" lang="si" hreflang="si">සිංහල</a>
+                    </div>
+                </div>
 
                 <!-- Logo (mobile) -->
                 <div class="flex items-center gap-2 mb-6 lg:hidden">
@@ -186,8 +187,8 @@
                     <span class="font-semibold text-lg" style="color: var(--text);">EduManager</span>
                 </div>
 
-                <h1 class="font-display text-2xl font-bold mb-1" style="color: var(--text);">Welcome Back</h1>
-                <p class="text-sm mb-6" style="color: var(--text-secondary);">Sign in to your EduManager account</p>
+                <h1 class="font-display text-2xl font-bold mb-1" style="color: var(--text);"><?= te('Welcome Back') ?></h1>
+                <p class="text-sm mb-6" style="color: var(--text-secondary);"><?= te('Sign in to your EduManager account') ?></p>
 
                 <!-- Flash Messages -->
                 <?php include __DIR__ . '/../components/flash-messages.php'; ?>
