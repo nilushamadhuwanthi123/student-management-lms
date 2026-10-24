@@ -20,6 +20,8 @@ class ApiController extends BaseController
     public function classesByInstitute(string $id): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- staff forms only
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF, AuthMiddleware::ROLE_TEACHER]);
 
         $instituteId = (int) $id;
 

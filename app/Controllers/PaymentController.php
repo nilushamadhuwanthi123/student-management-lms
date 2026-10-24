@@ -94,6 +94,8 @@ class PaymentController extends BaseController
     public function studentPayments(string $studentId): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as Payments; any student's history was readable by id
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
 
         $payments = [];
         $student = null;

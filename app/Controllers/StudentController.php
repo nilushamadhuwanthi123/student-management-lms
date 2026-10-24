@@ -198,6 +198,8 @@ class StudentController extends BaseController
     public function show(string $id): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as the Students list; any student's record was readable by id
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF, AuthMiddleware::ROLE_TEACHER]);
 
         $student = $this->studentModel->getWithEnrollments((int) $id);
 

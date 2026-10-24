@@ -24,6 +24,18 @@ class DashboardController extends BaseController
     {
         AuthMiddleware::requireAuth();
 
+        // access: role-checked -- this dashboard is the institute's: every
+        // student, the month's takings, everyone's unpaid fees. Students
+        // and parents were landing here after login and could read all of
+        // it. They have their own home pages, scoped to themselves.
+        $userType = session_get('user_type');
+        if ($userType === 'student') {
+            $this->redirect('/my/home');
+        }
+        if ($userType === 'parent') {
+            $this->redirect('/family');
+        }
+
         $user = $this->getCurrentUser();
         $role = $user['role'] ?? 'student';
 

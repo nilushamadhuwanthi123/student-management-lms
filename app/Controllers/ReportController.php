@@ -48,6 +48,8 @@ class ReportController extends BaseController
     public function attendance(): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as the Reports hub; students and parents were able to open this
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
 
         $startDate   = trim($_GET['start_date'] ?? date('Y-m-01'));
         $endDate     = trim($_GET['end_date'] ?? date('Y-m-d'));
@@ -92,6 +94,8 @@ class ReportController extends BaseController
     public function classes(): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as the Reports hub
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
 
         $instituteId = !empty($_GET['institute_id']) ? (int) $_GET['institute_id'] : null;
         $classes = $this->classModel->getGridList(['institute_id' => $instituteId]);
@@ -123,6 +127,8 @@ class ReportController extends BaseController
     public function users(): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as the Reports hub; this lists every staff member
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
 
         $role = trim($_GET['role'] ?? '');
         $status = trim($_GET['status'] ?? '');
@@ -157,6 +163,8 @@ class ReportController extends BaseController
     public function payments(): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as the Reports hub; this is everyone's payments
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
 
         $month = trim($_GET['month'] ?? date('Y-m'));
         $db = \Database::connect();
@@ -228,6 +236,8 @@ class ReportController extends BaseController
     public function students(): void
     {
         AuthMiddleware::requireAuth();
+        // access: role-checked -- same as the Reports hub
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
 
         $db = \Database::connect();
 
