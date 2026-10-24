@@ -110,7 +110,19 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
                     <span id="answered-count">0</span> of <?= count($questions) ?> answered.
                     Unanswered questions score zero.
                 </div>
-                <button type="submit" class="btn btn--primary" id="submit-btn">Hand it in</button>
+                <button type="submit" class="btn btn--primary" id="submit-btn"><?= te('Hand it in') ?></button>
+            </div>
+            <!-- Shown when a student tries to hand in with questions left blank.
+                 An 8-second blank hand-in scores 0% and stays on their record. -->
+            <div id="unanswered-warning" role="alertdialog" aria-live="assertive" hidden
+                 style="margin:0 1.25rem 1.25rem; padding:1rem 1.1rem; border-radius:12px;
+                        background:var(--warning-light); border:1px solid rgba(245,179,1,.5);">
+                <strong id="unanswered-text"></strong>
+                <div class="text-sm" style="margin:.3rem 0 .8rem;"><?= te('Unanswered questions score zero, and you cannot change your answers after handing in.') ?></div>
+                <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+                    <button type="button" class="btn btn--primary" id="go-back-btn"><?= te('Go back and answer them') ?></button>
+                    <button type="button" class="btn btn--ghost" id="hand-in-anyway-btn"><?= te('Hand in anyway') ?></button>
+                </div>
             </div>
         </div>
     </form>
@@ -196,10 +208,57 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
         });
     });
 
-    form.addEventListener('submit', function () {
+    // Stop an accidental blank hand-in. A student who clicks "Hand it in"
+    // straight away -- exploring, or by mistake -- would get 0% that stays
+    // on their record and drags their level down. With questions left,
+    // the first press explains and asks; the timer's own hand-in skips
+    // this, because by then the time really is up.
+    var warning = document.getElementById('unanswered-warning');
+    var warningText = document.getElementById('unanswered-text');
+    var confirmedBlank = false;
+    var unansweredMessage = <?= json_encode(t('{n} of {t} questions are not answered yet.', ['n' => '__N__', 't' => count($questions)])) ?>;
+
+    function unansweredCount() {
+        return <?= count($questions) ?> - parseInt(countEl.textContent, 10);
+    }
+
+    document.getElementById('go-back-btn').addEventListener('click', function () {
+        warning.hidden = true;
+        var firstBlank = [].find.call(form.querySelectorAll('[data-question]'), function (block) {
+            var text = block.querySelector('[data-answer-text]');
+            return !block.querySelector('input[type=radio]:checked') && !(text && text.value.trim() !== '');
+        });
+        if (firstBlank) {
+            firstBlank.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            var input = firstBlank.querySelector('input, textarea');
+            if (input) { input.focus({ preventScroll: true }); }
+        }
+    });
+
+    document.getElementById('hand-in-anyway-btn').addEventListener('click', function () {
+        confirmedBlank = true;
+        warning.hidden = true;
+        if (form.requestSubmit) {
+            form.requestSubmit(submitBtn);
+        } else {
+            // Older browsers: submit() skips the submit handler, so mark
+            // it here or the "leave page?" warning would fire.
+            submitting = true;
+            form.submit();
+        }
+    });
+
+    form.addEventListener('submit', function (e) {
+        if (!submitting && !confirmedBlank && unansweredCount() > 0) {
+            e.preventDefault();
+            warningText.textContent = unansweredMessage.replace('__N__', String(unansweredCount()));
+            warning.hidden = false;
+            warning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
         submitting = true;
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Handing in...';
+        submitBtn.textContent = <?= json_encode(t('Handing in...')) ?>;
     });
 
     // Warn on leaving mid-attempt. The attempt survives, but a student
