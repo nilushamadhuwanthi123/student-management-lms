@@ -24,7 +24,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
         <h1 style="margin-bottom:0.25rem;"><?= $greeting ?>, <?= $displayName ?></h1>
         <p class="text-muted" style="margin-bottom:0;">Student Management & LMS Operational Control Center</p>
     </div>
-    <?php if (in_array($role, ['super_admin', 'admin'])): ?>
+    <?php if ($role === 'super_admin'): ?>
     <div>
         <a href="<?= BASE_URL ?>/settings/dashboard-items" class="btn btn--ghost btn--sm">
             &#9881; Configure Dashboard Items
@@ -32,6 +32,25 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     </div>
     <?php endif; ?>
 </div>
+
+<?php if (!empty($widgets['work_queue'])): ?>
+<!-- Today's work: real counts, each linked to where it is handled -->
+<section class="card mb-3" aria-labelledby="work-queue-title">
+    <div class="card__body">
+        <h2 id="work-queue-title" style="font-size:1.05rem; margin:0 0 .75rem;"><?= te("Today's work") ?></h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:.75rem;">
+            <?php foreach ($widgets['work_queue'] as $item): ?>
+                <a href="<?= BASE_URL . htmlspecialchars($item['url'], ENT_QUOTES, 'UTF-8') ?>"
+                   class="kpi-card" style="text-decoration:none; border-left:4px solid var(--<?= $item['count'] > 0 ? htmlspecialchars($item['tone'], ENT_QUOTES, 'UTF-8') : 'border' ?>); min-width:0;">
+                    <span class="kpi-card__label"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="kpi-card__value"><?= number_format((int) $item['count']) ?></span>
+                    <span class="text-xs text-muted"><?= (int) $item['count'] > 0 ? te('Open') . ' &rarr;' : te('Nothing waiting') ?></span>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
 
 <!-- ========================================== -->
 <!-- ROW 1: PRIMARY FINANCIAL & ATTENDANCE KPIS -->
@@ -60,7 +79,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     <div class="kpi-card animate-slide-up delay-3" style="border-left: 4px solid #2563EB;">
         <span class="kpi-card__label">Active Classes</span>
         <span class="kpi-card__value"><?= number_format((int) ($widgets['active_classes'] ?? 0)) ?></span>
-        <span class="text-xs text-muted">Across all institutes</span>
+        <span class="text-xs text-muted"><?= !empty($widgets['is_global']) ? te('Across all branches') : te('In your branch') ?></span>
     </div>
     <?php endif; ?>
 

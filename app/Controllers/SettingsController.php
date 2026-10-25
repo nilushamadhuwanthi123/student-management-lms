@@ -22,6 +22,8 @@ class SettingsController extends BaseController
     public function index(): void
     {
         AuthMiddleware::requireAuth();
+        // System-wide settings: the super admin only (viewing included).
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
@@ -69,6 +71,8 @@ class SettingsController extends BaseController
     public function deactivation(): void
     {
         AuthMiddleware::requireAuth();
+        // System-wide settings: the super admin only (viewing included).
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
@@ -122,6 +126,8 @@ class SettingsController extends BaseController
     public function deletion(): void
     {
         AuthMiddleware::requireAuth();
+        // System-wide settings: the super admin only (viewing included).
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
@@ -175,6 +181,8 @@ class SettingsController extends BaseController
     public function dashboardItems(): void
     {
         AuthMiddleware::requireAuth();
+        // System-wide settings: the super admin only (viewing included).
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,

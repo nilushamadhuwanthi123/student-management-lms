@@ -182,6 +182,10 @@ $router->get('/lang/{code}', ['App\Controllers\LanguageController', 'switch']);
 $router->get('/first-login-password', ['App\Controllers\AuthController', 'showFirstLoginPassword']);
 $router->post('/first-login-password', ['App\Controllers\AuthController', 'updateFirstLoginPassword']);
 
+// Forgotten password: redeem a one-time code issued by the branch office.
+$router->get('/reset-password', ['App\Controllers\AccountController', 'showReset']);
+$router->post('/reset-password', ['App\Controllers\AccountController', 'reset']);
+
 // Password management routes (requires auth)
 $router->get('/change-password', ['App\Controllers\AuthController', 'showChangePassword']);
 $router->post('/change-password', ['App\Controllers\AuthController', 'changePassword']);
@@ -204,6 +208,10 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/users/{id}/toggle-status', ['App\Controllers\UserController', 'toggleStatus']);
     $router->post('/users/{id}/delete', ['App\Controllers\UserController', 'delete']);
     $router->post('/users/{id}/reset-password', ['App\Controllers\UserController', 'resetPassword']);
+    $router->post('/users/{id}/reset-code', ['App\Controllers\AccountController', 'userCode']);
+    $router->post('/students/{id}/reset-code', ['App\Controllers\AccountController', 'studentCode']);
+    $router->post('/parents/{id}/reset-code', ['App\Controllers\AccountController', 'parentCode']);
+    $router->get('/accounts/issued', ['App\Controllers\AccountController', 'issued']);
     $router->get('/users/{id}/id-card', ['App\Controllers\UserController', 'idCard']);
 
     // Institutes Management

@@ -152,8 +152,28 @@ class StudentController extends BaseController
             $this->redirect('/students/create');
         }
 
+        // Guardian login (optional): name + a Sri Lankan phone number.
+        $guardianName  = trim((string) ($_POST['guardian_name'] ?? ''));
+        $guardianPhone = preg_replace('/[\s-]/', '', trim((string) ($_POST['guardian_phone'] ?? ''))) ?? '';
+        if (($guardianName !== '') !== ($guardianPhone !== '')
+            || ($guardianPhone !== '' && preg_match('/^(\+94|0)\d{9}$/', $guardianPhone) !== 1)) {
+            $this->flash('error', t('For a parent login, give both the guardian name and a Sri Lankan phone number (for example 0771234567).'));
+            $this->redirect('/students/create');
+        }
+
+        // Classes must be in the registering person's branches.
+        $classIds = array_values(array_filter(array_map('intval', (array) ($_POST['class_ids'] ?? [])), static fn (int $c): bool => $c > 0));
+        foreach ($classIds as $cid) {
+            if (!BranchScope::current()->allowsClass($cid)) {
+                http_response_code(403);
+                $this->flash('error', t('One of the chosen classes is not in your branch.'));
+                $this->redirect('/students/create');
+            }
+        }
+
         // Generate student ID and create
         $studentIdDisplay = $this->studentModel->generateStudentId();
+        $studentPassword  = \App\Services\AccountService::temporaryPassword();
         $insertData = [
             'student_id_display' => $studentIdDisplay,
             'full_name'          => $fullName,
@@ -162,23 +182,46 @@ class StudentController extends BaseController
             'date_of_birth'      => $dob !== '' ? $dob : date('Y-m-d'),
             'address'            => $address !== '' ? $address : null,
             'status'             => 'active',
+            'password_hash'      => password_hash($studentPassword, PASSWORD_DEFAULT),
             'created_by'         => (int) session_get('user_id'),
             'created_at'         => date('Y-m-d H:i:s'),
             'updated_at'         => date('Y-m-d H:i:s'),
         ];
 
+        $issued = [];
         try {
+            $this->db->beginTransaction();
             $id = $this->studentModel->create($insertData);
+            $this->db->prepare("UPDATE students SET must_change_password = 1 WHERE id = :id")->execute([':id' => $id]);
+            $issued[] = ['kind' => 'password', 'name' => $fullName, 'login_id' => $studentIdDisplay, 'secret' => $studentPassword, 'expires_at' => null];
+
+            if ($guardianPhone !== '') {
+                $existing = $this->db->prepare("SELECT COUNT(*) FROM parents WHERE phone1 = :p");
+                $existing->execute([':p' => $guardianPhone]);
+                $parentPassword = \App\Services\AccountService::temporaryPassword();
+                $this->db->prepare(
+                    "INSERT INTO parents (student_id, parent_name, phone1, password_hash, must_change_password, status)
+                     VALUES (:s, :n, :p, :h, 1, 'active')"
+                )->execute([':s' => $id, ':n' => $guardianName, ':p' => $guardianPhone, ':h' => password_hash($parentPassword, PASSWORD_DEFAULT)]);
+                if ((int) $existing->fetchColumn() > 0) {
+                    // Known limitation: a phone number logs in to the first child linked to it.
+                    $this->flash('warning', t('This phone number is already a parent login for another child. The parent portal shows one child per phone number, so use a different number if the parent needs to see this child too.'));
+                } else {
+                    $issued[] = ['kind' => 'password', 'name' => $guardianName . ' (' . t('parent') . ')', 'login_id' => $guardianPhone, 'secret' => $parentPassword, 'expires_at' => null];
+                }
+            }
 
             // Handle class enrollments if provided
-            $classIds = $_POST['class_ids'] ?? [];
             $scholarshipTypes = $_POST['scholarship_type'] ?? [];
-            if (!empty($classIds) && is_array($classIds)) {
+            if (!empty($classIds)) {
                 $enrollStmt = $this->db->prepare("INSERT INTO enrollments (student_id, class_id, scholarship_type, enrollment_status, enrolled_at, updated_at) VALUES (:sid, :cid, :stype, 'active', NOW(), NOW())");
                 foreach ($classIds as $cid) {
                     $cid = (int) $cid;
                     if ($cid > 0 && BranchScope::current()->allowsClass($cid)) {
-                        $stype = $scholarshipTypes[$cid] ?? 'full_payment';
+                        $stype = (string) ($scholarshipTypes[$cid] ?? 'full_payment');
+                        if (!in_array($stype, ['full_payment', 'half_payment', 'free_card'], true)) {
+                            $stype = 'full_payment';
+                        }
                         $enrollStmt->execute([
                             ':sid'   => $id,
                             ':cid'   => $cid,
@@ -194,11 +237,19 @@ class StudentController extends BaseController
                 'name'       => $fullName,
             ]);
 
-            $this->flash('success', "Student registered successfully. Student ID: {$studentIdDisplay}");
-            $this->redirect('/students/' . $id);
+            $this->db->commit();
+
+            // The temporary passwords are shown once on the next page, then forgotten.
+            session_set('issued_credentials', $issued);
+            session_set('issued_back', '/students/' . $id);
+            $this->flash('success', t('Student registered. Student ID: {id}', ['id' => $studentIdDisplay]));
+            $this->redirect('/accounts/issued');
         } catch (\Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
             error_log('Student creation failed: ' . $e->getMessage());
-            $this->flash('error', 'Failed to register student: ' . $e->getMessage());
+            $this->flash('error', t('The student could not be registered. Please check the details and try again.'));
             $this->redirect('/students/create');
         }
     }

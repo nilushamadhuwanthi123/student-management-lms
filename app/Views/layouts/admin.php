@@ -228,7 +228,9 @@ $notificationCount = $notificationCount ?? 0;
                         <a href="<?= BASE_URL ?>/family" class="dropdown__item"><?= te('My Child') ?></a>
                     <?php else: ?>
                         <a href="<?= BASE_URL ?>/profile" class="dropdown__item">Profile</a>
-                        <a href="<?= BASE_URL ?>/settings" class="dropdown__item">Settings</a>
+                        <?php if (session_get('user_role') === 'super_admin'): ?>
+                            <a href="<?= BASE_URL ?>/settings" class="dropdown__item"><?= te('Settings') ?></a>
+                        <?php endif; ?>
                     <?php endif; ?>
                     <div class="dropdown__divider"></div>
                     <form method="POST" action="<?= BASE_URL ?>/logout" style="margin:0;">

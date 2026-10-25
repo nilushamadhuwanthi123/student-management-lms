@@ -44,6 +44,8 @@ class DashboardController extends BaseController
 
         // Gather all 16 widgets data
         $data = $this->gatherDashboardData($role, (int) ($user['id'] ?? 0));
+        $data['work_queue'] = $this->workQueue($role, (int) ($user['id'] ?? 0));
+        $data['is_global'] = \App\Services\BranchScope::current()->isGlobal();
 
         $this->view('dashboard/index', [
             'pageTitle'        => 'Dashboard',
@@ -52,6 +54,68 @@ class DashboardController extends BaseController
             'widgets'          => $data,
             'widgetVisibility' => $widgetVisibility,
         ], 'layouts/admin');
+    }
+
+    /**
+     * "Today's work": real counts of things waiting for this person, each
+     * linked to the page where it is dealt with. Only items the role can act
+     * on are listed, and every count is limited to the viewer's branches.
+     *
+     * @return list<array{label: string, count: int, url: string, tone: string}>
+     */
+    private function workQueue(string $role, int $userId): array
+    {
+        if (!in_array($role, ['super_admin', 'admin', 'coordinator', 'staff'], true)) {
+            return [];
+        }
+        $db = \Database::connect();
+        $scope = \App\Services\BranchScope::current();
+        $inP = $scope->classSql('p.class_id');
+        $inClass = $scope->classSql('a.class_id');
+        $inInst = $scope->instituteSql('institute_id');
+        $month = date('Y-m-01');
+        $items = [];
+        $count = static function (string $sql, array $params = []) use ($db): int {
+            try {
+                $stmt = $db->prepare($sql);
+                $stmt->execute($params);
+                return (int) $stmt->fetchColumn();
+            } catch (\Throwable $e) {
+                error_log('Work queue count failed: ' . $e->getMessage());
+                return 0;
+            }
+        };
+
+        if (in_array($role, ['super_admin', 'admin', 'staff'], true)) {
+            $items[] = ['label' => t('Payment slips to check'), 'url' => '/payments/slips', 'tone' => 'warning',
+                'count' => $count("SELECT COUNT(*) FROM payment_slips ps JOIN payments p ON p.id = ps.payment_id WHERE ps.status = 'pending'{$inP}")];
+        }
+
+        $items[] = ['label' => t('New enrolment inquiries'), 'url' => '/inquiries', 'tone' => 'primary',
+            'count' => $scope->isGlobal()
+                ? $count("SELECT COUNT(*) FROM contact_messages WHERE status = 'new'")
+                : $count("SELECT COUNT(*) FROM contact_messages WHERE status = 'new' AND kind = 'enrollment'{$inInst}")];
+
+        $openHelp = "status IN ('open','in_progress')";
+        if ($scope->isGlobal()) {
+            $help = $count("SELECT COUNT(*) FROM help_threads WHERE $openHelp");
+        } elseif ($role === 'staff') {
+            $help = $count("SELECT COUNT(*) FROM help_threads WHERE $openHelp AND kind = 'support'{$inInst}");
+        } else {
+            $help = $count("SELECT COUNT(*) FROM help_threads WHERE $openHelp AND ((kind = 'support'{$inInst}) OR (kind = 'question'{$scope->classSql('class_id')}))");
+        }
+        $items[] = ['label' => t('Open help requests'), 'url' => '/help', 'tone' => 'primary', 'count' => $help];
+
+        $items[] = ['label' => t('Approvals waiting for you'), 'url' => '/workflows', 'tone' => 'warning',
+            'count' => $count("SELECT COUNT(*) FROM workflow_inbox WHERE recipient_id = :me AND status = 'pending'", [':me' => $userId])];
+
+        $items[] = ['label' => t('Unpaid fees this month'), 'url' => '/payments', 'tone' => 'danger',
+            'count' => $count("SELECT COUNT(*) FROM payments p WHERE p.month_year = :m AND p.payment_status IN ('pending','overdue'){$inP}", [':m' => $month])];
+
+        $items[] = ['label' => t('Marked absent today'), 'url' => '/attendance', 'tone' => 'danger',
+            'count' => $count("SELECT COUNT(*) FROM attendance a WHERE a.date = :d AND a.status = 'absent'{$inClass}", [':d' => date('Y-m-d')])];
+
+        return $items;
     }
 
     /**

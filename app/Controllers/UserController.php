@@ -198,9 +198,9 @@ class UserController extends BaseController
         $displayId = $this->userModel->generateDisplayId($role);
         $currentUserId = (int) (session_get('user_id') ?? 1);
 
-        // Initial default password hash for first login
-        $defaultPassword = 'Password@123';
-        $passwordHash = password_hash($defaultPassword, PASSWORD_DEFAULT);
+        // A random temporary password, shown once; it must be changed at the first login.
+        $temporaryPassword = \App\Services\AccountService::temporaryPassword();
+        $passwordHash = password_hash($temporaryPassword, PASSWORD_DEFAULT);
 
         try {
             $userId = $this->userModel->create([
@@ -252,11 +252,16 @@ class UserController extends BaseController
                 'name'       => $fullName,
             ]);
 
-            $this->flash('success', "User {$fullName} registered successfully with Registration ID: <strong>{$displayId}</strong>. Status is set to 'Pending first login'.");
-            $this->redirect('/users');
+            session_set('issued_credentials', [[
+                'kind' => 'password', 'name' => $fullName, 'login_id' => $displayId,
+                'secret' => $temporaryPassword, 'expires_at' => null,
+            ]]);
+            session_set('issued_back', '/users');
+            $this->flash('success', t('Account created. Login ID: {id}', ['id' => $displayId]));
+            $this->redirect('/accounts/issued');
         } catch (\Throwable $e) {
             error_log('User store error: ' . $e->getMessage());
-            $this->flash('error', 'Failed to create user: ' . $e->getMessage());
+            $this->flash('error', t('The account could not be created. Please check the details and try again.'));
             $this->redirect('/users/create');
         }
     }
@@ -454,17 +459,9 @@ class UserController extends BaseController
             }
         }
 
-        $newPassword = trim($_POST['new_password'] ?? 'Password@123');
-        if (strlen($newPassword) < 6) {
-            $this->flash('error', 'New password must be at least 6 characters long.');
-            $this->back();
-        }
-
-        $this->userModel->updatePassword((int) $id, $newPassword);
-        $this->logAudit('reset_user_password', 'user', (int) $id);
-
-        $this->flash('success', 'User password has been successfully reset to: <strong>' . htmlspecialchars($newPassword, ENT_QUOTES, 'UTF-8') . '</strong>');
-        $this->back();
+        // Office staff no longer choose (or see) someone else's password:
+        // this now issues a one-time reset code, like for students and parents.
+        (new AccountController())->userCode($id);
     }
 
     /**
