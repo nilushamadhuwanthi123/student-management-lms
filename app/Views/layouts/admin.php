@@ -25,7 +25,7 @@ $notificationCount = $notificationCount ?? 0;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($pageTitle ?? 'EduManager', ENT_QUOTES, 'UTF-8') ?> - EduManager</title>
+    <title><?= te((string) ($pageTitle ?? 'EduManager')) ?> - EduManager</title>
     <?php if (function_exists('csrfMeta')): ?><?= csrfMeta() ?><?php endif; ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=<?= @filemtime(BASE_PATH . '/public/assets/css/style.css') ?: 1 ?>">
     <style>

@@ -28,8 +28,8 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
                 <?= htmlspecialchars($quiz['title'], ENT_QUOTES, 'UTF-8') ?>
             </h1>
             <div class="text-sm text-muted">
-                <?= count($questions) ?> questions
-                &middot; <?= rtrim(rtrim(number_format((float) $quiz['total_marks'], 2), '0'), '.') ?> marks
+                <?= te('{n} questions', ['n' => count($questions)]) ?>
+                &middot; <?= te('{n} marks', ['n' => rtrim(rtrim(number_format((float) $quiz['total_marks'], 2), '0'), '.')]) ?>
             </div>
         </div>
 
@@ -69,7 +69,7 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
                             <?= $index + 1 ?>. <?= htmlspecialchars($q['question_text'], ENT_QUOTES, 'UTF-8') ?>
                         </div>
                         <div class="text-sm text-muted" style="white-space:nowrap;">
-                            <?= rtrim(rtrim(number_format((float) $q['marks'], 2), '0'), '.') ?> marks
+                            <?= te('{n} marks', ['n' => rtrim(rtrim(number_format((float) $q['marks'], 2), '0'), '.')]) ?>
                         </div>
                     </div>
 
@@ -77,7 +77,7 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
                         <input type="text" class="form-control" data-answer-text
                                data-question-id="<?= (int) $q['id'] ?>"
                                value="<?= htmlspecialchars((string) ($saved['answer_text'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                               placeholder="Your answer">
+                               placeholder="<?= te('Your answer') ?>">
                     <?php else: ?>
                         <div style="display:grid; gap:.5rem;">
                             <?php foreach ($letters as $key => $label): ?>
@@ -107,8 +107,8 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
         <div class="card">
             <div class="card__body" style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
                 <div class="text-sm text-muted">
-                    <span id="answered-count">0</span> of <?= count($questions) ?> answered.
-                    Unanswered questions score zero.
+                    <?= t('{n} of {t} answered.', ['n' => '<span id="answered-count">0</span>', 't' => count($questions)]) ?>
+                    <?= te('Unanswered questions score zero.') ?>
                 </div>
                 <button type="submit" class="btn btn--primary" id="submit-btn"><?= te('Hand it in') ?></button>
             </div>
@@ -138,6 +138,13 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
     var csrf = form.querySelector('input[name="_csrf_token"]');
     var attemptId = form.querySelector('input[name="attempt_id"]').value;
     var submitting = false;
+    var L = <?= json_encode([
+        'saving'   => t('Saving...'),
+        'saved'    => t('Saved'),
+        'couldNot' => t('Could not save.'),
+        'offline'  => t('Offline - your answer is not saved yet.'),
+        'timeUp'   => t('Time is up. Handing your paper in.'),
+    ], JSON_UNESCAPED_UNICODE) ?>;
 
     function say(message, tone) {
         state.textContent = message;
@@ -163,23 +170,23 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
         if (payload.option !== undefined) { body.append('selected_option', payload.option); }
         if (payload.text !== undefined) { body.append('answer_text', payload.text); }
 
-        say('Saving...');
+        say(L.saving);
 
         return fetch('<?= BASE_URL ?>/my/quizzes/answer', {
             method: 'POST', body: body, credentials: 'same-origin'
         }).then(function (res) {
-            return res.json().catch(function () { return { ok: false, message: 'Could not save.' }; });
+            return res.json().catch(function () { return { ok: false, message: L.couldNot }; });
         }).then(function (data) {
             if (data.ok) {
-                say('Saved', 'good');
+                say(L.saved, 'good');
             } else {
                 // The usual cause is the clock having run out, in which
                 // case the server has already submitted the paper.
-                say(data.message || 'Could not save.', 'bad');
-                if (/time/i.test(data.message || '')) { window.location.reload(); }
+                say(data.message || L.couldNot, 'bad');
+                if (data.time_up || /time/i.test(data.message || '')) { window.location.reload(); }
             }
         }).catch(function () {
-            say('Offline - your answer is not saved yet.', 'bad');
+            say(L.offline, 'bad');
         });
     }
 
@@ -279,7 +286,7 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
             if (remaining <= 0) {
                 clearInterval(tick);
                 timer.textContent = '0:00';
-                say('Time is up. Handing your paper in.', 'bad');
+                say(L.timeUp, 'bad');
                 submitting = true;
                 form.submit();
                 return;

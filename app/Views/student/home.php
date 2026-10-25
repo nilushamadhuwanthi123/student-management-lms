@@ -18,7 +18,7 @@ $suggestions   = $suggestions ?? [];
 $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 
 $hour = (int) $now->format('G');
-$greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
+$greeting = $hour < 12 ? t('Good morning') : ($hour < 17 ? t('Good afternoon') : t('Good evening'));
 $first = explode(' ', trim((string) ($student['full_name'] ?? 'there')))[0];
 
 $owed = array_sum(array_column($classes, 'owed'));
@@ -39,7 +39,7 @@ $kind = [
 $whenLabel = static function (array $item) use ($now): string {
     $date = new DateTimeImmutable($item['date']);
     $diff = (int) $now->setTime(0, 0)->diff($date)->format('%r%a');
-    $day = $diff === 0 ? 'Today' : ($diff === 1 ? 'Tomorrow' : $date->format('D j M'));
+    $day = $diff === 0 ? t('Today') : ($diff === 1 ? t('Tomorrow') : lang_date('D j M', $date->getTimestamp()));
     return $item['start_time'] !== null ? "{$day}, {$item['start_time']}" : $day;
 };
 ?>
@@ -120,24 +120,24 @@ $whenLabel = static function (array $item) use ($now): string {
     <?php if ($nextClass !== null): ?>
         <div class="sh-next">
             <div>
-                <div class="sh-next__label">Next class</div>
+                <div class="sh-next__label"><?= te('Next class') ?></div>
                 <div class="sh-next__title"><?= $e($nextClass['title']) ?></div>
                 <div style="opacity:.9; font-size:.9rem;">
                     <?= $e($whenLabel($nextClass)) ?><?= $nextClass['end_time'] ? ' &ndash; ' . $e($nextClass['end_time']) : '' ?>
-                    <?= $nextClass['room'] ? ' &middot; Room ' . $e($nextClass['room']) : '' ?>
+                    <?= $nextClass['room'] ? ' &middot; ' . te('Room {r}', ['r' => $nextClass['room']]) : '' ?>
                 </div>
                 <?php if (!$nextIsOpen): ?>
-                    <span class="sh-lock">&#128274; This month's notes and recordings for it are locked until the fee is settled</span>
+                    <span class="sh-lock">&#128274; <?= te("This month's notes and recordings for it are locked until the fee is settled") ?></span>
                 <?php endif; ?>
             </div>
             <div class="sh-next__count">
                 <strong data-countdown="<?= $e(str_replace(' ', 'T', $nextClass['starts_at'])) ?>"
                         data-now="<?= $e($now->format('Y-m-d\TH:i:s')) ?>">&nbsp;</strong>
-                <span style="font-size:.8rem; opacity:.85;">to go</span>
+                <span style="font-size:.8rem; opacity:.85;"><?= te('to go') ?></span>
             </div>
         </div>
     <?php else: ?>
-        <div class="sh-next"><div>No classes on the calendar for the next two weeks.</div></div>
+        <div class="sh-next"><div><?= te('No classes on the calendar for the next two weeks.') ?></div></div>
     <?php endif; ?>
 </section>
 
@@ -145,8 +145,8 @@ $whenLabel = static function (array $item) use ($now): string {
     <div class="sh-banner">
         <span style="font-size:1.3rem;">&#128274;</span>
         <div>
-            <strong>Rs. <?= number_format($owed, 2) ?> is due for <?= $e($now->format('F')) ?>.</strong>
-            The classes still run, but their notes, recordings and quizzes open once it's paid.
+            <strong><?= te('Rs. {n} is due for {month}.', ['n' => number_format($owed, 2), 'month' => lang_date('F', $now->getTimestamp())]) ?></strong>
+            <?= te("The classes still run, but their notes, recordings and quizzes open once it's paid.") ?>
         </div>
     </div>
 <?php endif; ?>
@@ -155,19 +155,19 @@ $whenLabel = static function (array $item) use ($now): string {
 <div class="sh-stats">
     <div class="sh-stat">
         <div class="sh-stat__n"><?= count($classes) ?></div>
-        <div class="sh-stat__l">My classes</div>
+        <div class="sh-stat__l"><?= te('My Classes') ?></div>
     </div>
     <div class="sh-stat">
         <div class="sh-stat__n" style="color:<?= count($quizzes) > 0 ? 'var(--danger)' : 'var(--success)' ?>;"><?= count($quizzes) ?></div>
-        <div class="sh-stat__l"><?= count($quizzes) === 1 ? 'Quiz waiting' : 'Quizzes waiting' ?></div>
+        <div class="sh-stat__l"><?= count($quizzes) === 1 ? te('Quiz waiting') : te('Quizzes waiting') ?></div>
     </div>
     <div class="sh-stat">
         <div class="sh-stat__n"><?= $avgMark !== null ? $avgMark . '%' : '&ndash;' ?></div>
-        <div class="sh-stat__l">Average, last <?= count($marks) ?: '' ?> quizzes</div>
+        <div class="sh-stat__l"><?= te('Average, last {n} quizzes', ['n' => count($marks)]) ?></div>
     </div>
     <div class="sh-stat">
         <div class="sh-stat__n"><?= $attendanceRate !== null ? $attendanceRate . '%' : '&ndash;' ?></div>
-        <div class="sh-stat__l">Attendance</div>
+        <div class="sh-stat__l"><?= te('Attendance') ?></div>
     </div>
 </div>
 
@@ -175,67 +175,67 @@ $whenLabel = static function (array $item) use ($now): string {
     <div>
         <!-- Things to do -->
         <div class="sh-card">
-            <h3>&#9997;&#65039; Quizzes waiting for you <span class="sh-count"><?= count($quizzes) ?></span></h3>
+            <h3>&#9997;&#65039; <?= te('Quizzes waiting for you') ?> <span class="sh-count"><?= count($quizzes) ?></span></h3>
             <?php if ($quizzes === []): ?>
-                <p class="sh-empty">You're all caught up. <?= $lockedQuizzes > 0 ? $lockedQuizzes . ' more ' . ($lockedQuizzes === 1 ? 'is' : 'are') . ' locked until this month\'s fee is settled.' : '' ?></p>
+                <p class="sh-empty"><?= te("You're all caught up.") ?> <?= $lockedQuizzes > 0 ? te("{n} more locked until this month's fee is settled.", ['n' => $lockedQuizzes]) : '' ?></p>
             <?php else: foreach ($quizzes as $q): ?>
                 <div class="sh-row">
                     <div class="sh-row__icon">&#10067;</div>
                     <div class="sh-row__main">
                         <div class="sh-row__title"><?= $e($q['title']) ?></div>
                         <div class="sh-row__meta">
-                            <?= $e($q['class_name']) ?> &middot; closes <?= $e(date('D j M, g:ia', strtotime($q['closes_at']))) ?>
-                            <?= $q['time_limit_minutes'] ? ' &middot; ' . (int) $q['time_limit_minutes'] . ' min' : '' ?>
+                            <?= $e($q['class_name']) ?> &middot; <?= te('closes {when}', ['when' => lang_date('D j M, g:ia', (string) $q['closes_at'])]) ?>
+                            <?= $q['time_limit_minutes'] ? ' &middot; ' . te('{n} min', ['n' => (int) $q['time_limit_minutes']]) : '' ?>
                         </div>
                     </div>
-                    <a class="btn btn--primary btn--sm" href="<?= BASE_URL ?>/my/quizzes/<?= (int) $q['id'] ?>/sit">Start</a>
+                    <a class="btn btn--primary btn--sm" href="<?= BASE_URL ?>/my/quizzes/<?= (int) $q['id'] ?>/sit"><?= te('Start') ?></a>
                 </div>
             <?php endforeach; endif; ?>
         </div>
 
         <!-- New material -->
         <div class="sh-card">
-            <h3>&#10024; New for you</h3>
+            <h3>&#10024; <?= te('New for you') ?></h3>
             <?php if ($materials === []): ?>
-                <p class="sh-empty">Nothing new yet. Recordings and notes appear here as soon as they're posted.</p>
+                <p class="sh-empty"><?= te("Nothing new yet. Recordings and notes appear here as soon as they're posted.") ?></p>
             <?php else: foreach ($materials as $m): [$label, $icon] = $kind[$m['material_type']] ?? ['Material', '&#128196;']; ?>
                 <div class="sh-row">
                     <div class="sh-row__icon"><?= $icon ?></div>
                     <div class="sh-row__main">
                         <div class="sh-row__title"><?= $e($m['title']) ?></div>
                         <div class="sh-row__meta">
-                            <?= $label ?> &middot; <?= $e($m['class_name']) ?> &middot; <?= $e(date('j M', strtotime($m['created_at']))) ?>
-                            <?= $m['duration_minutes'] ? ' &middot; ' . (int) $m['duration_minutes'] . ' min' : '' ?>
+                            <?= te($label) ?> &middot; <?= $e($m['class_name']) ?> &middot; <?= $e(lang_date('j M', (string) $m['created_at'])) ?>
+                            <?= $m['duration_minutes'] ? ' &middot; ' . te('{n} min', ['n' => (int) $m['duration_minutes']]) : '' ?>
                         </div>
                     </div>
-                    <?php if ((int) $m['seen'] === 0): ?><span class="sh-dot" title="Not opened yet"></span><?php endif; ?>
-                    <a class="btn btn--ghost btn--sm" href="<?= BASE_URL ?>/my/materials/<?= (int) $m['id'] ?>/open">Open</a>
+                    <?php if ((int) $m['seen'] === 0): ?><span class="sh-dot" title="<?= te('Not opened yet') ?>"></span><?php endif; ?>
+                    <a class="btn btn--ghost btn--sm" href="<?= BASE_URL ?>/my/materials/<?= (int) $m['id'] ?>/open"><?= te('Open') ?></a>
                 </div>
             <?php endforeach; endif; ?>
         </div>
 
         <!-- Classes -->
         <div class="sh-card">
-            <h3>&#128218; My classes</h3>
+            <h3>&#128218; <?= te('My Classes') ?></h3>
             <?php if ($classes === []): ?>
-                <p class="sh-empty">You're not enrolled in any classes yet.</p>
+                <p class="sh-empty"><?= te("You're not enrolled in any classes yet.") ?></p>
             <?php else: ?>
                 <div class="sh-classes">
                     <?php foreach ($classes as $c): ?>
                         <a class="sh-class <?= $c['open'] ? '' : 'sh-class--locked' ?>" href="<?= BASE_URL ?>/my/classes/<?= (int) $c['id'] ?>">
                             <div style="font-weight:700;"><?= $e($c['class_name']) ?></div>
                             <div class="sh-row__meta" style="margin:.25rem 0 .6rem;">
-                                <?= $e($c['days']) ?><?= $c['start_time'] ? ' &middot; ' . $e(substr((string) $c['start_time'], 0, 5)) : '' ?>
+                                <?= $e(lang_names((string) $c['days'])) ?><?= $c['start_time'] ? ' &middot; ' . $e(substr((string) $c['start_time'], 0, 5)) : '' ?>
                                 <?= $c['institute_name'] ? ' &middot; ' . $e($c['institute_name']) : '' ?>
                             </div>
                             <?php if (($c['scholarship_type'] ?? '') === 'free_card'): ?>
-                                <span class="sh-pill sh-pill--free">Free card</span>
+                                <span class="sh-pill sh-pill--free"><?= te('Free card') ?></span>
                             <?php elseif (in_array($c['payment_status'], ['paid', 'waived'], true)): ?>
-                                <span class="sh-pill sh-pill--ok">&#10003; <?= $e($now->format('F')) ?> paid</span>
+                                <span class="sh-pill sh-pill--ok">&#10003; <?= te('{month} paid', ['month' => lang_date('F', $now->getTimestamp())]) ?></span>
                             <?php elseif ($c['payment_status'] === null): ?>
-                                <span class="sh-pill sh-pill--wait">Fee not issued yet</span>
+                                <span class="sh-pill sh-pill--wait"><?= te('Fee not issued yet') ?></span>
                             <?php else: ?>
-                                <span class="sh-pill sh-pill--due">&#128274; Rs. <?= number_format((float) $c['owed'], 0) ?> due</span>
+                                <span class="sh-pill sh-pill--due">&#128274; <?= te('Rs. {n} due', ['n' => number_format((float) $c['owed'], 0)]) ?></span>
                             <?php endif; ?>
                         </a>
                     <?php endforeach; ?>
@@ -247,43 +247,43 @@ $whenLabel = static function (array $item) use ($now): string {
     <div>
         <!-- Progress -->
         <div class="sh-card">
-            <h3>&#127919; My progress</h3>
+            <h3>&#127919; <?= te('My progress') ?></h3>
             <?php if (empty($progress['has_data'])): ?>
-                <p class="sh-empty">Your level appears once you have quiz marks or attendance.</p>
+                <p class="sh-empty"><?= te('Your level appears once you have quiz marks or attendance.') ?></p>
             <?php else: ?>
                 <div class="sh-ring">
                     <svg width="120" height="120" viewBox="0 0 120 120" role="img"
-                         aria-label="Overall score <?= round($score) ?> out of 100">
+                         aria-label="<?= te('Overall score {n} out of 100', ['n' => round($score)]) ?>">
                         <circle cx="60" cy="60" r="52" fill="none" stroke="var(--surface-sunken)" stroke-width="12"/>
                         <circle cx="60" cy="60" r="52" fill="none" stroke="var(--primary)" stroke-width="12"
                                 stroke-linecap="round" transform="rotate(-90 60 60)"
                                 stroke-dasharray="<?= round($ringFill, 1) ?> <?= round($ringLength, 1) ?>"/>
                         <text x="60" y="58" text-anchor="middle" font-size="26" font-weight="700" fill="var(--text)"><?= round($score) ?></text>
-                        <text x="60" y="78" text-anchor="middle" font-size="11" fill="var(--text-muted)">out of 100</text>
+                        <text x="60" y="78" text-anchor="middle" font-size="11" fill="var(--text-muted)"><?= te('out of 100') ?></text>
                     </svg>
                     <div style="flex:1; min-width:0;">
-                        <div style="font-size:1.15rem; font-weight:700; color:var(--primary);"><?= $e($progress['level']) ?></div>
+                        <div style="font-size:1.15rem; font-weight:700; color:var(--primary);"><?= te((string) $progress['level']) ?></div>
                         <?php foreach ([
                             ['Quiz marks', $progress['marks']['quizzes_taken'] > 0 ? $progress['marks']['average_percentage'] : null],
                             ['Attendance', $progress['attendance']['sessions_recorded'] > 0 ? $progress['attendance']['rate'] : null],
                             ['Material opened', $progress['engagement']['materials_total'] > 0 ? $progress['engagement']['rate'] : null],
                         ] as [$label, $value]): ?>
                             <div class="sh-row__meta" style="display:flex; justify-content:space-between;">
-                                <span><?= $label ?></span><span><?= $value !== null ? round((float) $value) . '%' : '&ndash;' ?></span>
+                                <span><?= te($label) ?></span><span><?= $value !== null ? round((float) $value) . '%' : '&ndash;' ?></span>
                             </div>
                             <div class="sh-bar"><span style="width:<?= $value !== null ? min(100, max(0, (float) $value)) : 0 ?>%;"></span></div>
                         <?php endforeach; ?>
                     </div>
                 </div>
-                <a href="<?= BASE_URL ?>/my/progress" class="text-sm">See how it's worked out &rarr;</a>
+                <a href="<?= BASE_URL ?>/my/progress" class="text-sm"><?= te("See how it's worked out") ?> &rarr;</a>
             <?php endif; ?>
         </div>
 
         <!-- Coming up -->
         <div class="sh-card">
-            <h3>&#128197; Coming up</h3>
+            <h3>&#128197; <?= te('Coming up') ?></h3>
             <?php if ($comingUp === []): ?>
-                <p class="sh-empty">No tests, deadlines or extra classes in the next two weeks.</p>
+                <p class="sh-empty"><?= te('No tests, deadlines or extra classes in the next two weeks.') ?></p>
             <?php else: foreach ($comingUp as $item):
                 $isExam = in_array($item['event_type'] ?? '', ['exam', 'test'], true);
                 ?>
@@ -293,18 +293,18 @@ $whenLabel = static function (array $item) use ($now): string {
                     </div>
                     <div class="sh-row__main">
                         <div class="sh-row__title"><?= $e($item['title']) ?></div>
-                        <div class="sh-row__meta"><?= $e($item['detail']) ?> &middot; <?= $e($whenLabel($item)) ?></div>
+                        <div class="sh-row__meta"><?= te((string) $item['detail']) ?> &middot; <?= $e($whenLabel($item)) ?></div>
                     </div>
                 </div>
             <?php endforeach; endif; ?>
-            <a href="<?= BASE_URL ?>/my/calendar" class="text-sm">Open my calendar &rarr;</a>
+            <a href="<?= BASE_URL ?>/my/calendar" class="text-sm"><?= te('Open my calendar') ?> &rarr;</a>
         </div>
 
         <!-- Recent marks -->
         <div class="sh-card sh-marks">
-            <h3>&#128202; Recent marks</h3>
+            <h3>&#128202; <?= te('Recent marks') ?></h3>
             <?php if ($marks === []): ?>
-                <p class="sh-empty">No marked quizzes yet.</p>
+                <p class="sh-empty"><?= te('No marked quizzes yet.') ?></p>
             <?php else: foreach ($marks as $m): $pct = (float) $m['percentage']; ?>
                 <div class="sh-row__meta" style="display:flex; justify-content:space-between; gap:.5rem;">
                     <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?= $e($m['title']) ?></span>
@@ -312,30 +312,30 @@ $whenLabel = static function (array $item) use ($now): string {
                 </div>
                 <div class="sh-bar <?= $pct < 50 ? 'sh-bar--low' : '' ?>"><span style="width:<?= min(100, max(0, $pct)) ?>%;"></span></div>
             <?php endforeach; ?>
-                <a href="<?= BASE_URL ?>/my/marks" class="text-sm">All my marks &rarr;</a>
+                <a href="<?= BASE_URL ?>/my/marks" class="text-sm"><?= te('All my marks') ?> &rarr;</a>
             <?php endif; ?>
         </div>
 
         <!-- Ask the assistant -->
         <div class="sh-card sh-ask">
-            <h3>&#129302; Ask me anything about your classes</h3>
-            <p class="sh-row__meta" style="margin:-.4rem 0 .75rem;">English, Sinhala or Singlish &mdash; "ilanga panthiya kawadada?" works too.</p>
+            <h3>&#129302; <?= te('Ask me anything about your classes') ?></h3>
+            <p class="sh-row__meta" style="margin:-.4rem 0 .75rem;"><?= te('English, Sinhala or Singlish — "ilanga panthiya kawadada?" works too.') ?></p>
             <div class="sh-chips">
                 <?php foreach (array_slice($suggestions, 0, 4) as $s): ?>
-                    <button type="button" class="sh-chip" data-ask="<?= $e($s) ?>"><?= $e($s) ?></button>
+                    <button type="button" class="sh-chip" data-ask="<?= $e($s) ?>"><?= te($s) ?></button>
                 <?php endforeach; ?>
             </div>
         </div>
 
         <?php if ($notifications !== []): ?>
             <div class="sh-card">
-                <h3>&#128276; Latest notifications</h3>
+                <h3>&#128276; <?= te('Latest notifications') ?></h3>
                 <?php foreach ($notifications as $n): ?>
                     <div class="sh-row">
                         <?php if (!(int) $n['is_read']): ?><span class="sh-dot"></span><?php endif; ?>
                         <div class="sh-row__main">
                             <div class="sh-row__title" style="font-weight:<?= (int) $n['is_read'] ? 500 : 700 ?>;"><?= $e($n['title']) ?></div>
-                            <div class="sh-row__meta"><?= $e(date('j M, g:ia', strtotime($n['created_at']))) ?></div>
+                            <div class="sh-row__meta"><?= $e(lang_date('j M, g:ia', (string) $n['created_at'])) ?></div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -357,7 +357,7 @@ $whenLabel = static function (array $item) use ($now): string {
 
     function render() {
         var ms = target - (serverNow + (Date.now() - started));
-        if (ms <= 0) { el.textContent = 'Now'; return; }
+        if (ms <= 0) { el.textContent = <?= json_encode(t('Now')) ?>; return; }
         var m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
         el.textContent = d > 0 ? d + 'd ' + h + 'h' : (h > 0 ? h + 'h ' + mm + 'm' : mm + ' min');
     }
@@ -368,7 +368,7 @@ $whenLabel = static function (array $item) use ($now): string {
 // The suggestion chips on this page open the assistant with that question.
 document.querySelectorAll('[data-ask]').forEach(function (btn) {
     btn.addEventListener('click', function () {
-        if (window.StudyAssistant) window.StudyAssistant.ask(btn.getAttribute('data-ask'));
+        if (window.StudyAssistant) window.StudyAssistant.ask(btn.getAttribute('data-ask'), btn.textContent.trim());
     });
 });
 </script>

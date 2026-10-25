@@ -121,8 +121,16 @@ function te(string $text, array $vars = []): string
 function lang_date(string $format, int|string|null $time = null): string
 {
     $timestamp = is_int($time) ? $time : ($time === null ? time() : (int) strtotime((string) $time));
-    $out = date($format, $timestamp);
+    return lang_names(date($format, $timestamp));
+}
 
+/**
+ * Month names, day names and am/pm inside any ready-made English text,
+ * such as a class schedule ("Saturday & Sunday 8:00 am"), in the
+ * current language.
+ */
+function lang_names(string $out): string
+{
     if (lang_current() !== 'si') {
         return $out;
     }

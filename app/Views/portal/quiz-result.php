@@ -20,11 +20,11 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
     <div>
         <h1 class="page-header__title"><?= htmlspecialchars($attempt['title'], ENT_QUOTES, 'UTF-8') ?></h1>
         <p class="text-sm text-muted">
-            Handed in <?= $attempt['submitted_at'] ? date('j M Y, g:i a', strtotime($attempt['submitted_at'])) : '&mdash;' ?>
+            <?= te('Handed in {when}', ['when' => $attempt['submitted_at'] ? lang_date('j M Y, g:i a', (string) $attempt['submitted_at']) : '—']) ?>
         </p>
     </div>
     <div class="page-header__actions">
-        <a href="<?= BASE_URL ?>/my/marks" class="btn btn--ghost">&larr; My marks</a>
+        <a href="<?= BASE_URL ?>/my/marks" class="btn btn--ghost">&larr; <?= te('My Marks') ?></a>
     </div>
 </div>
 
@@ -35,19 +35,19 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
         </div>
         <div style="margin-top:.5rem; color:var(--text-secondary);">
             <?= $attempt['score'] !== null
-                ? rtrim(rtrim(number_format((float) $attempt['score'], 2), '0'), '.') . ' out of ' . rtrim(rtrim(number_format((float) $attempt['total_marks'], 2), '0'), '.') . ' marks'
-                : 'Not marked yet' ?>
+                ? te('{a} out of {b} marks', ['a' => rtrim(rtrim(number_format((float) $attempt['score'], 2), '0'), '.'), 'b' => rtrim(rtrim(number_format((float) $attempt['total_marks'], 2), '0'), '.')])
+                : te('Not marked yet') ?>
         </div>
 
         <?php if ($attempt['attempt_status'] === 'auto_submitted'): ?>
             <div class="text-sm" style="margin-top:.75rem; color:var(--warning);">
-                The time ran out and this was handed in automatically.
+                <?= te('The time ran out and this was handed in automatically.') ?>
             </div>
         <?php endif; ?>
 
         <?php if ((int) $attempt['needs_marking'] === 1): ?>
             <div class="text-sm" style="margin-top:.75rem; color:var(--warning);">
-                Some answers are still being marked. This score may go up.
+                <?= te('Some answers are still being marked. This score may go up.') ?>
             </div>
         <?php endif; ?>
     </div>
@@ -58,14 +58,13 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
         <div class="card__body" style="text-align:center; padding:2rem 1.5rem;">
             <div style="font-size:2rem;">&#128274;</div>
             <p style="margin:.75rem 0 0; color:var(--text-secondary);">
-                The answers appear here once the quiz closes on
-                <?= date('j M Y, g:i a', strtotime($attempt['closes_at'])) ?>.
+                <?= te('The answers appear here once the quiz closes on {when}.', ['when' => lang_date('j M Y, g:i a', (string) $attempt['closes_at'])]) ?>
             </p>
         </div>
     </div>
 <?php else: ?>
     <div class="card">
-        <div class="card__header"><h3 style="margin:0;">Your answers</h3></div>
+        <div class="card__header"><h3 style="margin:0;"><?= te('Your answers') ?></h3></div>
         <div class="card__body" style="display:grid; gap:1rem;">
             <?php foreach ($answers as $a):
                 $correct = (int) ($a['is_correct'] ?? 0) === 1;
@@ -86,9 +85,9 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
 
                     <?php if ($a['question_type'] === 'short_answer'): ?>
                         <div class="text-sm" style="margin-top:.75rem;">
-                            <div>You wrote: <strong><?= htmlspecialchars((string) ($a['answer_text'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
+                            <div><?= te('You wrote:') ?> <strong><?= htmlspecialchars((string) ($a['answer_text'] ?? '-'), ENT_QUOTES, 'UTF-8') ?></strong></div>
                             <?php if (!empty($a['correct_text'])): ?>
-                                <div style="color:var(--success);">Expected: <?= htmlspecialchars($a['correct_text'], ENT_QUOTES, 'UTF-8') ?></div>
+                                <div style="color:var(--success);"><?= te('Expected:') ?> <?= htmlspecialchars($a['correct_text'], ENT_QUOTES, 'UTF-8') ?></div>
                             <?php endif; ?>
                         </div>
                     <?php else: ?>
@@ -101,7 +100,7 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
                                     <li class="text-sm" style="<?= $isRight ? 'color:var(--success); font-weight:600;' : ($isMine ? 'color:var(--danger);' : 'color:var(--text-secondary);') ?>">
                                         <?= $label ?>. <?= htmlspecialchars($a['option_' . $key], ENT_QUOTES, 'UTF-8') ?>
                                         <?= $isRight ? ' &#10003;' : '' ?>
-                                        <?= $isMine && !$isRight ? ' &larr; your answer' : '' ?>
+                                        <?= $isMine && !$isRight ? ' &larr; ' . te('your answer') : '' ?>
                                     </li>
                                 <?php endif; ?>
                             <?php endforeach; ?>
@@ -109,7 +108,7 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
                     <?php endif; ?>
 
                     <?php if ($unanswered): ?>
-                        <div class="text-sm text-muted" style="margin-top:.5rem;">You left this blank.</div>
+                        <div class="text-sm text-muted" style="margin-top:.5rem;"><?= te('You left this blank.') ?></div>
                     <?php endif; ?>
 
                     <?php if (!empty($a['explanation'])): ?>

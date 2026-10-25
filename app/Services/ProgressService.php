@@ -306,24 +306,22 @@ class ProgressService
             return 'Strong across marks, attendance and material.';
         }
 
+        // Through t(), so a student or parent reading in Sinhala gets the
+        // sentence in Sinhala; in English the wording is unchanged.
         return match ($weakest) {
-            'marks' => sprintf(
-                'Quiz marks are averaging %s%% over %d quiz%s -- the area to work on.',
-                $value,
-                $marks['quizzes_taken'],
-                $marks['quizzes_taken'] === 1 ? '' : 'zes'
+            'marks' => t(
+                $marks['quizzes_taken'] === 1
+                    ? 'Quiz marks are averaging {pct}% over {n} quiz -- the area to work on.'
+                    : 'Quiz marks are averaging {pct}% over {n} quizzes -- the area to work on.',
+                ['pct' => $value, 'n' => (int) $marks['quizzes_taken']]
             ),
-            'attendance' => sprintf(
-                'Attended %d of %d sessions (%s%%). Missing class is the main gap.',
-                $attendance['attended'],
-                $attendance['sessions_recorded'],
-                $value
+            'attendance' => t(
+                'Attended {a} of {b} sessions ({pct}%). Missing class is the main gap.',
+                ['a' => (int) $attendance['attended'], 'b' => (int) $attendance['sessions_recorded'], 'pct' => $value]
             ),
-            default => sprintf(
-                'Opened %d of %d posted items (%s%%). Working through the material would help.',
-                $engagement['materials_viewed'],
-                $engagement['materials_total'],
-                $value
+            default => t(
+                'Opened {a} of {b} posted items ({pct}%). Working through the material would help.',
+                ['a' => (int) $engagement['materials_viewed'], 'b' => (int) $engagement['materials_total'], 'pct' => $value]
             ),
         };
     }

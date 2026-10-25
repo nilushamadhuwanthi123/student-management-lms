@@ -218,7 +218,7 @@ class CalendarController extends BaseController
         [$from, $to] = $this->gridBounds($month);
 
         $this->view('calendar/mine', [
-            'pageTitle'  => $child['full_name'] . "'s calendar",
+            'pageTitle'  => t("{name}'s calendar", ['name' => $child['full_name']]),
             'activePage' => 'family-calendar',
             'month'      => $month,
             'gridFrom'   => $from,
