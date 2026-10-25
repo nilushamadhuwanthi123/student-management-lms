@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="<?= function_exists('lang_current') ? lang_current() : 'en' ?>" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($pageTitle ?? 'EduManager - Student Management System', ENT_QUOTES, 'UTF-8') ?></title>
-    <meta name="description" content="<?= htmlspecialchars($metaDescription ?? 'EduManager - A comprehensive student management system for educational institutes.', ENT_QUOTES, 'UTF-8') ?>">
+    <title><?= htmlspecialchars($pageTitle ?? (\App\Services\PublicSite::teacherName() ?? t('Science classes')), ENT_QUOTES, 'UTF-8') ?></title>
+    <meta name="description" content="<?= htmlspecialchars($metaDescription ?? 'Science classes for Grades 6 to 11.', ENT_QUOTES, 'UTF-8') ?>">
     <?= csrfMeta() ?>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -259,6 +259,22 @@
             }
         }
 
+        /* Navigation over the dark blue hero (desktop): white until scrolled */
+        @media (min-width: 769px) {
+            .navbar--on-dark:not(.scrolled) .navbar__brand,
+            .navbar--on-dark:not(.scrolled) .navbar__brand small,
+            .navbar--on-dark:not(.scrolled) .navbar__links > li > a:not(.nav-login),
+            .navbar--on-dark:not(.scrolled) #themeToggle { color: #fff !important; }
+            .navbar--on-dark:not(.scrolled) .navbar__links > li > a.active::after { background: #FACC15; }
+            .navbar--on-dark:not(.scrolled) .navbar__links > li > a.active { color: #FACC15 !important; }
+        }
+        .navbar--on-dark:not(.scrolled) .navbar__toggle,
+        .navbar--on-dark:not(.scrolled) .navbar__brand,
+        .navbar--on-dark:not(.scrolled) .navbar__brand small { color: #fff !important; }
+        .navbar__brand small { display: block; font-size: .72rem; font-weight: 500; opacity: .8; letter-spacing: .01em; line-height: 1.1; }
+        .navbar__brand .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+        .nav-lang { border: 1px solid currentColor; border-radius: 999px; padding: .25rem .7rem !important; text-transform: none !important; font-size: .8rem !important; }
+
         /* Noscript fallback */
         noscript .reveal { opacity: 1; transform: none; }
     </style>
@@ -266,15 +282,13 @@
 <body class="public-layout">
 
     <!-- Liquid-Glass Navbar -->
-    <nav class="navbar navbar--liquid-glass" id="mainNav">
+    <nav class="navbar navbar--liquid-glass<?= in_array($activePage ?? '', ['home', 'about', 'contact', 'branch'], true) ? ' navbar--on-dark' : '' ?>" id="mainNav">
         <div class="nav-shimmer"></div>
         <a href="<?= BASE_URL ?>/" class="navbar__brand font-body">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                <rect width="32" height="32" rx="8" fill="var(--primary)"/>
-                <path d="M8 22V12l8-4 8 4v10l-8 4-8-4z" stroke="var(--text-inverse)" stroke-width="1.5" fill="none"/>
-                <path d="M16 12v10M8 12l8 4 8-4" stroke="var(--text-inverse)" stroke-width="1.5"/>
-            </svg>
-            <span class="font-semibold tracking-tight">EduManager</span>
+            <span style="width:36px;height:36px;border-radius:11px;background:#FACC15;display:grid;place-items:center;color:#0B1B3F;flex:0 0 36px;">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg>
+            </span>
+            <span class="brand-text"><span class="font-semibold tracking-tight"><?= htmlspecialchars(\App\Services\PublicSite::teacherName() ?? t('Science classes'), ENT_QUOTES, 'UTF-8') ?></span><small><?= te('Science classes') ?> &middot; <?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></small></span>
         </a>
 
         <button class="navbar__toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -282,16 +296,15 @@
         </button>
 
         <ul class="navbar__links" id="navLinks">
-            <li><a href="<?= BASE_URL ?>/" class="<?= ($activePage ?? '') === 'home' ? 'active' : '' ?>">Home</a></li>
+            <li><a href="<?= BASE_URL ?>/" class="<?= ($activePage ?? '') === 'home' ? 'active' : '' ?>"><?= te('Home') ?></a></li>
             <li><a href="<?= BASE_URL ?>/timetable" class="<?= ($activePage ?? '') === 'classes' ? 'active' : '' ?>"><?= te('Timetable') ?></a></li>
-            <li><a href="<?= BASE_URL ?>/about" class="<?= ($activePage ?? '') === 'about' ? 'active' : '' ?>">About</a></li>
-            <li><a href="<?= BASE_URL ?>/features" class="<?= ($activePage ?? '') === 'features' ? 'active' : '' ?>">Features</a></li>
-            <li><a href="<?= BASE_URL ?>/contact" class="<?= ($activePage ?? '') === 'contact' ? 'active' : '' ?>">Contact</a></li>
+            <li><a href="<?= BASE_URL ?>/about" class="<?= ($activePage ?? '') === 'about' ? 'active' : '' ?>"><?= te('About') ?></a></li>
+            <li><a href="<?= BASE_URL ?>/contact" class="<?= ($activePage ?? '') === 'contact' ? 'active' : '' ?>"><?= te('Contact') ?></a></li>
+            <li><a href="<?= BASE_URL ?>/lang/<?= (function_exists('lang_current') && lang_current() === 'si') ? 'en' : 'si' ?>" class="nav-lang" hreflang="<?= (function_exists('lang_current') && lang_current() === 'si') ? 'en' : 'si' ?>"><?= (function_exists('lang_current') && lang_current() === 'si') ? 'English' : 'සිංහල' ?></a></li>
             <li>
-                <a href="<?= BASE_URL ?>/login" class="inline-flex items-center px-5 py-2 rounded-full text-sm font-semibold
-                    bg-[var(--primary)] text-[var(--text-inverse)] hover:bg-[var(--primary-hover)]
-                    transition-all duration-300 btn-glow" style="text-transform:none;">
-                    Login
+                <a href="<?= BASE_URL ?>/login" class="nav-login inline-flex items-center px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300"
+                   style="text-transform:none; background:#FACC15; color:#0B1B3F;">
+                    <?= te('Login') ?>
                 </a>
             </li>
             <li>
@@ -312,75 +325,47 @@
         <?= $content ?>
     </main>
 
-    <!-- Premium Footer -->
+    <!-- Footer: only real details (branches and phones from the database) -->
+    <?php $__fb = \App\Services\PublicSite::branches(); $__ft = \App\Services\PublicSite::teacherName(); ?>
     <footer class="relative overflow-hidden" style="background: #0B1220;">
-        <!-- Subtle gradient accent -->
-        <div class="absolute top-0 left-0 right-0 h-px" style="background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);"></div>
-
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-                <!-- Brand Column -->
+        <div class="absolute top-0 left-0 right-0 h-px" style="background: linear-gradient(90deg, transparent, #FACC15, #1D4ED8, transparent);"></div>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
                 <div class="md:col-span-1">
-                    <div class="flex items-center gap-2 mb-4">
-                        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                            <rect width="32" height="32" rx="8" fill="#1D4ED8"/>
-                            <path d="M8 22V12l8-4 8 4v10l-8 4-8-4z" stroke="#fff" stroke-width="1.5" fill="none"/>
-                            <path d="M16 12v10M8 12l8 4 8-4" stroke="#fff" stroke-width="1.5"/>
-                        </svg>
-                        <span class="text-white font-semibold text-lg tracking-tight font-body">EduManager</span>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span style="width:34px;height:34px;border-radius:10px;background:#FACC15;display:grid;place-items:center;color:#0B1B3F;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg>
+                        </span>
+                        <span class="text-white font-semibold text-lg tracking-tight"><?= htmlspecialchars($__ft ?? t('Science classes'), ENT_QUOTES, 'UTF-8') ?></span>
                     </div>
-                    <p class="text-sm leading-relaxed" style="color: #8494AC;">
-                        A comprehensive student management system designed to streamline
-                        educational institute operations.
-                    </p>
+                    <p class="text-sm leading-relaxed" style="color:#94A3B8;"><?= te('Science classes') ?> &middot; <?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></p>
                 </div>
-
-                <!-- Quick Links -->
                 <div>
-                    <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4">Quick Links</h4>
-                    <ul class="space-y-2">
-                        <li><a href="<?= BASE_URL ?>/" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">Home</a></li>
-                        <li><a href="<?= BASE_URL ?>/timetable" class="text-sm hover:text-white transition-colors" style="color: #8494AC;"><?= te('Timetable') ?></a></li>
-                        <li><a href="<?= BASE_URL ?>/about" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">About Us</a></li>
-                        <li><a href="<?= BASE_URL ?>/features" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">Features</a></li>
-                        <li><a href="<?= BASE_URL ?>/contact" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">Contact</a></li>
+                    <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4"><?= te('Pages') ?></h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="<?= BASE_URL ?>/" class="hover:text-white" style="color:#94A3B8;"><?= te('Home') ?></a></li>
+                        <li><a href="<?= BASE_URL ?>/timetable" class="hover:text-white" style="color:#94A3B8;"><?= te('Timetable') ?></a></li>
+                        <li><a href="<?= BASE_URL ?>/about" class="hover:text-white" style="color:#94A3B8;"><?= te('About') ?></a></li>
+                        <li><a href="<?= BASE_URL ?>/contact" class="hover:text-white" style="color:#94A3B8;"><?= te('Contact') ?></a></li>
                     </ul>
                 </div>
-
-                <!-- Contact -->
                 <div>
-                    <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4">Contact</h4>
-                    <ul class="space-y-2 text-sm" style="color: #8494AC;">
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
-                            info@edumanager.com
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
-                            +94 11 234 5678
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                            123 Education Lane, Colombo, Sri Lanka
-                        </li>
+                    <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4"><?= te('Branches') ?></h4>
+                    <ul class="space-y-3 text-sm" style="color:#94A3B8;">
+                        <?php foreach ($__fb as $__b): ?>
+                            <li><a href="<?= BASE_URL ?>/branches/<?= (int) $__b['id'] ?>" class="text-white hover:underline"><?= htmlspecialchars((string) $__b['name'], ENT_QUOTES, 'UTF-8') ?></a>
+                                <?php if (!empty($__b['phone1'])): ?><br><a href="<?= htmlspecialchars(\App\Services\PublicSite::telHref($__b['phone1']), ENT_QUOTES, 'UTF-8') ?>" class="hover:text-white" style="color:#94A3B8;">&#128222; <?= htmlspecialchars((string) $__b['phone1'], ENT_QUOTES, 'UTF-8') ?></a><?php endif; ?></li>
+                        <?php endforeach; ?>
                     </ul>
                 </div>
-
-                <!-- Social / CTA -->
                 <div>
-                    <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4">Get Started</h4>
-                    <p class="text-sm mb-4" style="color: #8494AC;">Ready to transform your institute?</p>
-                    <a href="<?= BASE_URL ?>/login" class="inline-flex items-center px-5 py-2.5 rounded-full text-sm font-semibold
-                        bg-[#1D4ED8] text-white hover:bg-[#1A3FAF] transition-all duration-300">
-                        Login Now
-                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-                    </a>
+                    <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4"><?= te('Students and parents') ?></h4>
+                    <p class="text-sm mb-4" style="color:#94A3B8;"><?= te('Log in to see classes, marks, homework and fees.') ?></p>
+                    <a href="<?= BASE_URL ?>/login" class="inline-flex items-center px-5 py-2.5 rounded-full text-sm font-semibold" style="background:#FACC15;color:#0B1B3F;"><?= te('Login') ?> &rarr;</a>
                 </div>
             </div>
-
-            <!-- Bottom bar -->
-            <div class="border-t pt-6 text-center" style="border-color: #141E31;">
-                <p class="text-xs" style="color: #3D5273;">&copy; <?= date('Y') ?> EduManager. All rights reserved.</p>
+            <div class="border-t pt-6 text-center" style="border-color:#1E293B;">
+                <p class="text-xs" style="color:#64748B;">&copy; <?= date('Y') ?> <?= htmlspecialchars($__ft ?? t('Science classes'), ENT_QUOTES, 'UTF-8') ?> &middot; <?= te('Science classes') ?></p>
             </div>
         </div>
     </footer>

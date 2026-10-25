@@ -1,5 +1,5 @@
 <?php /** @var array<string, mixed> $c */ $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); ?>
-<div class="ts-card">
+<div class="ts-card ts-class ts-g<?= (int) preg_replace('/\D+/', '', (string) $c['grade']) ?>">
     <div style="margin-bottom:.45rem;">
         <span class="ts-badge ts-badge--grade"><?= $e(t((string) $c['grade'])) ?></span>
         <?php if (($c['delivery_mode'] ?? 'physical') !== 'physical'): ?>

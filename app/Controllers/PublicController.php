@@ -16,12 +16,12 @@ class PublicController extends BaseController
         // invented student counts, success rates or testimonials.
         $branches = $this->publicBranches();
         $this->view('public/tuition-home', [
-            'pageTitle'       => 'Science Classes for Grades 6-11 | Pannipitiya, Galle, Kandy',
+            'pageTitle'       => (\App\Services\PublicSite::teacherName() ? \App\Services\PublicSite::teacherName() . ' | ' : '') . t('Science classes') . ' ' . t('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]),
             'metaDescription' => 'Science tuition for Grades 6 to 11 at branches in Pannipitiya, Galle and Kandy - physical and online classes, lesson recordings, quizzes and a parent portal.',
             'activePage'      => 'home',
             'branches'        => $branches,
             'classes'         => $this->publicClasses(),
-            'teacher'         => $this->leadTeacher(),
+            'teacher'         => \App\Services\PublicSite::teacherName(),
         ], 'layouts/public');
     }
 
@@ -58,7 +58,7 @@ class PublicController extends BaseController
         $this->view('public/branch', [
             'pageTitle'       => $branch['name'] . ' | Science classes',
             'metaDescription' => 'Science classes for Grades 6 to 11 at ' . $branch['name'] . '.',
-            'activePage'      => 'classes',
+            'activePage'      => 'branch',
             'branch'          => $branch,
             'classes'         => $this->publicClasses(null, (int) $branch['id']),
         ], 'layouts/public');
@@ -201,7 +201,9 @@ class PublicController extends BaseController
     public function about(): void
     {
         $this->view('public/about', [
-            'pageTitle' => 'About Us',
+            'pageTitle'       => t('About the classes'),
+            'metaDescription' => 'Science classes for Grades 6 to 11: the teacher, how the classes run, and the branches.',
+            'activePage'      => 'about',
         ], 'layouts/public');
     }
 
@@ -210,9 +212,9 @@ class PublicController extends BaseController
      */
     public function features(): void
     {
-        $this->view('public/features', [
-            'pageTitle' => 'Features',
-        ], 'layouts/public');
+        // The old product-feature page described the software, not the
+        // classes; parents are sent to the section that explains the classes.
+        $this->redirect('/#how');
     }
 
     /**
@@ -221,7 +223,9 @@ class PublicController extends BaseController
     public function contact(): void
     {
         $this->view('public/contact', [
-            'pageTitle' => 'Contact Us',
+            'pageTitle'       => t('Contact'),
+            'metaDescription' => 'Phone numbers and locations of the Science class branches.',
+            'activePage'      => 'contact',
         ], 'layouts/public');
     }
 
@@ -242,12 +246,18 @@ class PublicController extends BaseController
 
         $errors = $this->validate($data, [
             'name'    => 'required|max:255',
-            'email'   => 'required|email|max:255',
+            'email'   => 'max:255',
             'phone'   => 'max:50',
             'subject' => 'required|max:255',
             'message' => 'required|max:5000',
         ]);
 
+        if ($data['email'] !== '' && !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = t('That email address is not valid.');
+        }
+        if ($data['email'] === '' && $data['phone'] === '') {
+            $errors['phone'] = t('Give a phone number or an email so the office can reply.');
+        }
         if (!empty($errors)) {
             $this->flash('error', implode(' ', $errors));
             $this->redirect('/contact');
@@ -272,7 +282,7 @@ class PublicController extends BaseController
             }
         }
 
-        $this->flash('success', 'Thank you for your message! We will get back to you soon.');
+        $this->flash('success', t('Thank you! The branch office will contact you soon.'));
         $this->redirect('/contact');
     }
 }

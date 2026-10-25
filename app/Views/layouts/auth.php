@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title><?= htmlspecialchars($pageTitle ?? 'EduManager - Login', ENT_QUOTES, 'UTF-8') ?></title>
+    <title><?= htmlspecialchars(($pageTitle ?? t('Login')) . ' | ' . (\App\Services\PublicSite::teacherName() ?? t('Science classes')), ENT_QUOTES, 'UTF-8') ?></title>
     <?= csrfMeta() ?>
 
     <!-- Google Fonts -->
@@ -138,21 +138,16 @@
 
     <div class="login-cinematic">
         <!-- Left: Showcase Panel -->
-        <div class="login-showcase">
-            <div class="relative z-10 text-center px-12 max-w-md">
-                <!-- Logo -->
-                <div class="mb-8">
-                    <svg width="56" height="56" viewBox="0 0 32 32" fill="none" aria-hidden="true" class="mx-auto">
-                        <rect width="32" height="32" rx="8" fill="rgba(255,255,255,0.15)"/>
-                        <path d="M8 22V12l8-4 8 4v10l-8 4-8-4z" stroke="#fff" stroke-width="1.5" fill="none"/>
-                        <path d="M16 12v10M8 12l8 4 8-4" stroke="#fff" stroke-width="1.5"/>
-                    </svg>
+        <?php $__teacher = \App\Services\PublicSite::teacherName(); ?>
+        <div class="login-showcase" style="background: linear-gradient(180deg, rgba(10,42,107,.35) 0%, rgba(10,42,107,.78) 55%, rgba(10,42,107,.96) 100%), url('<?= BASE_URL ?>/assets/img/teacher-smartboard.jpg') center 20% / cover no-repeat;">
+            <div class="relative z-10 text-center px-12 max-w-md" style="margin-top:auto; padding-bottom:3rem;">
+                <div class="mb-5">
+                    <span style="width:56px;height:56px;border-radius:16px;background:#FACC15;display:inline-grid;place-items:center;color:#0B1B3F;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg></span>
                 </div>
-                <h2 class="font-display text-white text-3xl font-bold mb-4 leading-tight">
-                    <?= te('Empowering Education,') ?><br><?= te('One Institute at a Time') ?>
-                </h2>
-                <p class="text-white/60 text-sm leading-relaxed">
-                    <?= te('Streamline enrollment, automate workflows, and gain real-time insights into every aspect of your institution.') ?>
+                <h2 class="text-white text-3xl font-bold mb-2 leading-tight"><?= htmlspecialchars($__teacher ?? t('Science classes'), ENT_QUOTES, 'UTF-8') ?></h2>
+                <p class="text-sm font-semibold mb-3" style="color:#FDE68A;"><?= te('Science classes') ?> &middot; <?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></p>
+                <p class="text-sm leading-relaxed" style="color:rgba(255,255,255,.85);">
+                    <?= te('Your classes, notes, recordings, quizzes and marks, in one place.') ?>
                 </p>
                 <!-- Decorative circles -->
                 <div class="absolute -bottom-20 -left-20 w-60 h-60 rounded-full border border-white/5"></div>
@@ -180,16 +175,12 @@
 
                 <!-- Logo (mobile) -->
                 <div class="flex items-center gap-2 mb-6 lg:hidden">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                        <rect width="32" height="32" rx="8" fill="var(--primary)"/>
-                        <path d="M8 22V12l8-4 8 4v10l-8 4-8-4z" stroke="var(--text-inverse)" stroke-width="1.5" fill="none"/>
-                        <path d="M16 12v10M8 12l8 4 8-4" stroke="var(--text-inverse)" stroke-width="1.5"/>
-                    </svg>
-                    <span class="font-semibold text-lg" style="color: var(--text);">EduManager</span>
+                    <span style="width:34px;height:34px;border-radius:10px;background:#FACC15;display:grid;place-items:center;color:#0B1B3F;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg></span>
+                    <span class="font-semibold text-lg" style="color: var(--text);"><?= htmlspecialchars($__teacher ?? t('Science classes'), ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
 
                 <h1 class="font-display text-2xl font-bold mb-1" style="color: var(--text);"><?= te('Welcome Back') ?></h1>
-                <p class="text-sm mb-6" style="color: var(--text-secondary);"><?= te('Sign in to your EduManager account') ?></p>
+                <p class="text-sm mb-6" style="color: var(--text-secondary);"><?= te('Sign in to the class portal') ?></p>
 
                 <!-- Flash Messages -->
                 <?php include __DIR__ . '/../components/flash-messages.php'; ?>
