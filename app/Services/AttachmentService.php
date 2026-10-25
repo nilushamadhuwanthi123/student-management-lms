@@ -37,7 +37,7 @@ class AttachmentService
      * @return array{0: string, 1: string}|null  [relative path, display name], or null when no file was sent
      * @throws \RuntimeException with a message safe to show the user
      */
-    public function store(?array $file, string $folder): ?array
+    public function store(?array $file, string $folder, int $maxBytes = self::MAX_BYTES): ?array
     {
         if ($file === null || ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
             return null;
@@ -49,8 +49,8 @@ class AttachmentService
         if ($size <= 0) {
             throw new \RuntimeException('That file is empty.');
         }
-        if ($size > self::MAX_BYTES) {
-            throw new \RuntimeException('Files are capped at 5 MB.');
+        if ($size > $maxBytes) {
+            throw new \RuntimeException('Files are capped at ' . (int) round($maxBytes / 1048576) . ' MB.');
         }
 
         $head = (string) file_get_contents((string) $file['tmp_name'], false, null, 0, 8);

@@ -42,6 +42,8 @@ $month = $month ?? date('Y-m-01');
                        placeholder="e.g. Chemical Reactions - full lesson recording">
             </div>
 
+            <?php include __DIR__ . '/../components/topic-select.php'; ?>
+
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem;">
                 <div class="form-group">
                     <label class="form-label" for="material_type">

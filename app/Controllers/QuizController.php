@@ -138,6 +138,8 @@ class QuizController extends BaseController
             'created_by'         => (int) session_get('user_id'),
         ]);
 
+        (new \App\Services\TopicService($this->db))->tag('quizzes', (int) $quizId, (int) $classId, $_POST['topic_id'] ?? null);
+
         $this->flash('success', 'Quiz saved as a draft. Add the questions next.');
         $this->redirect("/classes/{$classId}/quizzes/{$quizId}");
     }
@@ -254,6 +256,9 @@ class QuizController extends BaseController
             ':ctext'   => $correctText !== '' ? $correctText : null,
             ':exp'     => trim($_POST['explanation'] ?? '') ?: null,
         ]);
+
+        // A question's own topic; when none is chosen it counts under the quiz's topic.
+        (new \App\Services\TopicService($this->db))->tag('quiz_questions', (int) $this->db->lastInsertId(), (int) $classId, $_POST['topic_id'] ?? null);
 
         $total = $this->quizzes->syncTotalMarks((int) $id);
 

@@ -346,6 +346,10 @@ $notificationCount = $notificationCount ?? 0;
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
                 <?= te('My assignments') ?>
             </a>
+            <a href="<?= BASE_URL ?>/my/papers" class="sidebar__link <?= $isHere('/my/papers') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/><path d="M8 7h8M8 11h6"/></svg>
+                <?= te('Past papers') ?>
+            </a>
             <a href="<?= BASE_URL ?>/my/payments" class="sidebar__link <?= $isHere('/my/payments') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                 <?= te('Payments') ?>
@@ -401,6 +405,16 @@ $notificationCount = $notificationCount ?? 0;
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
                 Teaching
             </a>
+            <?php if (in_array($userRole, ['super_admin', 'admin', 'teacher'], true)): ?>
+            <a href="<?= BASE_URL ?>/topics" class="sidebar__link <?= $isHere('/topics') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                <?= te('Topics') ?>
+            </a>
+            <a href="<?= BASE_URL ?>/past-papers" class="sidebar__link <?= $isHere('/past-papers') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/><path d="M8 7h8M8 11h6"/></svg>
+                <?= te('Past papers') ?>
+            </a>
+            <?php endif; ?>
             <!-- Classes, quizzes and tests on one grid -->
             <a href="<?= BASE_URL ?>/calendar" class="sidebar__link <?= $activePage === 'calendar' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -493,6 +507,7 @@ $notificationCount = $notificationCount ?? 0;
                 <div class="sidebar__sub-links <?= $activePage === 'attendance' ? 'open' : '' ?>" id="attendance-sub">
                     <a href="<?= BASE_URL ?>/attendance" class="sidebar__sub-link <?= $activeSubPage === 'log' ? 'active' : '' ?>">Daily Attendance</a>
                     <a href="<?= BASE_URL ?>/attendance/qr" class="sidebar__sub-link <?= $activeSubPage === 'qr' ? 'active' : '' ?>">QR Scan Terminal</a>
+                    <a href="<?= BASE_URL ?>/attendance/register" class="sidebar__sub-link <?= $isHere('/attendance/register') ? 'active' : '' ?>"><?= te('Class register') ?></a>
                 </div>
             </div>
             <?php endif; ?>

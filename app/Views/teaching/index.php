@@ -135,6 +135,10 @@ $month    = $month ?? date('Y-m-01');
                            class="btn btn--primary btn--sm" style="flex:1;">Quizzes</a>
                         <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/assignments"
                            class="btn btn--ghost btn--sm" style="flex:1;"><?= te('Assignments') ?></a>
+                        <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/learning-gaps"
+                           class="btn btn--ghost btn--sm" style="flex:1;"><?= te('Learning gaps') ?></a>
+                        <a href="<?= BASE_URL ?>/attendance/register?class_id=<?= (int) $c['id'] ?>"
+                           class="btn btn--ghost btn--sm" style="flex:1;"><?= te('Register') ?></a>
                     </div>
                 </div>
             <?php endforeach; ?>

@@ -151,8 +151,12 @@ class AttendanceController extends BaseController
 
         $studentId = (int) ($_POST['student_id'] ?? 0);
         $classId   = (int) ($_POST['class_id'] ?? 0);
-        $date      = trim($_POST['date'] ?? date('Y-m-d'));
+        $date      = self::validDate((string) ($_POST['date'] ?? '')) ?? date('Y-m-d');
         $status    = trim($_POST['status'] ?? 'present');
+        if (!in_array($status, ['present', 'late', 'absent'], true)) {
+            $this->flash('error', t('Choose present, late or absent.'));
+            $this->back();
+        }
         $markedBy  = (int) (session_get('user_id') ?? 1);
 
         if ($studentId <= 0 || $classId <= 0) {
@@ -168,8 +172,123 @@ class AttendanceController extends BaseController
         }
 
         $this->attendanceModel->markManual($studentId, $classId, $date, $status, $markedBy);
+        if ($status === 'absent') {
+            (new \App\Services\AbsenceAlertService())->alert($studentId, $classId, $date, $markedBy);
+        }
         $this->flash('success', 'Attendance record saved manually.');
         $this->back();
+    }
+
+    /**
+     * GET /attendance/register?class_id=&date=
+     * One class, one day: every enrolled student with their mark. Students
+     * who scanned in show as present; the rest can be marked absent, which
+     * alerts their family (once).
+     */
+    public function register(): void
+    {
+        $this->requireRegisterRole();
+        $scope = BranchScope::current();
+
+        $classes = $this->db->query(
+            "SELECT id, class_name, grade, start_time FROM classes WHERE status = 'active'{$scope->classSql('id')} ORDER BY class_name"
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        $classId = (int) ($_GET['class_id'] ?? 0);
+        $date = self::validDate((string) ($_GET['date'] ?? '')) ?? date('Y-m-d');
+        if ($date > date('Y-m-d')) {
+            $date = date('Y-m-d');
+        }
+
+        $students = [];
+        $class = null;
+        if ($classId > 0) {
+            if (!$scope->allowsClass($classId)) {
+                http_response_code(403);
+                $this->flash('error', t('That class is not in your branch.'));
+                $this->redirect('/attendance/register');
+            }
+            $class = $this->classModel->find($classId);
+            $stmt = $this->db->prepare(
+                "SELECT s.id, s.student_id_display, s.full_name,
+                        COALESCE(
+                          (SELECT a.status FROM attendance a WHERE a.student_id = s.id AND a.class_id = :c1 AND a.date = :d1 ORDER BY a.id DESC LIMIT 1),
+                          (SELECT a.status FROM attendance a WHERE a.student_id = s.id AND a.class_id IS NULL AND a.date = :d2 AND a.status IN ('present','late') LIMIT 1)
+                        ) AS status,
+                        (SELECT COUNT(*) FROM absence_alerts aa WHERE aa.student_id = s.id AND aa.class_id = :c2 AND aa.date = :d3) AS alerted
+                   FROM enrollments e JOIN students s ON s.id = e.student_id
+                  WHERE e.class_id = :c3 AND e.enrollment_status = 'active' AND s.status = 'active'
+               ORDER BY s.full_name"
+            );
+            $stmt->execute([':c1' => $classId, ':c2' => $classId, ':c3' => $classId, ':d1' => $date, ':d2' => $date, ':d3' => $date]);
+            $students = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        }
+
+        $this->view('attendance/register', [
+            'pageTitle'  => t('Class register'),
+            'classes'    => $classes,
+            'class'      => $class,
+            'date'       => $date,
+            'students'   => $students,
+            'alertsLive' => \App\Services\AbsenceAlertService::dateIsRecent($date),
+        ]);
+    }
+
+    /** POST /attendance/register */
+    public function saveRegister(): void
+    {
+        $this->requireRegisterRole();
+        verifyCsrfToken();
+
+        $classId = (int) ($_POST['class_id'] ?? 0);
+        $date = self::validDate((string) ($_POST['date'] ?? ''));
+        $back = '/attendance/register?class_id=' . $classId . '&date=' . ($date ?? '');
+        if ($classId <= 0 || $date === null || $date > date('Y-m-d')) {
+            $this->flash('error', t('Choose a class and a date that is not in the future.'));
+            $this->redirect('/attendance/register');
+        }
+        if (!BranchScope::current()->allowsClass($classId)) {
+            http_response_code(403);
+            $this->flash('error', t('That class is not in your branch.'));
+            $this->redirect('/attendance/register');
+        }
+
+        $enrolled = $this->db->prepare("SELECT student_id FROM enrollments WHERE class_id = :c AND enrollment_status = 'active'");
+        $enrolled->execute([':c' => $classId]);
+        $allowed = array_flip(array_map('intval', $enrolled->fetchAll(\PDO::FETCH_COLUMN)));
+
+        $by = (int) session_get('user_id');
+        $alerts = new \App\Services\AbsenceAlertService($this->db);
+        $saved = 0; $absent = 0; $families = 0;
+        foreach ((array) ($_POST['status'] ?? []) as $sid => $status) {
+            $sid = (int) $sid;
+            if (!isset($allowed[$sid]) || !in_array($status, ['present', 'late', 'absent'], true)) {
+                continue;
+            }
+            $this->attendanceModel->markManual($sid, $classId, $date, $status, $by);
+            $saved++;
+            if ($status === 'absent') {
+                $absent++;
+                if ($alerts->alert($sid, $classId, $date, $by)['created']) {
+                    $families++;
+                }
+            }
+        }
+
+        $this->logAudit('save_register', 'class', $classId, ['date' => $date, 'saved' => $saved, 'absent' => $absent, 'alerts' => $families]);
+        $this->flash('success', t('Register saved: {n} students, {a} absent, {f} families alerted.', ['n' => $saved, 'a' => $absent, 'f' => $families]));
+        $this->redirect($back);
+    }
+
+    private function requireRegisterRole(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF, AuthMiddleware::ROLE_TEACHER]);
+    }
+
+    private static function validDate(string $value): ?string
+    {
+        $d = \DateTime::createFromFormat('Y-m-d', $value);
+        return ($d !== false && $d->format('Y-m-d') === $value) ? $value : null;
     }
 
     private function logAudit(string $action, string $entityType, int $entityId, array $details = []): void

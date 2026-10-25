@@ -39,8 +39,15 @@ To be ticked by the teacher or office staff on the real server, using real accou
 - ☐ Notice to a class reaches only that class's families
 - ☐ Quizzes, attendance and progress work as before
 
+## Topics, past papers, register, learning gaps
+- ☐ The teacher enters her units for each grade (Topics) and tags a few notes, quizzes and homework
+- ☐ Past paper uploaded with a marking scheme; a student of that grade downloads it; the marking scheme opens only after release
+- ☐ Class register: mark a test student absent → the parent sees the alert in the portal, and the WhatsApp message is in the message log as "queued"
+- ☐ Saving the register again does not alert the parent twice
+- ☐ Learning gaps page for a class shows the unit averages and the weakest students, and the numbers match the marks
+
 ## Language
-- ☐ Sinhala wording checked by a native speaker (translations were written without client review)
+- ☐ Sinhala wording read by a native speaker (terminology was made consistent, but no native speaker has reviewed it yet)
 
 ## Operations
 - ☐ Daily backup set up and one restore tested (BACKUP_AND_RESTORE.md)

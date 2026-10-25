@@ -97,6 +97,7 @@ class AssignmentController extends BaseController
             ':by' => (int) session_get('user_id'),
         ]);
         $id = (int) $this->db->lastInsertId();
+        (new \App\Services\TopicService($this->db))->tag('assignments', $id, (int) $class['id'], $_POST['topic_id'] ?? null);
 
         $this->audit('create_assignment', $id, ['class_id' => (int) $class['id'], 'published' => $publish]);
         if ($publish) {

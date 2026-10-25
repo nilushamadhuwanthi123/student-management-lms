@@ -3,7 +3,7 @@
 ## What exists now
 The LMS does **not** send WhatsApp messages by itself. No WhatsApp provider is connected.
 
-It **prepares** messages, for example fee reminders built from templates with the child's name, class and amount, and opens each one in WhatsApp through a `wa.me` click-to-chat link. A staff member presses Send in WhatsApp on their own phone or WhatsApp Web.
+It **prepares** messages, for example absence alerts from the class register and fee reminders built from templates with the child's name, class and amount, and opens each one in WhatsApp through a `wa.me` click-to-chat link. A staff member presses Send in WhatsApp on their own phone or WhatsApp Web.
 
 | Status in the log | Meaning |
 |---|---|
