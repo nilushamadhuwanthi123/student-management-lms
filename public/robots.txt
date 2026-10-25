@@ -1,0 +1,15 @@
+# Public pages may be indexed. Portals, reports and files may not.
+User-agent: *
+Disallow: /login
+Disallow: /dashboard
+Disallow: /my/
+Disallow: /family
+Disallow: /students
+Disallow: /payments
+Disallow: /payment-slips
+Disallow: /reports
+Disallow: /materials
+Disallow: /assignments
+Disallow: /help
+Disallow: /files
+Allow: /

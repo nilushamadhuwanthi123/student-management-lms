@@ -66,9 +66,19 @@ class DashboardController extends BaseController
         $currentMonth = date('Y-m');
         $dayOfWeek = date('l'); // e.g. "Monday"
 
+        // Every figure below is limited to the viewer's branch (or, for a
+        // teacher, their classes). For the super admin these are all "".
+        $scope = \App\Services\BranchScope::current();
+        $inStudents = $scope->studentSql('students.id');
+        $inClassId  = $scope->classSql('class_id');
+        $inC        = $scope->classSql('c.id');
+        $inP        = $scope->classSql('p.class_id');
+        $inTeachers = $scope->isGlobal() ? '' : " AND id IN (SELECT teacher_id FROM classes WHERE teacher_id IS NOT NULL{$scope->classSql('id')})";
+        $inW        = $scope->studentSql('w.entity_id');
+
         try {
             // 1. Active Students
-            $stmt = $db->query("SELECT COUNT(*) AS cnt FROM students WHERE status = 'active'");
+            $stmt = $db->query("SELECT COUNT(*) AS cnt FROM students WHERE status = 'active'{$inStudents}");
             $data['active_students'] = (int) ($stmt->fetch()['cnt'] ?? 0);
 
             // 2. Today's Attendance
@@ -76,25 +86,25 @@ class DashboardController extends BaseController
                                     COUNT(CASE WHEN status = 'present' THEN 1 END) AS present_count,
                                     COUNT(*) AS total_records
                                 FROM attendance 
-                                WHERE date = '{$today}'");
+                                WHERE date = '{$today}'{$inClassId}");
             $attRow = $stmt->fetch();
             $data['today_attendance'] = (int) ($attRow['present_count'] ?? 0);
             $totalTodayAtt = (int) ($attRow['total_records'] ?? 0);
 
             // 3. Active Classes
-            $stmt = $db->query("SELECT COUNT(*) AS cnt FROM classes WHERE status = 'active'");
+            $stmt = $db->query("SELECT COUNT(*) AS cnt FROM classes WHERE status = 'active'{$scope->classSql('id')}");
             $data['active_classes'] = (int) ($stmt->fetch()['cnt'] ?? 0);
 
             // 4. Today's Revenue
-            $stmt = $db->query("SELECT COALESCE(SUM(amount_paid), 0) AS rev FROM payments WHERE DATE(paid_at) = '{$today}' AND payment_status = 'paid'");
+            $stmt = $db->query("SELECT COALESCE(SUM(amount_paid), 0) AS rev FROM payments WHERE DATE(paid_at) = '{$today}' AND payment_status = 'paid'{$inClassId}");
             $data['today_revenue'] = (float) ($stmt->fetch()['rev'] ?? 0);
 
             // 5. Monthly Revenue
-            $stmt = $db->query("SELECT COALESCE(SUM(amount_paid), 0) AS rev FROM payments WHERE payment_status = 'paid' AND (month_year LIKE '{$currentMonth}%' OR DATE_FORMAT(paid_at, '%Y-%m') = '{$currentMonth}')");
+            $stmt = $db->query("SELECT COALESCE(SUM(amount_paid), 0) AS rev FROM payments WHERE payment_status = 'paid' AND (month_year LIKE '{$currentMonth}%' OR DATE_FORMAT(paid_at, '%Y-%m') = '{$currentMonth}'){$inClassId}");
             $data['monthly_revenue'] = (float) ($stmt->fetch()['rev'] ?? 0);
 
             // 6. Pending Payments
-            $stmt = $db->query("SELECT COALESCE(SUM(amount_due - amount_paid), 0) AS pending FROM payments WHERE payment_status IN ('pending', 'overdue')");
+            $stmt = $db->query("SELECT COALESCE(SUM(amount_due - amount_paid), 0) AS pending FROM payments WHERE payment_status IN ('pending', 'overdue'){$inClassId}");
             $data['pending_payments'] = (float) ($stmt->fetch()['pending'] ?? 0);
 
             // 7. Today's Attendance Overview
@@ -106,7 +116,7 @@ class DashboardController extends BaseController
             ];
 
             // 8. Active Teachers
-            $stmt = $db->query("SELECT COUNT(*) AS cnt FROM users WHERE role = 'teacher' AND status = 'active'");
+            $stmt = $db->query("SELECT COUNT(*) AS cnt FROM users WHERE role = 'teacher' AND status = 'active'{$inTeachers}");
             $data['active_teachers'] = (int) ($stmt->fetch()['cnt'] ?? 0);
 
             // 9. Attendance Trend (7 Days) [Daily present vs total]
@@ -117,7 +127,7 @@ class DashboardController extends BaseController
                 $stmt = $db->query("SELECT 
                                         COUNT(CASE WHEN status = 'present' THEN 1 END) AS pres,
                                         COUNT(*) AS tot
-                                    FROM attendance WHERE date = '{$d}'");
+                                    FROM attendance WHERE date = '{$d}'{$inClassId}");
                 $tRow = $stmt->fetch();
                 $trend[] = [
                     'date'    => $d,
@@ -134,7 +144,7 @@ class DashboardController extends BaseController
                                     COUNT(e.student_id) AS student_count
                                 FROM classes c
                                 LEFT JOIN enrollments e ON c.id = e.class_id AND e.enrollment_status = 'active'
-                                WHERE c.status = 'active'
+                                WHERE c.status = 'active'{$inC}
                                 GROUP BY c.id
                                 ORDER BY student_count DESC LIMIT 5");
             $data['students_by_class'] = $stmt->fetchAll();
@@ -148,7 +158,7 @@ class DashboardController extends BaseController
                                 FROM classes c
                                 LEFT JOIN institutes i ON c.institute_id = i.id
                                 LEFT JOIN users t ON c.teacher_id = t.id
-                                WHERE c.status = 'active'
+                                WHERE c.status = 'active'{$inC}
                                 ORDER BY c.class_name ASC LIMIT 8");
             $data['all_active_classes'] = $stmt->fetchAll();
 
@@ -158,16 +168,16 @@ class DashboardController extends BaseController
                                 FROM classes c
                                 LEFT JOIN institutes i ON c.institute_id = i.id
                                 LEFT JOIN users t ON c.teacher_id = t.id
-                                WHERE c.status = 'active' AND (c.schedule_days LIKE '%{$dayOfWeek}%' OR c.schedule_days IS NULL)
+                                WHERE c.status = 'active'{$inC} AND (c.schedule_days LIKE '%{$dayOfWeek}%' OR c.schedule_days IS NULL)
                                 ORDER BY c.start_time ASC");
             $data['today_classes'] = $stmt->fetchAll();
 
             // 13. Today New Students
-            $stmt = $db->query("SELECT COUNT(*) AS cnt FROM students WHERE DATE(created_at) = '{$today}'");
+            $stmt = $db->query("SELECT COUNT(*) AS cnt FROM students WHERE DATE(created_at) = '{$today}'{$inStudents}");
             $data['today_new_students'] = (int) ($stmt->fetch()['cnt'] ?? 0);
 
             // 14. This Month New Students
-            $stmt = $db->query("SELECT COUNT(*) AS cnt FROM students WHERE DATE_FORMAT(created_at, '%Y-%m') = '{$currentMonth}'");
+            $stmt = $db->query("SELECT COUNT(*) AS cnt FROM students WHERE DATE_FORMAT(created_at, '%Y-%m') = '{$currentMonth}'{$inStudents}");
             $data['this_month_new_students'] = (int) ($stmt->fetch()['cnt'] ?? 0);
 
             // 15. Upcoming Classes
@@ -177,19 +187,20 @@ class DashboardController extends BaseController
                                 FROM classes c
                                 LEFT JOIN institutes i ON c.institute_id = i.id
                                 LEFT JOIN users t ON c.teacher_id = t.id
-                                WHERE c.status = 'active' AND c.schedule_days LIKE '%{$dayOfWeek}%' AND c.start_time >= '{$nowTime}'
+                                WHERE c.status = 'active'{$inC} AND c.schedule_days LIKE '%{$dayOfWeek}%' AND c.start_time >= '{$nowTime}'
                                 ORDER BY c.start_time ASC LIMIT 4");
             $data['upcoming_classes'] = $stmt->fetchAll();
 
             // 16. Recent Messages & Workflow Approvals
-            $stmt = $db->query("SELECT * FROM notifications ORDER BY id DESC LIMIT 5");
+            $stmt = $db->prepare("SELECT * FROM notifications WHERE recipient_type = 'user' AND recipient_id = :me ORDER BY id DESC LIMIT 5");
+            $stmt->execute([':me' => $userId]);
             $data['recent_messages'] = $stmt->fetchAll();
 
             $stmt = $db->query("SELECT 
                                     w.*, s.full_name AS student_name, s.student_id_display
                                 FROM workflows w
                                 LEFT JOIN students s ON w.entity_id = s.id
-                                WHERE w.status = 'pending'
+                                WHERE w.status = 'pending'{$inW}
                                 ORDER BY w.id DESC LIMIT 5");
             $data['recent_workflows'] = $stmt->fetchAll();
 
@@ -200,7 +211,7 @@ class DashboardController extends BaseController
                                     COALESCE(SUM(p.amount_paid * ((100 - c.teacher_revenue_split) / 100)), 0) AS institute_share
                                 FROM payments p
                                 JOIN classes c ON p.class_id = c.id
-                                WHERE p.payment_status = 'paid' AND (p.month_year LIKE '{$currentMonth}%' OR DATE_FORMAT(p.paid_at, '%Y-%m') = '{$currentMonth}')");
+                                WHERE p.payment_status = 'paid' AND (p.month_year LIKE '{$currentMonth}%' OR DATE_FORMAT(p.paid_at, '%Y-%m') = '{$currentMonth}'){$inP}");
             $incRow = $stmt->fetch();
             $data['this_month_income'] = [
                 'total'           => (float) ($incRow['total_paid'] ?? 0),

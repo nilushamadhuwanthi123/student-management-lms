@@ -180,6 +180,12 @@ class Student extends BaseModel
             $params[':cid'] = $filters['class_id'];
         }
 
+        // Branch restriction, built by App\Services\BranchScope from ids
+        // it read from the database (never from the request).
+        if (!empty($filters['scope_sql'])) {
+            $where[] = '1 = 1' . $filters['scope_sql'];
+        }
+
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
         $sql = "SELECT DISTINCT s.* FROM {$this->table} s

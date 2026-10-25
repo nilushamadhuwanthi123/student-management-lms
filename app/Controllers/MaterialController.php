@@ -278,8 +278,15 @@ class MaterialController extends BaseController
     {
         $role = (string) session_get('user_role');
 
-        if (in_array($role, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'], true)) {
-            return;
+        if (session_get('user_type') === 'user'
+            && in_array($role, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'], true)) {
+            // Staff open material of the classes in their branch, and a
+            // teacher their own classes' -- not every file by id.
+            if (\App\Services\BranchScope::current()->allowsClass((int) $material['class_id'])) {
+                return;
+            }
+            http_response_code(403);
+            exit('Not allowed.');
         }
 
         if (session_get('user_type') !== 'student') {
@@ -414,7 +421,10 @@ class MaterialController extends BaseController
     {
         $role = (string) session_get('user_role');
 
-        if (in_array($role, ['super_admin', 'admin', 'coordinator'], true)) {
+        // Super admin: every class. Branch admins and coordinators: the
+        // classes of their own branch, not every branch's.
+        if (in_array($role, ['super_admin', 'admin', 'coordinator'], true)
+            && \App\Services\BranchScope::current()->allowsClass((int) ($class['id'] ?? 0))) {
             return;
         }
 

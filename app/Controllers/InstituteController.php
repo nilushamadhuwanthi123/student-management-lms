@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
+use App\Services\BranchScope;
 
 class InstituteController extends BaseController
 {
@@ -33,6 +34,7 @@ class InstituteController extends BaseController
 
         $search = trim($_GET['search'] ?? '');
         $institutes = $this->instituteModel->getAllWithCoordinator($search);
+        $institutes = array_values(array_filter($institutes, static fn (array $i): bool => BranchScope::current()->allowsInstitute((int) $i['id'])));
 
         // Fetch coordinators for modal / quick register
         $coordinators = $this->userModel->getByRole('coordinator');
@@ -51,6 +53,8 @@ class InstituteController extends BaseController
     public function create(): void
     {
         AuthMiddleware::requireAuth();
+        // Adding, closing or removing a branch is the super admin's decision.
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
@@ -70,6 +74,8 @@ class InstituteController extends BaseController
     public function store(): void
     {
         AuthMiddleware::requireAuth();
+        // Adding, closing or removing a branch is the super admin's decision.
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
@@ -136,6 +142,11 @@ class InstituteController extends BaseController
             $this->flash('error', 'Institute not found.');
             $this->redirect('/institutes');
         }
+        if (!BranchScope::current()->allowsInstitute((int) $institute['id'])) {
+            http_response_code(403);
+            $this->flash('error', 'That branch is not yours to manage.');
+            $this->redirect('/institutes');
+        }
 
         $coordinators = $this->userModel->getByRole('coordinator');
 
@@ -163,6 +174,11 @@ class InstituteController extends BaseController
             $this->flash('error', 'Institute not found.');
             $this->redirect('/institutes');
         }
+        if (!BranchScope::current()->allowsInstitute((int) $institute['id'])) {
+            http_response_code(403);
+            $this->flash('error', 'That branch is not yours to manage.');
+            $this->redirect('/institutes');
+        }
 
         $name          = trim($_POST['name'] ?? '');
         $coordinatorId = !empty($_POST['coordinator_id']) ? (int) $_POST['coordinator_id'] : null;
@@ -182,7 +198,11 @@ class InstituteController extends BaseController
                 'notes'          => $notes,
                 'status'         => $status,
                 'updated_at'     => date('Y-m-d H:i:s'),
-            ]);
+            ] + (\App\Services\BranchScope::current()->isGlobal() ? [
+                // What the public website shows is the super admin's call.
+                'is_public'        => isset($_POST['is_public']) ? 1 : 0,
+                'public_show_fees' => isset($_POST['public_show_fees']) ? 1 : 0,
+            ] : []));
 
             $this->logAudit('update_institute', 'institute', (int) $id, ['name' => $name]);
             $this->flash('success', "Institute '{$name}' updated successfully.");
@@ -200,6 +220,8 @@ class InstituteController extends BaseController
     public function toggleStatus(string $id): void
     {
         AuthMiddleware::requireAuth();
+        // Adding, closing or removing a branch is the super admin's decision.
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
@@ -219,6 +241,8 @@ class InstituteController extends BaseController
     public function delete(string $id): void
     {
         AuthMiddleware::requireAuth();
+        // Adding, closing or removing a branch is the super admin's decision.
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
@@ -230,6 +254,11 @@ class InstituteController extends BaseController
 
         if (!$institute) {
             $this->flash('error', 'Institute not found.');
+            $this->redirect('/institutes');
+        }
+        if (!BranchScope::current()->allowsInstitute((int) $institute['id'])) {
+            http_response_code(403);
+            $this->flash('error', 'That branch is not yours to manage.');
             $this->redirect('/institutes');
         }
 

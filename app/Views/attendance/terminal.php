@@ -23,6 +23,12 @@ $classes = $classes ?? [];
     </div>
 </div>
 
+<style>
+/* Scanner on the left, today's log on the right; stacked on a phone or
+   small tablet, where a fixed 380px column ran off the screen. */
+#terminalLayout > * { min-width: 0; }
+@media (max-width: 900px) { #terminalLayout { grid-template-columns: minmax(0, 1fr) !important; } }
+</style>
 <div style="display:grid; grid-template-columns: 1fr 380px; gap:1.5rem;" id="terminalLayout">
     <!-- LEFT: SCANNER INTERFACE -->
     <div>

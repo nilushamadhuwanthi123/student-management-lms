@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
+use App\Services\BranchScope;
 
 class AttendanceController extends BaseController
 {
@@ -45,9 +46,10 @@ class AttendanceController extends BaseController
             'search'   => $search,
         ];
 
-        $records = $this->attendanceModel->getDailyAttendance($date, $filters);
-        $summary = $this->attendanceModel->getSummary($date);
-        $classes = $this->classModel->getActiveClasses();
+        $scope = BranchScope::current();
+        $records = $this->attendanceModel->getDailyAttendance($date, $filters + ['class_ids' => $scope->classIds()]);
+        $summary = $this->attendanceModel->getSummary($date, $scope->classIds());
+        $classes = array_values(array_filter($this->classModel->getActiveClasses(), static fn (array $c): bool => $scope->allowsClass((int) $c['id'])));
 
         $this->view('attendance/index', [
             'pageTitle' => 'Attendance Management',
@@ -75,7 +77,7 @@ class AttendanceController extends BaseController
             AuthMiddleware::ROLE_TEACHER,
         ]);
 
-        $classes = $this->classModel->getActiveClasses();
+        $classes = array_values(array_filter($this->classModel->getActiveClasses(), static fn (array $c): bool => BranchScope::current()->allowsClass((int) $c['id'])));
 
         $this->view('attendance/terminal', [
             'pageTitle' => 'QR Scan Terminal',
@@ -110,6 +112,20 @@ class AttendanceController extends BaseController
             ], 400);
         }
 
+        // A branch's scanner records its own classes and students only.
+        $scope = BranchScope::current();
+        if ($classId !== null && !$scope->allowsClass($classId)) {
+            $this->json(['success' => false, 'status' => 'not_allowed', 'message' => 'That class is not in your branch.'], 403);
+        }
+        if (!$scope->isGlobal()) {
+            $lookup = $this->db->prepare('SELECT id FROM students WHERE student_id_display = :c OR id = :n LIMIT 1');
+            $lookup->execute([':c' => $code, ':n' => ctype_digit($code) ? (int) $code : 0]);
+            $found = $lookup->fetchColumn();
+            if ($found !== false && !$scope->allowsStudent((int) $found)) {
+                $this->json(['success' => false, 'status' => 'not_allowed', 'message' => 'That student is not in your branch.'], 403);
+            }
+        }
+
         $result = $this->attendanceModel->recordScan($code, $classId, $currentUserId);
 
         if ($result['status'] === 'red_flag') {
@@ -141,6 +157,13 @@ class AttendanceController extends BaseController
 
         if ($studentId <= 0 || $classId <= 0) {
             $this->flash('error', 'Invalid student or class specified.');
+            $this->back();
+        }
+
+        $scope = BranchScope::current();
+        if (!$scope->allowsClass($classId) || !$scope->allowsStudent($studentId)) {
+            http_response_code(403);
+            $this->flash('error', 'That class or student is not in your branch.');
             $this->back();
         }
 

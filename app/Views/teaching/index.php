@@ -128,11 +128,13 @@ $month    = $month ?? date('Y-m-01');
                         </div>
                     </div>
 
-                    <div class="card__footer" style="display:flex; gap:.5rem;">
+                    <div class="card__footer" style="display:flex; gap:.5rem; flex-wrap:wrap;">
                         <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/materials?month=<?= urlencode($month) ?>"
                            class="btn btn--ghost btn--sm" style="flex:1;">Material</a>
                         <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/quizzes"
                            class="btn btn--primary btn--sm" style="flex:1;">Quizzes</a>
+                        <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/assignments"
+                           class="btn btn--ghost btn--sm" style="flex:1;"><?= te('Assignments') ?></a>
                     </div>
                 </div>
             <?php endforeach; ?>

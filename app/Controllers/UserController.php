@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
+use App\Services\BranchScope;
 
 class UserController extends BaseController
 {
@@ -49,9 +50,17 @@ class UserController extends BaseController
         // Fetch filtered users (Admin, Coordinator, Staff, Teacher - NOT students)
         $users = $this->userModel->getFilteredUsers($filters);
         $kpi = $this->userModel->getStatistics();
+        $scope = BranchScope::current();
+        if (!$scope->isGlobal()) {
+            $users = array_values(array_filter($users, static fn (array $u): bool => $scope->allowsUser((int) $u['id'])));
+            $kpi = [
+                'total'        => count($users),
+                'active_users' => count(array_filter($users, static fn (array $u): bool => $u['status'] === 'active')),
+            ] + $kpi;
+        }
 
         // Dropdowns for filters
-        $institutes = $this->instituteModel->getActiveInstitutes();
+        $institutes = array_values(array_filter($this->instituteModel->getActiveInstitutes(), static fn (array $i): bool => BranchScope::current()->allowsInstitute((int) $i['id'])));
         $classes = !empty($instFilter) 
             ? $this->classModel->getActiveClasses((int) $instFilter)
             : $this->classModel->getActiveClasses();
@@ -85,8 +94,9 @@ class UserController extends BaseController
             AuthMiddleware::ROLE_ADMIN,
         ]);
 
-        $institutes = $this->instituteModel->getActiveInstitutes();
-        $classes = $this->classModel->getActiveClasses();
+        $scope = BranchScope::current();
+        $institutes = array_values(array_filter($this->instituteModel->getActiveInstitutes(), static fn (array $i): bool => $scope->allowsInstitute((int) $i['id'])));
+        $classes = array_values(array_filter($this->classModel->getActiveClasses(), static fn (array $c): bool => $scope->allowsClass((int) $c['id'])));
 
         $this->view('users/create', [
             'pageTitle'  => 'Create New User',
@@ -145,6 +155,13 @@ class UserController extends BaseController
         }
         if (empty($instituteId)) {
             $errors[] = 'Institute selection is required.';
+        } elseif (!BranchScope::current()->allowsInstitute($instituteId)) {
+            $errors[] = 'You can only add people to your own branch.';
+        }
+        // A branch admin manages coordinators, staff and teachers. Creating
+        // another administrator is the super admin's job.
+        if ($role === 'admin' && !BranchScope::current()->isGlobal()) {
+            $errors[] = 'Only the super admin can create administrator accounts.';
         }
 
         if (!empty($email) && $this->userModel->findByEmail($email)) {
@@ -214,8 +231,18 @@ class UserController extends BaseController
                 $this->userModel->query($sql, [':cid' => $userId, ':iid' => $instituteId]);
             }
 
+            // The branch chosen on the form is now actually recorded, so
+            // the new admin/coordinator/staff member is scoped to it.
+            if ($instituteId && $role !== 'teacher') {
+                $this->userModel->query(
+                    "INSERT IGNORE INTO user_institutes (user_id, institute_id, assigned_by) VALUES (:u, :i, :by)",
+                    [':u' => $userId, ':i' => $instituteId, ':by' => $currentUserId]
+                );
+            }
+
             // Sync assigned classes
             if (!empty($selectedClasses) && is_array($selectedClasses)) {
+                $selectedClasses = array_values(array_filter($selectedClasses, static fn ($c): bool => BranchScope::current()->allowsClass((int) $c)));
                 $this->userModel->syncClasses($userId, $selectedClasses);
             }
 
@@ -250,10 +277,15 @@ class UserController extends BaseController
             $this->flash('error', 'User not found.');
             $this->redirect('/users');
         }
+        $this->requireUserInScope((int) $user['id']);
 
+        $scope = BranchScope::current();
         $institutes = $this->instituteModel->getActiveInstitutes();
-        $classes = $this->classModel->getActiveClasses();
+        $classes = array_values(array_filter($this->classModel->getActiveClasses(), static fn (array $c): bool => $scope->allowsClass((int) $c['id'])));
         $assignedClasses = $this->userModel->getAssignedClassIds((int) $id);
+        $branchStmt = $this->db->prepare("SELECT institute_id FROM user_institutes WHERE user_id = :u");
+        $branchStmt->execute([':u' => (int) $id]);
+        $assignedBranches = array_map('intval', $branchStmt->fetchAll(\PDO::FETCH_COLUMN));
 
         $this->view('users/edit', [
             'pageTitle'       => 'Edit User - ' . ($user['full_name'] ?? ''),
@@ -261,6 +293,8 @@ class UserController extends BaseController
             'institutes'      => $institutes,
             'classes'         => $classes,
             'assignedClasses' => $assignedClasses,
+            'assignedBranches' => $assignedBranches,
+            'canEditBranches' => $scope->isGlobal() && $user['role'] !== 'super_admin',
             'roles'           => [
                 'admin'       => 'Administrator (ADM)',
                 'coordinator' => 'Coordinator (COD)',
@@ -288,6 +322,7 @@ class UserController extends BaseController
             $this->flash('error', 'User not found.');
             $this->redirect('/users');
         }
+        $this->requireUserInScope((int) $user['id']);
 
         $fullName    = trim($_POST['full_name'] ?? '');
         $dob         = trim($_POST['date_of_birth'] ?? '') ?: null;
@@ -339,7 +374,31 @@ class UserController extends BaseController
 
         try {
             $this->userModel->update((int) $id, $data);
+
+            // A branch admin only sees their branch's classes on the form,
+            // so assignments to other branches' classes are kept as they
+            // were instead of being wiped by the save.
+            $scope = BranchScope::current();
+            if (!$scope->isGlobal()) {
+                $kept = array_values(array_filter(
+                    array_map('intval', $this->userModel->getAssignedClassIds((int) $id)),
+                    static fn (int $c): bool => !$scope->allowsClass($c)
+                ));
+                $chosen = array_values(array_filter(array_map('intval', (array) $selectedClasses), static fn (int $c): bool => $scope->allowsClass($c)));
+                $selectedClasses = array_values(array_unique(array_merge($kept, $chosen)));
+            }
             $this->userModel->syncClasses((int) $id, $selectedClasses);
+
+            // Branch membership is set by the super admin only.
+            if ($scope->isGlobal() && isset($_POST['branches_submitted']) && $user['role'] !== 'super_admin') {
+                $branches = array_values(array_unique(array_filter(array_map('intval', (array) ($_POST['branches'] ?? [])))));
+                $this->db->prepare("DELETE FROM user_institutes WHERE user_id = :u")->execute([':u' => (int) $id]);
+                $add = $this->db->prepare("INSERT IGNORE INTO user_institutes (user_id, institute_id, assigned_by) VALUES (:u, :i, :by)");
+                foreach ($branches as $b) {
+                    $add->execute([':u' => (int) $id, ':i' => $b, ':by' => (int) session_get('user_id')]);
+                }
+                $this->logAudit('update_user_branches', 'user', (int) $id, ['branches' => $branches]);
+            }
 
             $this->logAudit('update_user', 'user', (int) $id, ['name' => $fullName]);
             $this->flash('success', "User {$fullName} updated successfully.");
@@ -362,6 +421,7 @@ class UserController extends BaseController
             AuthMiddleware::ROLE_ADMIN,
         ]);
         verifyCsrfToken();
+        $this->requireUserInScope((int) $id);
 
         $newStatus = $this->userModel->toggleStatus((int) $id);
         $this->logAudit('toggle_user_status', 'user', (int) $id, ['new_status' => $newStatus]);
@@ -381,6 +441,18 @@ class UserController extends BaseController
             AuthMiddleware::ROLE_ADMIN,
         ]);
         verifyCsrfToken();
+
+        // A branch admin could previously reset ANY account's password by
+        // id, including the super admin's. Now only people in their branch.
+        $this->requireUserInScope((int) $id);
+        if ((int) $id !== (int) session_get('user_id')) {
+            $target = $this->userModel->find((int) $id);
+            if ($target && $target['role'] === 'super_admin' && !BranchScope::current()->isGlobal()) {
+                http_response_code(403);
+                $this->flash('error', 'You cannot reset that account.');
+                $this->back();
+            }
+        }
 
         $newPassword = trim($_POST['new_password'] ?? 'Password@123');
         if (strlen($newPassword) < 6) {
@@ -417,12 +489,26 @@ class UserController extends BaseController
             $this->flash('error', 'User not found.');
             $this->redirect('/users');
         }
+        $this->requireUserInScope((int) $user['id']);
 
         $this->view('users/id-card', [
             'pageTitle'  => 'ID Card - ' . ($user['full_name'] ?? ''),
             'user'       => $user,
             'roleColors' => \User::ROLE_COLORS,
         ], null); // Render without layout for printing
+    }
+
+    /**
+     * A branch admin manages the people of their own branch only, and
+     * never the super admin. Anyone may open their own record.
+     */
+    private function requireUserInScope(int $userId): void
+    {
+        if (!BranchScope::current()->allowsUser($userId)) {
+            http_response_code(403);
+            $this->flash('error', 'That account is not in your branch.');
+            $this->redirect('/users');
+        }
     }
 
     /**
@@ -441,6 +527,7 @@ class UserController extends BaseController
             $this->flash('error', 'User not found.');
             $this->redirect('/users');
         }
+        $this->requireUserInScope((int) $user['id']);
 
         if ($user['role'] === 'super_admin') {
             $this->flash('error', 'Super Admin account cannot be deleted.');

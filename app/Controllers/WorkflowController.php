@@ -44,6 +44,14 @@ class WorkflowController extends BaseController
             error_log('Workflow index error: ' . $e->getMessage());
         }
 
+
+        // A branch admin sees requests about their own branch's students.
+        $scope = \App\Services\BranchScope::current();
+        if (!$scope->isGlobal()) {
+            $pendingWorkflows = array_values(array_filter($pendingWorkflows, static fn (array $w): bool =>
+                ($w['entity_type'] ?? 'student') !== 'student' || $scope->allowsStudent((int) ($w['entity_id'] ?? 0))));
+        }
+
         $this->view('workflows/index', [
             'pageTitle' => 'Pending Approvals',
             'workflows' => $pendingWorkflows,
@@ -146,6 +154,14 @@ class WorkflowController extends BaseController
             }
         } catch (\Throwable $e) {
             error_log('Workflow history error: ' . $e->getMessage());
+        }
+
+
+        // A branch admin sees requests about their own branch's students.
+        $scope = \App\Services\BranchScope::current();
+        if (!$scope->isGlobal()) {
+            $workflows = array_values(array_filter($workflows, static fn (array $w): bool =>
+                ($w['entity_type'] ?? 'student') !== 'student' || $scope->allowsStudent((int) ($w['entity_id'] ?? 0))));
         }
 
         $this->view('workflows/history', [

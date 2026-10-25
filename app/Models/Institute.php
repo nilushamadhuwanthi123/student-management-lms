@@ -12,6 +12,7 @@ class Institute extends BaseModel
     protected array $fillable = [
         'name', 'coordinator_id', 'location', 'phone1', 'phone2',
         'notes', 'status', 'created_at', 'updated_at',
+        'is_public', 'public_show_fees',
     ];
 
     /**

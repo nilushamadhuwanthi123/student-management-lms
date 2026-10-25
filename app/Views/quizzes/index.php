@@ -20,6 +20,7 @@ $quizzes = $quizzes ?? [];
     </div>
     <div class="page-header__actions">
         <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials" class="btn btn--ghost">Material</a>
+        <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/assignments" class="btn btn--ghost"><?= te('Assignments') ?></a>
         <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/quizzes/create" class="btn btn--primary">
             + Set a quiz
         </a>

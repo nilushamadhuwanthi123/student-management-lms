@@ -25,6 +25,13 @@ class ApiController extends BaseController
 
         $instituteId = (int) $id;
 
+        // Another branch's class list is not returned.
+        if (!\App\Services\BranchScope::current()->allowsInstitute($instituteId)) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo '[]';
+            exit;
+        }
+
         $stmt = $this->db->prepare("
             SELECT c.id, c.class_name, c.subject, c.grade, c.medium,
                    c.monthly_fee, c.status,

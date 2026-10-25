@@ -97,6 +97,9 @@ class MessageController extends BaseController
     public function send(): void
     {
         AuthMiddleware::requireAuth();
+        // A broadcast reaches every account in every branch, so it is the
+        // super admin's. Branch admins post branch notices instead.
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
@@ -107,6 +110,11 @@ class MessageController extends BaseController
         $body       = trim($_POST['body'] ?? '');
         $type       = trim($_POST['type'] ?? 'info');
         $targetRole = trim($_POST['target_role'] ?? 'all');
+        // The model builds its WHERE clause from this value, so only the
+        // known role names get through.
+        if (!in_array($targetRole, ['all', 'super_admin', 'admin', 'coordinator', 'staff', 'teacher'], true)) {
+            $targetRole = 'all';
+        }
 
         if (empty($title) || empty($body)) {
             $this->flash('error', 'Message title and body are required.');

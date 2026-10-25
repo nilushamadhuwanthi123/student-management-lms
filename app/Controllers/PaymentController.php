@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
+use App\Services\BranchScope;
 
 class PaymentController extends BaseController
 {
@@ -32,14 +33,18 @@ class PaymentController extends BaseController
         $monthYear = $_GET['month'] ?? date('Y-m');
         $classId   = !empty($_GET['class_id']) ? (int) $_GET['class_id'] : null;
 
+        // Branch staff see their own branch's payments only. A class id
+        // from another branch in the URL simply matches nothing.
+        $scopeClasses = BranchScope::current()->classIds();
+
         // Get revenue stats for the selected month
         $revenueStats = [];
         $overduePayments = [];
         $payments = [];
         try {
-            $revenueStats = $this->paymentModel->getRevenueStats($monthYear);
-            $overduePayments = $this->paymentModel->getOverdue($classId);
-            $payments = $this->paymentModel->getAllPayments($monthYear, $classId);
+            $revenueStats = $this->paymentModel->getRevenueStats($monthYear, $scopeClasses);
+            $overduePayments = $this->paymentModel->getOverdue($classId, $scopeClasses);
+            $payments = $this->paymentModel->getAllPayments($monthYear, $classId, null, $scopeClasses);
         } catch (\Throwable $e) {
             error_log('Payment stats error: ' . $e->getMessage());
         }
@@ -61,6 +66,7 @@ class PaymentController extends BaseController
             try {
                 $classModel = new \ClassModel();
                 $classes = $classModel->all('class_name ASC');
+                $classes = array_values(array_filter($classes, static fn (array $c): bool => BranchScope::current()->allowsClass((int) $c['id'])));
                 foreach ($classes as &$cls) {
                     $cls['name'] = $cls['name'] ?? $cls['class_name'] ?? '';
                 }
@@ -102,8 +108,14 @@ class PaymentController extends BaseController
         try {
             $studentModel = new \Student();
             $student = $studentModel->find((int) $studentId);
+            if ($student && !BranchScope::current()->allowsStudent((int) $studentId)) {
+                $student = null;
+            }
             if ($student) {
                 $payments = $this->paymentModel->getByStudent((int) $studentId);
+                // A student enrolled in two branches: each branch sees
+                // only its own fees.
+                $payments = array_values(array_filter($payments, static fn (array $p): bool => BranchScope::current()->allowsClass((int) ($p['class_id'] ?? 0))));
             }
         } catch (\Throwable $e) {
             error_log('Student payment fetch error: ' . $e->getMessage());
@@ -170,6 +182,12 @@ class PaymentController extends BaseController
             $this->back();
         }
 
+        if (!BranchScope::current()->allowsPayment($paymentId)) {
+            http_response_code(403);
+            $this->flash('error', 'That payment is not in your branch.');
+            $this->back();
+        }
+
         $userId = (int) session_get('user_id');
 
         try {
@@ -205,7 +223,8 @@ class PaymentController extends BaseController
         $monthYear = trim($_POST['month_year'] ?? date('Y-m'));
 
         try {
-            $count = $this->paymentModel->generateMonthlyPayments($monthYear);
+            // A branch admin raises the month's fees for their own branch.
+            $count = $this->paymentModel->generateMonthlyPayments($monthYear, BranchScope::current()->classIds());
             $this->logAudit('generate_monthly_payments', 'payment', 0, [
                 'month_year' => $monthYear,
                 'count'      => $count,
