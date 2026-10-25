@@ -44,25 +44,25 @@ $assistantFor = session_get('user_type') === 'parent' ? 'parent' : 'student';
 @media (max-width: 520px) { .sa-panel { right:16px; bottom:88px; } .sa-fab { right:16px; bottom:16px; } }
 </style>
 
-<button type="button" class="sa-fab" id="sa-fab" aria-label="Open the study assistant" aria-expanded="false">
+<button type="button" class="sa-fab" id="sa-fab" aria-label="<?= te('Open the study assistant') ?>" aria-expanded="false">
     &#129302;<span class="sa-fab__dot" aria-hidden="true"></span>
 </button>
 
-<section class="sa-panel" id="sa-panel" role="dialog" aria-label="Study assistant">
+<section class="sa-panel" id="sa-panel" role="dialog" aria-label="<?= te('Study assistant') ?>">
     <header class="sa-head">
         <span style="font-size:1.5rem;">&#129302;</span>
         <div>
-            <strong>Study assistant</strong>
-            <small><?= $assistantFor === 'parent' ? "About your child's classes" : 'About your classes, marks and fees' ?></small>
+            <strong><?= te('Study assistant') ?></strong>
+            <small><?= $assistantFor === 'parent' ? te("About your child's classes") : te('About your classes, marks and fees') ?></small>
         </div>
-        <button type="button" id="sa-close" aria-label="Close">&times;</button>
+        <button type="button" id="sa-close" aria-label="<?= te('Close') ?>">&times;</button>
     </header>
     <div class="sa-log" id="sa-log" aria-live="polite"></div>
     <form class="sa-form" id="sa-form" autocomplete="off">
         <?= csrfField() ?>
         <input type="text" name="question" id="sa-input" maxlength="300"
-               placeholder="Ask about classes, quizzes, marks, fees..." aria-label="Your question">
-        <button type="submit">Ask</button>
+               placeholder="<?= te('Ask about classes, quizzes, marks, fees...') ?>" aria-label="<?= te('Your question') ?>">
+        <button type="submit"><?= te('Ask') ?></button>
     </form>
 </section>
 
@@ -76,6 +76,12 @@ $assistantFor = session_get('user_type') === 'parent' ? 'parent' : 'student';
     var endpoint = <?= json_encode(BASE_URL . '/assistant/ask') ?>;
     var base = <?= json_encode(BASE_URL) ?>;
     var greeted = false;
+    var L = <?= json_encode([
+        'checking' => t('Checking…'),
+        'wrong'    => t('Sorry, something went wrong.'),
+        'expired'  => t('This page has been open a while. Refresh it and ask again.'),
+        'offline'  => t("I couldn't reach the server just now. Try again in a moment."),
+    ], JSON_UNESCAPED_UNICODE) ?>;
     var busy = false;
 
     function bubble(text, who) {
@@ -102,16 +108,19 @@ $assistantFor = session_get('user_type') === 'parent' ? 'parent' : 'student';
         });
     }
 
-    function addChips(list) {
+    // `list` is what each chip sends (the English question the matcher
+    // knows); `labels`, when given, is what it shows.
+    function addChips(list, labels) {
         if (!list || !list.length) return;
         var wrap = document.createElement('div');
         wrap.className = 'sa-chips';
-        list.forEach(function (s) {
+        list.forEach(function (s, i) {
+            var shown = (labels && labels[i]) || s;
             var b = document.createElement('button');
             b.type = 'button';
             b.className = 'sa-chip';
-            b.textContent = s;
-            b.addEventListener('click', function () { ask(s); });
+            b.textContent = shown;
+            b.addEventListener('click', function () { ask(s, shown); });
             wrap.appendChild(b);
         });
         log.appendChild(wrap);
@@ -134,13 +143,13 @@ $assistantFor = session_get('user_type') === 'parent' ? 'parent' : 'student';
         fab.focus();
     }
 
-    function send(question, silent) {
+    function send(question, silent, shown) {
         if (busy) return;
         busy = true;
-        if (!silent) bubble(question, 'me');
+        if (!silent) bubble(shown || question, 'me');
         var typing = document.createElement('div');
         typing.className = 'sa-typing';
-        typing.textContent = 'Checking…';
+        typing.textContent = L.checking;
         log.appendChild(typing);
         scroll();
 
@@ -160,24 +169,24 @@ $assistantFor = session_get('user_type') === 'parent' ? 'parent' : 'student';
         })
         .then(function (data) {
             typing.remove();
-            var el = bubble(data.answer || 'Sorry, something went wrong.', 'bot');
+            var el = bubble(data.answer || L.wrong, 'bot');
             addLinks(el, data.links);
-            addChips(data.suggestions);
+            addChips(data.suggestions, data.suggestion_labels);
             scroll();
         })
         .catch(function (err) {
             typing.remove();
             bubble(err && err.message === 'expired'
-                ? 'This page has been open a while. Refresh it and ask again.'
-                : "I couldn't reach the server just now. Try again in a moment.", 'bot');
+                ? L.expired
+                : L.offline, 'bot');
             scroll();
         })
         .finally(function () { busy = false; });
     }
 
-    function ask(question) {
+    function ask(question, shown) {
         if (!panel.classList.contains('is-open')) { panel.classList.add('is-open'); greeted = true; }
-        send(question, false);
+        send(question, false, shown);
     }
 
     fab.addEventListener('click', function () { panel.classList.contains('is-open') ? close() : open(); });

@@ -164,7 +164,7 @@ class AssistantService
         $reply = match ($intent) {
             'greeting'         => $this->greeting(),
             'help'             => $this->help(),
-            'thanks'           => $this->reply("You're welcome! Ask me anything else about your classes.", 'thanks'),
+            'thanks'           => $this->reply(t("You're welcome! Ask me anything else about your classes."), 'thanks'),
             'next_class'       => $this->nextClass(),
             'schedule'         => $this->schedule($question),
             'exams'            => $this->exams(),
@@ -228,6 +228,16 @@ class AssistantService
             }
         }
 
+        // "what is on tomorrow" opens like a science question, but it asks
+        // about the timetable. "What is" alone outscores "tomorrow", so a
+        // subject question only wins when nothing about the site matched.
+        if ($best === 'subject_question') {
+            $without = $this->detectWithout($text, ['subject_question', 'greeting', 'thanks', 'help']);
+            if ($without !== 'unknown') {
+                return $without;
+            }
+        }
+
         return $best;
     }
 
@@ -282,13 +292,11 @@ class AssistantService
 
     private function greeting(): array
     {
-        $first = $this->firstName();
-        $who = $this->audience === 'parent'
-            ? "about {$first}'s classes"
-            : 'about your classes';
-
         return $this->reply(
-            "Hi! I can answer questions {$who} -- the next class, quizzes, marks, fees and new notes. Try one of these:",
+            $this->say(
+                'Hi! I can answer questions about your classes -- the next class, quizzes, marks, fees and new notes. Try one of these:',
+                "Hi! I can answer questions about {name}'s classes -- the next class, quizzes, marks, fees and new notes. Try one of these:"
+            ),
             'greeting'
         );
     }
@@ -296,12 +304,12 @@ class AssistantService
     private function help(): array
     {
         return $this->reply(
-            "I know about:\n"
-            . "- when classes, quizzes and exams are\n"
-            . "- marks and progress\n"
-            . "- this month's fees\n"
-            . "- new notes, recordings and videos\n\n"
-            . "I can't explain science topics -- for that, use the class notes or ask the teacher.",
+            t('I know about:') . "\n"
+            . '- ' . t('when classes, quizzes and exams are') . "\n"
+            . '- ' . t('marks and progress') . "\n"
+            . '- ' . t("this month's fees") . "\n"
+            . '- ' . t('new notes, recordings and videos') . "\n\n"
+            . t("I can't explain science topics -- for that, use the class notes or ask the teacher."),
             'help'
         );
     }
@@ -320,22 +328,24 @@ class AssistantService
 
         if ($next === null) {
             return $this->reply(
-                $this->you('have', 'has') . ' no classes on the calendar for the next three weeks.',
+                $this->say('You have no classes on the calendar for the next three weeks.', '{name} has no classes on the calendar for the next three weeks.'),
                 'next_class',
-                [['label' => 'Open the calendar', 'href' => $this->calendarLink()]]
+                [['label' => t('Open the calendar'), 'href' => $this->calendarLink()]]
             );
         }
 
-        $text = 'The next class is ' . $next['title']
-            . ' ' . $this->when($next, true)
-            . ($next['room'] ? ', room ' . $next['room'] : '')
-            . ' -- ' . $this->countdown($next) . '.';
+        $text = t($next['room'] ? 'The next class is {title} {when}, room {room} -- {countdown}.' : 'The next class is {title} {when} -- {countdown}.', [
+            'title'     => $next['title'],
+            'when'      => $this->when($next, true),
+            'room'      => (string) $next['room'],
+            'countdown' => $this->countdown($next),
+        ]);
 
         if ($next['class_id'] !== null && !$this->isOpen((int) $next['class_id'])) {
-            $text .= "\n\nThis month's fee for that class isn't settled yet, so the notes and recordings are locked. The class itself still runs.";
+            $text .= "\n\n" . t("This month's fee for that class isn't settled yet, so the notes and recordings are locked. The class itself still runs.");
         }
 
-        return $this->reply($text, 'next_class', [['label' => 'Open the calendar', 'href' => $this->calendarLink()]]);
+        return $this->reply($text, 'next_class', [['label' => t('Open the calendar'), 'href' => $this->calendarLink()]]);
     }
 
     private function schedule(string $question): array
@@ -346,15 +356,15 @@ class AssistantService
         if ($this->contains($text, 'tomorrow') || $this->contains($text, 'heta') || $this->contains($text, 'හෙට')) {
             $from = $today->modify('+1 day');
             $to = $from;
-            $label = 'Tomorrow (' . $from->format('l j M') . ')';
+            $label = t('Tomorrow ({date})', ['date' => lang_date('l j M', $from->getTimestamp())]);
         } elseif ($this->contains($text, 'today') || $this->contains($text, 'ada') || $this->contains($text, 'අද')) {
             $from = $today;
             $to = $today;
-            $label = 'Today';
+            $label = t('Today');
         } else {
             $from = $today;
             $to = $today->modify('+6 days');
-            $label = 'The next 7 days';
+            $label = t('The next 7 days');
         }
 
         $items = $this->calendar->between($from, $to, ['student_id' => $this->studentId]);
@@ -365,17 +375,17 @@ class AssistantService
         ));
 
         if ($items === []) {
-            return $this->reply("{$label}: nothing on the calendar.", 'schedule',
-                [['label' => 'Open the calendar', 'href' => $this->calendarLink()]]);
+            return $this->reply(t('{label}: nothing on the calendar.', ['label' => $label]), 'schedule',
+                [['label' => t('Open the calendar'), 'href' => $this->calendarLink()]]);
         }
 
         $lines = array_map(fn (array $i): string => '- ' . $this->shortWhen($i, $from == $to) . ' ' . $i['title']
-            . ($i['detail'] !== 'Class' ? ' (' . $i['detail'] . ')' : ''), array_slice($items, 0, 10));
+            . ($i['detail'] !== 'Class' ? ' (' . t((string) $i['detail']) . ')' : ''), array_slice($items, 0, 10));
 
-        $more = count($items) > 10 ? "\n...and " . (count($items) - 10) . ' more on the calendar.' : '';
+        $more = count($items) > 10 ? "\n" . t('...and {n} more on the calendar.', ['n' => count($items) - 10]) : '';
 
         return $this->reply("{$label}:\n" . implode("\n", $lines) . $more, 'schedule',
-            [['label' => 'Open the calendar', 'href' => $this->calendarLink()]]);
+            [['label' => t('Open the calendar'), 'href' => $this->calendarLink()]]);
     }
 
     private function exams(): array
@@ -386,21 +396,21 @@ class AssistantService
         ));
 
         if ($items === []) {
-            return $this->reply('No exams or tests are scheduled for the next two months.', 'exams',
-                [['label' => 'Open the calendar', 'href' => $this->calendarLink()]]);
+            return $this->reply(t('No exams or tests are scheduled for the next two months.'), 'exams',
+                [['label' => t('Open the calendar'), 'href' => $this->calendarLink()]]);
         }
 
         $lines = [];
         foreach (array_slice($items, 0, 5) as $i) {
             $line = '- ' . $i['title'] . ' -- ' . $this->when($i) . ' (' . $this->countdown($i) . ')';
             if (!empty($i['syllabus'])) {
-                $line .= "\n  Covers: " . $i['syllabus'];
+                $line .= "\n  " . t('Covers: {what}', ['what' => $i['syllabus']]);
             }
             $lines[] = $line;
         }
 
-        return $this->reply("Coming up:\n" . implode("\n", $lines), 'exams',
-            [['label' => 'Open the calendar', 'href' => $this->calendarLink()]]);
+        return $this->reply(t('Coming up') . ":\n" . implode("\n", $lines), 'exams',
+            [['label' => t('Open the calendar'), 'href' => $this->calendarLink()]]);
     }
 
     private function quizzes(): array
@@ -446,34 +456,32 @@ class AssistantService
         }
 
         if ($open === [] && $soon === []) {
-            $text = $this->audience === 'parent'
-                ? 'No quizzes are waiting for ' . $this->firstName() . ' right now.'
-                : "You're all caught up -- no quizzes waiting.";
+            $text = $this->say("You're all caught up -- no quizzes waiting.", 'No quizzes are waiting for {name} right now.');
             if ($locked > 0) {
-                $text .= "\n\n{$locked} more " . ($locked === 1 ? 'is' : 'are') . " in a class whose fee isn't settled this month.";
+                $text .= "\n\n" . t($locked === 1 ? "{n} more is in a class whose fee isn't settled this month." : "{n} more are in a class whose fee isn't settled this month.", ['n' => $locked]);
             }
 
-            return $this->reply($text, 'quizzes', [['label' => 'My classes', 'href' => $this->classesLink()]]);
+            return $this->reply($text, 'quizzes', [['label' => t('My classes'), 'href' => $this->classesLink()]]);
         }
 
         $lines = [];
         foreach ($open as $q) {
-            $lines[] = '- ' . $q['title'] . ' (' . $q['class_name'] . ') -- open now, closes ' . $this->dateTime($q['closes_at']);
+            $lines[] = '- ' . $q['title'] . ' (' . $q['class_name'] . ') -- ' . t('open now, closes {when}', ['when' => $this->dateTime($q['closes_at'])]);
         }
         foreach (array_slice($soon, 0, 3) as $q) {
-            $lines[] = '- ' . $q['title'] . ' (' . $q['class_name'] . ') -- opens ' . $this->dateTime($q['opens_at']);
+            $lines[] = '- ' . $q['title'] . ' (' . $q['class_name'] . ') -- ' . t('opens {when}', ['when' => $this->dateTime($q['opens_at'])]);
         }
 
         $head = count($open) > 0
-            ? (count($open) === 1 ? '1 quiz is open now:' : count($open) . ' quizzes are open now:')
-            : 'Nothing open right now, but coming up:';
+            ? (count($open) === 1 ? t('1 quiz is open now:') : t('{n} quizzes are open now:', ['n' => count($open)]))
+            : t('Nothing open right now, but coming up:');
 
         if ($locked > 0) {
-            $lines[] = "\n{$locked} more " . ($locked === 1 ? 'is' : 'are') . " locked until this month's fee is settled.";
+            $lines[] = "\n" . t($locked === 1 ? "{n} more is locked until this month's fee is settled." : "{n} more are locked until this month's fee is settled.", ['n' => $locked]);
         }
 
         return $this->reply($head . "\n" . implode("\n", $lines), 'quizzes',
-            [['label' => 'Go to my classes', 'href' => $this->classesLink()]]);
+            [['label' => t('Go to my classes'), 'href' => $this->classesLink()]]);
     }
 
     private function marks(): array
@@ -493,7 +501,7 @@ class AssistantService
 
         if ($rows === []) {
             return $this->reply(
-                $this->you("haven't", "hasn't") . ' had a quiz marked yet. Marks show up here as soon as one is.',
+                $this->say("You haven't had a quiz marked yet. Marks show up here as soon as one is.", "{name} hasn't had a quiz marked yet. Marks show up here as soon as one is."),
                 'marks'
             );
         }
@@ -509,15 +517,15 @@ class AssistantService
             // version did, turned a 50% pass mark on a 50-mark paper into
             // 100% and called an 80% a fail.
             $passMark = $r['pass_mark'] !== null ? (float) $r['pass_mark'] : 50.0;
-            $lines[] = '- ' . $r['title'] . ' -- ' . round($pct) . '%' . ($pct >= $passMark ? '' : ' (below the pass mark)');
+            $lines[] = '- ' . $r['title'] . ' -- ' . round($pct) . '%' . ($pct >= $passMark ? '' : ' (' . t('below the pass mark') . ')');
         }
 
         $avg = round($sum / count($rows));
 
         return $this->reply(
-            'Latest marks:' . "\n" . implode("\n", $lines) . "\n\nAverage over these: {$avg}%.",
+            t('Latest marks:') . "\n" . implode("\n", $lines) . "\n\n" . t('Average over these: {n}%.', ['n' => $avg]),
             'marks',
-            [['label' => 'All marks', 'href' => $this->marksLink()]]
+            [['label' => t('All marks'), 'href' => $this->marksLink()]]
         );
     }
 
@@ -530,28 +538,31 @@ class AssistantService
         // a brand-new student they are at 0 out of 100.
         if (empty($summary['has_data'])) {
             return $this->reply(
-                "There isn't enough yet to measure progress -- it starts once there are quiz marks, attendance or material opened.",
+                t("There isn't enough yet to measure progress -- it starts once there are quiz marks, attendance or material opened."),
                 'progress'
             );
         }
 
         $level = (string) $summary['level'];
-        $text = ($this->audience === 'parent' ? $this->firstName() . ' is' : "You're")
-            . " at {$level} -- an overall score of " . round((float) $summary['score']) . ' out of 100.';
+        $text = $this->say(
+            "You're at {level} -- an overall score of {score} out of 100.",
+            '{name} is at {level} -- an overall score of {score} out of 100.',
+            ['level' => t($level), 'score' => round((float) $summary['score'])]
+        );
 
         if (!empty($summary['summary'])) {
-            $text .= "\n\n" . $summary['summary'];
+            $text .= "\n\n" . t((string) $summary['summary']);
         }
 
-        $text .= "\n\nIt combines quiz marks (60%), attendance (25%) and material opened (15%).";
+        $text .= "\n\n" . t('It combines quiz marks (60%), attendance (25%) and material opened (15%).');
 
-        return $this->reply($text, 'progress', [['label' => 'See the full progress page', 'href' => $this->progressLink()]]);
+        return $this->reply($text, 'progress', [['label' => t('See the full progress page'), 'href' => $this->progressLink()]]);
     }
 
     private function fees(): array
     {
         $month = ContentAccessService::normaliseMonth($this->now->format('Y-m-d'));
-        $label = date('F', strtotime($month));
+        $label = lang_date('F', $month);
 
         $stmt = $this->db->prepare(
             "SELECT c.id, c.class_name, e.scholarship_type,
@@ -569,7 +580,7 @@ class AssistantService
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if ($rows === []) {
-            return $this->reply($this->you('are', 'is') . ' not enrolled in any classes right now.', 'fees');
+            return $this->reply($this->say('You are not enrolled in any classes right now.', '{name} is not enrolled in any classes right now.'), 'fees');
         }
 
         $lines = [];
@@ -577,34 +588,34 @@ class AssistantService
 
         foreach ($rows as $r) {
             if (($r['scholarship_type'] ?? '') === 'free_card') {
-                $lines[] = '- ' . $r['class_name'] . ': free card, nothing to pay';
+                $lines[] = '- ' . $r['class_name'] . ': ' . t('free card, nothing to pay');
                 continue;
             }
 
             $status = $r['payment_status'];
 
             if ($status === null) {
-                $lines[] = '- ' . $r['class_name'] . ": the {$label} fee hasn't been issued yet";
+                $lines[] = '- ' . $r['class_name'] . ': ' . t("the {month} fee hasn't been issued yet", ['month' => $label]);
                 continue;
             }
 
             if (in_array($status, ['paid', 'waived'], true)) {
-                $lines[] = '- ' . $r['class_name'] . ': ' . ($status === 'waived' ? 'waived' : 'paid') . ' ✓';
+                $lines[] = '- ' . $r['class_name'] . ': ' . t($status === 'waived' ? 'waived' : 'paid') . ' ✓';
                 continue;
             }
 
             $due = (float) $r['amount_due'] - (float) $r['amount_paid'];
             $owed += $due;
-            $lines[] = '- ' . $r['class_name'] . ': Rs. ' . number_format($due, 2) . ' ' . ($status === 'overdue' ? 'overdue' : 'to pay');
+            $lines[] = '- ' . $r['class_name'] . ': ' . t($status === 'overdue' ? 'Rs. {n} overdue' : 'Rs. {n} to pay', ['n' => number_format($due, 2)]);
         }
 
-        $head = "{$label} fees:";
+        $head = t('{month} fees:', ['month' => $label]);
         $foot = $owed > 0
-            ? "\n\nOutstanding: Rs. " . number_format($owed, 2) . ". The notes, recordings and quizzes for those classes open again once it's paid."
-            : "\n\nEverything for {$label} is settled.";
+            ? "\n\n" . t("Outstanding: Rs. {n}. The notes, recordings and quizzes for those classes open again once it's paid.", ['n' => number_format($owed, 2)])
+            : "\n\n" . t('Everything for {month} is settled.', ['month' => $label]);
 
         return $this->reply($head . "\n" . implode("\n", $lines) . $foot, 'fees',
-            $this->audience === 'parent' ? [['label' => 'Fee history', 'href' => BASE_URL . '/family/fees']] : []);
+            $this->audience === 'parent' ? [['label' => t('Fee history'), 'href' => BASE_URL . '/family/fees']] : []);
     }
 
     private function materials(): array
@@ -627,22 +638,22 @@ class AssistantService
         $lockedCount = count($rows) - count($open);
 
         if ($open === []) {
-            $text = 'Nothing new to open right now.';
+            $text = t('Nothing new to open right now.');
             if ($lockedCount > 0) {
-                $text .= "\n\nThere is material in classes whose fee isn't settled this month -- it opens once it is.";
+                $text .= "\n\n" . t("There is material in classes whose fee isn't settled this month -- it opens once it is.");
             }
-            return $this->reply($text, 'materials', [['label' => 'My classes', 'href' => $this->classesLink()]]);
+            return $this->reply($text, 'materials', [['label' => t('My classes'), 'href' => $this->classesLink()]]);
         }
 
         $kinds = ['recording' => 'Recording', 'reading' => 'Notes', 'video' => 'Video', 'link' => 'Link'];
         $lines = [];
         foreach (array_slice($open, 0, 5) as $r) {
-            $lines[] = '- ' . ($kinds[$r['material_type']] ?? 'Material') . ': ' . $r['title']
-                . ' (' . $r['class_name'] . ', ' . date('j M', strtotime($r['created_at'])) . ')';
+            $lines[] = '- ' . t($kinds[$r['material_type']] ?? 'Material') . ': ' . $r['title']
+                . ' (' . $r['class_name'] . ', ' . lang_date('j M', (string) $r['created_at']) . ')';
         }
 
-        return $this->reply("Latest:\n" . implode("\n", $lines), 'materials',
-            [['label' => 'Open my classes', 'href' => $this->classesLink()]]);
+        return $this->reply(t('Latest:') . "\n" . implode("\n", $lines), 'materials',
+            [['label' => t('Open my classes'), 'href' => $this->classesLink()]]);
     }
 
     private function teacher(): array
@@ -651,10 +662,10 @@ class AssistantService
             "SELECT full_name FROM users WHERE role = 'teacher' AND status = 'active' ORDER BY id DESC LIMIT 1"
         )->fetchColumn();
 
-        $who = $name !== false ? (string) $name : 'the teacher';
+        $who = $name !== false ? (string) $name : t('the teacher');
 
         return $this->reply(
-            "Your science teacher is {$who}.\n\nFor a question about the lesson, ask at the next class, or contact the office at your branch.",
+            t('Your science teacher is {who}.', ['who' => $who]) . "\n\n" . t('For a question about the lesson, ask at the next class, or contact the office at your branch.'),
             'teacher'
         );
     }
@@ -662,10 +673,10 @@ class AssistantService
     private function subjectQuestion(): array
     {
         return $this->reply(
-            "That's a science question, and I'm only here for things like classes, marks and fees -- I don't explain lessons, because a wrong answer could cost you marks.\n\n"
-            . 'Check the notes and recordings for that lesson, or ask the teacher at the next class.',
+            t("That's a science question, and I'm only here for things like classes, marks and fees -- I don't explain lessons, because a wrong answer could cost you marks.") . "\n\n"
+            . t('Check the notes and recordings for that lesson, or ask the teacher at the next class.'),
             'subject_question',
-            [['label' => 'Open my classes', 'href' => $this->classesLink()]],
+            [['label' => t('Open my classes'), 'href' => $this->classesLink()]],
             true
         );
     }
@@ -673,7 +684,7 @@ class AssistantService
     private function fallback(): array
     {
         return $this->reply(
-            "Sorry, I didn't understand that one. I can tell you about classes, quizzes, exams, marks, progress, fees and new notes. Try one of these:",
+            t("Sorry, I didn't understand that one. I can tell you about classes, quizzes, exams, marks, progress, fees and new notes. Try one of these:"),
             'unknown',
             [],
             false
@@ -695,7 +706,26 @@ class AssistantService
             'answered'    => $answered && $intent !== 'unknown',
             'links'       => $links,
             'suggestions' => in_array($intent, ['greeting', 'help', 'unknown'], true) ? self::SUGGESTIONS : [],
+            // What each chip shows, in the reader's language. The chip still
+            // sends the English question in `suggestions`, which is what
+            // the intent matcher was written for.
+            'suggestion_labels' => in_array($intent, ['greeting', 'help', 'unknown'], true)
+                ? array_map(static fn (string $s): string => t($s), self::SUGGESTIONS)
+                : [],
         ];
+    }
+
+    /**
+     * One sentence in two versions: to the student ("You have ...") or
+     * to a parent about their child ("{name} has ..."), translated.
+     *
+     * @param array<string, string|int|float> $vars
+     */
+    private function say(string $toStudent, string $toParent, array $vars = []): string
+    {
+        return $this->audience === 'parent'
+            ? t($toParent, $vars + ['name' => $this->firstName()])
+            : t($toStudent, $vars);
     }
 
     /**
@@ -743,18 +773,20 @@ class AssistantService
         $diff = (int) $today->diff($date)->format('%r%a');
 
         $day = match ($diff) {
-            0       => 'today',
-            1       => 'tomorrow',
-            default => ($withPreposition ? 'on ' : '') . $date->format('l j M'),
+            0       => t('today'),
+            1       => t('tomorrow'),
+            default => $withPreposition
+                ? t('on {date}', ['date' => lang_date('l j M', $date->getTimestamp())])
+                : lang_date('l j M', $date->getTimestamp()),
         };
 
-        return $item['start_time'] !== null ? "{$day} at {$item['start_time']}" : $day;
+        return $item['start_time'] !== null ? t('{day} at {time}', ['day' => $day, 'time' => $item['start_time']]) : $day;
     }
 
     private function shortWhen(array $item, bool $sameDay): string
     {
-        $time = $item['start_time'] ?? 'All day';
-        return $sameDay ? $time : (new DateTimeImmutable($item['date']))->format('D') . ' ' . $time;
+        $time = $item['start_time'] ?? t('All day');
+        return $sameDay ? $time : lang_date('D', (new DateTimeImmutable($item['date']))->getTimestamp()) . ' ' . $time;
     }
 
     private function countdown(array $item): string
@@ -763,24 +795,24 @@ class AssistantService
         $minutes = (int) floor(($at->getTimestamp() - $this->now->getTimestamp()) / 60);
 
         return match (true) {
-            $minutes < 1     => 'starting now',
-            $minutes < 60    => "in {$minutes} minutes",
-            $minutes < 120   => 'in about an hour',
-            $minutes < 1440  => 'in ' . intdiv($minutes, 60) . ' hours',
-            $minutes < 2880  => 'tomorrow',
-            default          => 'in ' . intdiv($minutes, 1440) . ' days',
+            $minutes < 1     => t('starting now'),
+            $minutes < 60    => t('in {n} minutes', ['n' => $minutes]),
+            $minutes < 120   => t('in about an hour'),
+            $minutes < 1440  => t('in {n} hours', ['n' => intdiv($minutes, 60)]),
+            $minutes < 2880  => t('tomorrow'),
+            default          => t('in {n} days', ['n' => intdiv($minutes, 1440)]),
         };
     }
 
     private function dateTime(string $value): string
     {
-        return date('D j M, g:ia', strtotime($value));
+        return lang_date('D j M, g:ia', $value);
     }
 
     private function firstName(): string
     {
         $parts = preg_split('/\s+/', trim($this->name)) ?: [];
-        return $parts[0] ?? 'your child';
+        return $parts[0] ?? t('your child');
     }
 
     /** "You have" / "Nimal has", depending on who is asking. */

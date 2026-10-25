@@ -35,7 +35,7 @@ $tone = static fn (string $type, ?string $eventType): array => match (true) {
             <thead>
                 <tr>
                     <?php foreach (['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as $dayName): ?>
-                        <th style="text-align:left; width:14.28%;"><?= $dayName ?></th>
+                        <th style="text-align:left; width:14.28%;"><?= htmlspecialchars(lang_date('D', strtotime('next ' . $dayName)), ENT_QUOTES, 'UTF-8') ?></th>
                     <?php endforeach; ?>
                 </tr>
             </thead>
@@ -72,7 +72,7 @@ $tone = static fn (string $type, ?string $eventType): array => match (true) {
                                 <?php endif; ?>
                                 <?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?>
                                 <?php if ($locked): ?>
-                                    <span title="This month's fee is not settled, so the material stays locked. The class still runs."
+                                    <span title="<?= te("This month's fee is not settled, so the material stays locked. The class still runs.") ?>"
                                           style="color:var(--text-muted);">&#128274;</span>
                                 <?php endif; ?>
                             </div>
@@ -80,7 +80,7 @@ $tone = static fn (string $type, ?string $eventType): array => match (true) {
 
                         <?php if (count($items) > 3): ?>
                             <div class="text-sm text-muted" style="font-size:.7rem;">
-                                +<?= count($items) - 3 ?> more
+                                <?= te('+{n} more', ['n' => count($items) - 3]) ?>
                             </div>
                         <?php endif; ?>
                     </td>

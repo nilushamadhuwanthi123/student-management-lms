@@ -13,7 +13,7 @@ $classes  = $classes ?? [];
 $months   = $months ?? [];
 $month    = $month ?? date('Y-m-01');
 $overview = $overview ?? [];
-$monthLabel = date('F Y', strtotime($month));
+$monthLabel = lang_date('F Y', $month);
 $isCurrentMonth = $month === date('Y-m-01');
 
 $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
@@ -35,7 +35,7 @@ $kinds = [
 $dayLabel = static function (array $s): string {
     $d = new DateTimeImmutable($s['date']);
     $diff = (int) (new DateTimeImmutable('today'))->diff($d)->format('%r%a');
-    return $diff === 0 ? 'Today' : ($diff === 1 ? 'Tomorrow' : $d->format('D j M'));
+    return $diff === 0 ? t('Today') : ($diff === 1 ? t('Tomorrow') : lang_date('D j M', $d->getTimestamp()));
 };
 
 $barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v >= 70 ? 'var(--success)' : ($v >= 50 ? 'var(--accent)' : 'var(--danger)'));
@@ -100,38 +100,38 @@ $barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v 
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">My classes</h1>
-        <p class="text-sm text-muted"><?= $openCount ?> of <?= count($classes) ?> open for <?= $e($monthLabel) ?></p>
+        <h1 class="page-header__title"><?= te('My Classes') ?></h1>
+        <p class="text-sm text-muted"><?= te('{a} of {b} open for {month}', ['a' => $openCount, 'b' => count($classes), 'month' => $monthLabel]) ?></p>
     </div>
     <div class="page-header__actions">
         <form method="GET" action="<?= BASE_URL ?>/my/classes" style="display:flex; gap:.5rem; align-items:center;">
-            <select name="month" class="form-control" style="width:auto;" onchange="this.form.submit()" aria-label="Month">
+            <select name="month" class="form-control" style="width:auto;" onchange="this.form.submit()" aria-label="<?= te('Month') ?>">
                 <?php foreach ($months as $value => $label): ?>
-                    <option value="<?= $e($value) ?>" <?= $value === $month ? 'selected' : '' ?>><?= $e($label) ?></option>
+                    <option value="<?= $e($value) ?>" <?= $value === $month ? 'selected' : '' ?>><?= $e(lang_date('F Y', (string) $value)) ?></option>
                 <?php endforeach; ?>
             </select>
-            <noscript><button type="submit" class="btn btn--ghost btn--sm">Go</button></noscript>
+            <noscript><button type="submit" class="btn btn--ghost btn--sm"><?= te('Go') ?></button></noscript>
         </form>
-        <a href="<?= BASE_URL ?>/my/calendar" class="btn btn--ghost">Calendar</a>
-        <a href="<?= BASE_URL ?>/my/progress" class="btn btn--ghost">My progress</a>
+        <a href="<?= BASE_URL ?>/my/calendar" class="btn btn--ghost"><?= te('Calendar') ?></a>
+        <a href="<?= BASE_URL ?>/my/progress" class="btn btn--ghost"><?= te('My progress') ?></a>
     </div>
 </div>
 
 <?php if ($classes === []): ?>
     <div class="card" style="padding:3rem 1.5rem; text-align:center;">
         <div style="font-size:2.5rem;">&#127979;</div>
-        <h4 style="margin:.75rem 0 .35rem;">You are not enrolled in any class yet</h4>
-        <p class="text-sm text-muted" style="margin:0;">Speak to the office to be added to a class.</p>
+        <h4 style="margin:.75rem 0 .35rem;"><?= te('You are not enrolled in any class yet') ?></h4>
+        <p class="text-sm text-muted" style="margin:0;"><?= te('Speak to the office to be added to a class.') ?></p>
     </div>
 <?php else: ?>
 
 <div class="mc-summary">
     <div class="mc-sum"><div class="mc-sum__icon">&#128218;</div>
-        <div><div class="mc-sum__n"><?= $openCount ?>/<?= count($classes) ?></div><div class="mc-sum__l">Classes open this month</div></div></div>
+        <div><div class="mc-sum__n"><?= $openCount ?>/<?= count($classes) ?></div><div class="mc-sum__l"><?= te('Classes open this month') ?></div></div></div>
     <div class="mc-sum"><div class="mc-sum__icon">&#10024;</div>
-        <div><div class="mc-sum__n"><?= $allNew ?></div><div class="mc-sum__l">Not opened yet</div></div></div>
+        <div><div class="mc-sum__n"><?= $allNew ?></div><div class="mc-sum__l"><?= te('Not opened yet') ?></div></div></div>
     <div class="mc-sum"><div class="mc-sum__icon">&#9997;&#65039;</div>
-        <div><div class="mc-sum__n" style="color:<?= $allQuizzes ? 'var(--danger)' : 'var(--success)' ?>;"><?= $allQuizzes ?></div><div class="mc-sum__l">Quizzes to sit now</div></div></div>
+        <div><div class="mc-sum__n" style="color:<?= $allQuizzes ? 'var(--danger)' : 'var(--success)' ?>;"><?= $allQuizzes ?></div><div class="mc-sum__l"><?= te('Quizzes to sit now') ?></div></div></div>
 </div>
 
 <?php foreach ($classes as $c):
@@ -145,10 +145,20 @@ $barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v 
     $days = !empty($c['schedule_days']) ? (json_decode($c['schedule_days'], true) ?: []) : [];
     $teacherInitial = mb_strtoupper(mb_substr(trim((string) ($c['teacher_name'] ?? 'T')), 0, 1));
 
-    if ($gate['reason'] === 'free_card') { $statusClass = 'mc-status--ok'; $statusText = 'Free card'; }
-    elseif ($open) { $statusClass = 'mc-status--ok'; $statusText = '&#10003; ' . $e(date('F', strtotime($month))) . ' paid'; }
-    elseif ($gate['reason'] === 'not_generated') { $statusClass = ''; $statusText = 'Fee not issued yet'; }
-    else { $statusClass = 'mc-status--due'; $statusText = '&#128274; Rs. ' . number_format((float) $gate['amount_due'], 0) . ' due'; }
+    if ($gate['reason'] === 'free_card') { $statusClass = 'mc-status--ok'; $statusText = te('Free card'); }
+    elseif ($open) { $statusClass = 'mc-status--ok'; $statusText = '&#10003; ' . te('{month} paid', ['month' => lang_date('F', $month)]); }
+    elseif ($gate['reason'] === 'not_generated') { $statusClass = ''; $statusText = te('Fee not issued yet'); }
+    else { $statusClass = 'mc-status--due'; $statusText = '&#128274; ' . te('Rs. {n} due', ['n' => number_format((float) $gate['amount_due'], 0)]); }
+
+    // The fee service bakes the month into its English message, which no
+    // dictionary could match, so the sentence is rebuilt from the reason.
+    $gateMessage = match ($gate['reason']) {
+        'overdue'       => t('Your {month} fee is overdue. Settle it to reopen this class.', ['month' => $monthLabel]),
+        'unpaid'        => t('Your {month} fee is not settled yet.', ['month' => $monthLabel]),
+        'not_generated' => t('The {month} fee has not been issued yet. This class opens once it is.', ['month' => $monthLabel]),
+        'not_enrolled'  => t('You are not enrolled in this class.'),
+        default         => (string) $gate['message'],
+    };
 ?>
 <section class="mc-panel <?= $open ? '' : 'mc-panel--locked' ?>" aria-label="<?= $e($c['class_name']) ?>">
     <header class="mc-head">
@@ -159,9 +169,9 @@ $barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v 
                 <?= $e($c['teacher_name'] ?? '') ?>
                 <?= !empty($c['institute_name']) ? ' &middot; ' . $e($c['institute_name']) : '' ?>
                 <?= !empty($c['room']) ? ' &middot; ' . $e($c['room']) : '' ?>
-                <?= $days ? ' &middot; ' . $e(implode(' & ', $days)) : '' ?>
-                <?= !empty($c['start_time']) ? ' ' . $e(date('g:i a', strtotime($c['start_time']))) : '' ?>
-                <?= !empty($c['end_time']) ? '&ndash;' . $e(date('g:i a', strtotime($c['end_time']))) : '' ?>
+                <?= $days ? ' &middot; ' . $e(lang_names(implode(' & ', $days))) : '' ?>
+                <?= !empty($c['start_time']) ? ' ' . $e(lang_date('g:i a', (string) $c['start_time'])) : '' ?>
+                <?= !empty($c['end_time']) ? '&ndash;' . $e(lang_date('g:i a', (string) $c['end_time'])) : '' ?>
             </div>
         </div>
         <span class="mc-status <?= $statusClass ?>"><?= $statusText ?></span>
@@ -169,23 +179,23 @@ $barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v 
 
     <?php if (!$open): ?>
         <div class="mc-lockbox" style="margin-top:1.1rem;">
-            <strong><?= $e($gate['message']) ?></strong>
+            <strong><?= $e($gateMessage) ?></strong>
             <?php if ($lib['total'] > 0 || count($qz['open']) + $qz['upcoming'] > 0): ?>
                 <div class="text-sm" style="margin-top:.3rem;">
-                    Waiting behind the lock for <?= $e($monthLabel) ?>:
+                    <?= te('Waiting behind the lock for {month}:', ['month' => $monthLabel]) ?>
                     <?php
                     $waiting = [];
                     foreach ($kinds as $k => [$label]) {
-                        if (!empty($lib['counts'][$k])) { $waiting[] = $lib['counts'][$k] . ' ' . strtolower($label); }
+                        if (!empty($lib['counts'][$k])) { $waiting[] = t('{n} ' . strtolower($label), ['n' => $lib['counts'][$k]]); }
                     }
                     $lockedQuizzes = count($qz['open']) + $qz['upcoming'];
-                    if ($lockedQuizzes) { $waiting[] = $lockedQuizzes . ' ' . ($lockedQuizzes === 1 ? 'quiz' : 'quizzes'); }
+                    if ($lockedQuizzes) { $waiting[] = t($lockedQuizzes === 1 ? '{n} quiz' : '{n} quizzes', ['n' => $lockedQuizzes]); }
                     echo $e(implode(', ', $waiting));
                     ?>.
-                    The class itself still runs &mdash; come along as usual.
+                    <?= te('The class itself still runs — come along as usual.') ?>
                 </div>
             <?php else: ?>
-                <div class="text-sm" style="margin-top:.3rem;">The class itself still runs &mdash; come along as usual.</div>
+                <div class="text-sm" style="margin-top:.3rem;"><?= te('The class itself still runs — come along as usual.') ?></div>
             <?php endif; ?>
         </div>
     <?php endif; ?>
@@ -193,87 +203,87 @@ $barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v 
     <div class="mc-body">
         <!-- When -->
         <div class="mc-col">
-            <h4>Next class</h4>
+            <h4><?= te('Next class') ?></h4>
             <?php if (!empty($o['next'])): $n = $o['next']; ?>
                 <div class="mc-count" data-countdown="<?= $e(str_replace(' ', 'T', $n['starts_at'])) ?>"
                      data-now="<?= $e(date('Y-m-d\TH:i:s')) ?>">&nbsp;</div>
-                <div class="text-sm" style="margin-top:.3rem;"><?= $e($dayLabel($n)) ?> at <?= $e($n['start_time']) ?><?= ($n['event_type'] ?? '') === 'extra_class' ? ' &middot; extra class' : '' ?></div>
+                <div class="text-sm" style="margin-top:.3rem;"><?= te('{day} at {time}', ['day' => $dayLabel($n), 'time' => $n['start_time']]) ?><?= ($n['event_type'] ?? '') === 'extra_class' ? ' &middot; ' . te('extra class') : '' ?></div>
                 <?php if (count($o['week']) > 1): ?>
-                    <div class="mc-chips" aria-label="Sessions in the next 7 days">
+                    <div class="mc-chips" aria-label="<?= te('Sessions in the next 7 days') ?>">
                         <?php foreach ($o['week'] as $i => $s): ?>
-                            <span class="mc-chip <?= $i === 0 ? 'mc-chip--now' : '' ?>"><?= $e((new DateTimeImmutable($s['date']))->format('D j')) ?> &middot; <?= $e($s['start_time']) ?></span>
+                            <span class="mc-chip <?= $i === 0 ? 'mc-chip--now' : '' ?>"><?= $e(lang_date('D j', (string) $s['date'])) ?> &middot; <?= $e($s['start_time']) ?></span>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
             <?php else: ?>
-                <p class="mc-muted">No sessions in the next 7 days.</p>
+                <p class="mc-muted"><?= te('No sessions in the next 7 days.') ?></p>
             <?php endif; ?>
 
             <?php if (!empty($o['test'])): $t = $o['test']; ?>
                 <div class="mc-test">
                     <strong>&#128221; <?= $e($t['title']) ?></strong><br>
-                    <?= $e($dayLabel($t)) ?><?= $t['start_time'] ? ' at ' . $e($t['start_time']) : '' ?>
-                    <?php if (!empty($t['syllabus'])): ?><br><span class="text-muted">Covers: <?= $e($t['syllabus']) ?></span><?php endif; ?>
+                    <?= $t['start_time'] ? te('{day} at {time}', ['day' => $dayLabel($t), 'time' => $t['start_time']]) : $e($dayLabel($t)) ?>
+                    <?php if (!empty($t['syllabus'])): ?><br><span class="text-muted"><?= te('Covers: {what}', ['what' => $t['syllabus']]) ?></span><?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
 
         <!-- This month's folder -->
         <div class="mc-col">
-            <h4><?= $e(date('F', strtotime($month))) ?> folder
-                <?php if ($open && $lib['unopened'] > 0): ?><span class="mc-new" style="margin-left:.35rem;"><?= (int) $lib['unopened'] ?> new</span><?php endif; ?>
+            <h4><?= te('{month} folder', ['month' => lang_date('F', $month)]) ?>
+                <?php if ($open && $lib['unopened'] > 0): ?><span class="mc-new" style="margin-left:.35rem;"><?= te('{n} new', ['n' => (int) $lib['unopened']]) ?></span><?php endif; ?>
             </h4>
             <?php if ($lib['total'] === 0): ?>
-                <p class="mc-muted">Nothing posted for <?= $e(date('F', strtotime($month))) ?> yet.</p>
+                <p class="mc-muted"><?= te('Nothing posted for {month} yet.', ['month' => lang_date('F', $month)]) ?></p>
             <?php else: ?>
                 <div class="mc-lib">
                     <?php foreach ($kinds as $k => [$label, $icon]): if (empty($lib['counts'][$k])) { continue; } ?>
-                        <div class="mc-lib__item"><span><?= $icon ?></span><?= $label ?><strong><?= (int) $lib['counts'][$k] ?></strong></div>
+                        <div class="mc-lib__item"><span><?= $icon ?></span><?= te($label) ?><strong><?= (int) $lib['counts'][$k] ?></strong></div>
                     <?php endforeach; ?>
                 </div>
                 <?php if ($open && $lib['next'] !== null): $nx = $lib['next']; ?>
                     <a class="mc-continue" href="<?= BASE_URL ?>/my/materials/<?= (int) $nx['id'] ?>/open">
                         <span style="font-size:1.2rem;"><?= $kinds[$nx['material_type']][1] ?? '&#128196;' ?></span>
                         <span style="min-width:0;">
-                            <span class="text-sm text-muted">Up next for you</span><br>
+                            <span class="text-sm text-muted"><?= te('Up next for you') ?></span><br>
                             <strong style="font-size:.88rem;"><?= $e($nx['title']) ?></strong>
                         </span>
                         <span style="margin-left:auto; font-weight:700; color:var(--primary);">&rarr;</span>
                     </a>
                 <?php elseif ($open): ?>
-                    <p class="mc-muted" style="margin-top:.7rem;">&#10003; You've opened everything in this folder.</p>
+                    <p class="mc-muted" style="margin-top:.7rem;">&#10003; <?= te("You've opened everything in this folder.") ?></p>
                 <?php endif; ?>
             <?php endif; ?>
         </div>
 
         <!-- How I'm doing -->
         <div class="mc-col">
-            <h4>How I'm doing here</h4>
+            <h4><?= te("How I'm doing here") ?></h4>
             <?php if (empty($st['has_data'])): ?>
-                <p class="mc-muted">Your standing appears once there are marks or attendance in this class.</p>
+                <p class="mc-muted"><?= te('Your standing appears once there are marks or attendance in this class.') ?></p>
             <?php else: ?>
-                <span class="mc-level"><?= $e($st['level']) ?> &middot; <?= round((float) $st['score']) ?>/100</span>
+                <span class="mc-level"><?= te((string) $st['level']) ?> &middot; <?= round((float) $st['score']) ?>/100</span>
                 <?php foreach ([
-                    ['Average mark', $st['marks']['quizzes_taken'] > 0 ? (float) $st['marks']['average_percentage'] : null, $st['marks']['quizzes_taken'] . ' quiz' . ($st['marks']['quizzes_taken'] == 1 ? '' : 'zes')],
-                    ['Attendance', $st['attendance']['sessions_recorded'] > 0 ? (float) $st['attendance']['rate'] : null, $st['attendance']['sessions_recorded'] . ' sessions'],
-                    ['Material opened', $st['engagement']['materials_total'] > 0 ? (float) $st['engagement']['rate'] : null, $st['engagement']['materials_total'] . ' items'],
+                    ['Average mark', $st['marks']['quizzes_taken'] > 0 ? (float) $st['marks']['average_percentage'] : null, t($st['marks']['quizzes_taken'] == 1 ? '{n} quiz' : '{n} quizzes', ['n' => $st['marks']['quizzes_taken']])],
+                    ['Attendance', $st['attendance']['sessions_recorded'] > 0 ? (float) $st['attendance']['rate'] : null, t('{n} sessions', ['n' => $st['attendance']['sessions_recorded']])],
+                    ['Material opened', $st['engagement']['materials_total'] > 0 ? (float) $st['engagement']['rate'] : null, t('{n} items', ['n' => $st['engagement']['materials_total']])],
                 ] as [$label, $value, $basis]): ?>
-                    <div class="mc-stand__row"><span><?= $label ?> <span class="text-muted" style="font-size:.75rem;">(<?= $e($basis) ?>)</span></span>
+                    <div class="mc-stand__row"><span><?= te($label) ?> <span class="text-muted" style="font-size:.75rem;">(<?= $e($basis) ?>)</span></span>
                         <strong><?= $value !== null ? round($value) . '%' : '&ndash;' ?></strong></div>
                     <div class="mc-bar"><span style="width:<?= $value !== null ? min(100, max(0, $value)) : 0 ?>%; background:<?= $barTone($value) ?>;"></span></div>
                 <?php endforeach; ?>
             <?php endif; ?>
 
-            <h4 style="margin-top:.6rem;">Quizzes &middot; <?= $e(date('F', strtotime($month))) ?></h4>
+            <h4 style="margin-top:.6rem;"><?= te('Quizzes') ?> &middot; <?= $e(lang_date('F', $month)) ?></h4>
             <?php if (!$qz['open'] && !$qz['done'] && !$qz['upcoming'] && !$qz['missed']): ?>
-                <p class="mc-muted">No quizzes this month.</p>
+                <p class="mc-muted"><?= te('No quizzes this month.') ?></p>
             <?php else: ?>
                 <?php foreach ($qz['open'] as $q): ?>
                     <div class="mc-quiz">
                         <span>&#10067;</span>
                         <span class="mc-quiz__t" title="<?= $e($q['title']) ?>"><?= $e($q['title']) ?></span>
                         <?php if ($open): ?>
-                            <a class="btn btn--primary btn--sm" href="<?= BASE_URL ?>/my/quizzes/<?= (int) $q['id'] ?>/sit">Start</a>
+                            <a class="btn btn--primary btn--sm" href="<?= BASE_URL ?>/my/quizzes/<?= (int) $q['id'] ?>/sit"><?= te('Start') ?></a>
                         <?php else: ?>
                             <span class="text-muted">&#128274;</span>
                         <?php endif; ?>
@@ -283,14 +293,14 @@ $barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v 
                     <div class="mc-quiz">
                         <span>&#10003;</span>
                         <span class="mc-quiz__t" title="<?= $e($q['title']) ?>"><?= $e($q['title']) ?></span>
-                        <span class="mc-score" style="color:<?= $barTone($pct) ?>;"><?= $pct !== null ? round($pct) . '%' : 'Marking' ?></span>
+                        <span class="mc-score" style="color:<?= $barTone($pct) ?>;"><?= $pct !== null ? round($pct) . '%' : te('Marking') ?></span>
                     </div>
                 <?php endforeach; ?>
                 <?php if ($qz['upcoming'] || $qz['missed']): ?>
                     <div class="text-sm text-muted" style="margin-top:.4rem;">
-                        <?= $qz['upcoming'] ? (int) $qz['upcoming'] . ' coming later this month' : '' ?>
+                        <?= $qz['upcoming'] ? te('{n} coming later this month', ['n' => (int) $qz['upcoming']]) : '' ?>
                         <?= $qz['upcoming'] && $qz['missed'] ? ' &middot; ' : '' ?>
-                        <?= $qz['missed'] ? '<span style="color:var(--danger);">' . (int) $qz['missed'] . ' missed</span>' : '' ?>
+                        <?= $qz['missed'] ? '<span style="color:var(--danger);">' . te('{n} missed', ['n' => (int) $qz['missed']]) . '</span>' : '' ?>
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
@@ -299,11 +309,11 @@ $barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v 
 
     <footer class="mc-foot">
         <a href="<?= BASE_URL ?>/my/classes/<?= $id ?>?month=<?= urlencode($month) ?>" class="btn <?= $open ? 'btn--primary' : 'btn--ghost' ?>">
-            <?= $open ? 'Open class' : 'See what is locked' ?>
+            <?= $open ? te('Open class') : te('See what is locked') ?>
         </a>
-        <a href="<?= BASE_URL ?>/my/calendar" class="btn btn--ghost">Calendar</a>
-        <a href="<?= BASE_URL ?>/my/marks" class="btn btn--ghost">All marks</a>
-        <button type="button" class="btn btn--ghost" data-ask="When is my next class?">&#129302; Ask the assistant</button>
+        <a href="<?= BASE_URL ?>/my/calendar" class="btn btn--ghost"><?= te('Calendar') ?></a>
+        <a href="<?= BASE_URL ?>/my/marks" class="btn btn--ghost"><?= te('All marks') ?></a>
+        <button type="button" class="btn btn--ghost" data-ask="When is my next class?">&#129302; <?= te('Ask the assistant') ?></button>
     </footer>
 </section>
 <?php endforeach; ?>
@@ -317,13 +327,15 @@ $barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v 
 (function () {
     var started = Date.now();
     var els = document.querySelectorAll('[data-countdown]');
+    var L = <?= json_encode(['now' => t('Now'), 'inTpl' => t('in {x}'), 'd' => t('d'), 'h' => t('h'), 'm' => t('m'), 'min' => t('min')], JSON_UNESCAPED_UNICODE) ?>;
     function render() {
         els.forEach(function (el) {
             var ms = new Date(el.getAttribute('data-countdown')).getTime()
                    - (new Date(el.getAttribute('data-now')).getTime() + (Date.now() - started));
-            if (ms <= 0) { el.textContent = 'Now'; return; }
+            if (ms <= 0) { el.textContent = L.now; return; }
             var m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
-            el.textContent = d > 0 ? 'in ' + d + 'd ' + h + 'h' : (h > 0 ? 'in ' + h + 'h ' + mm + 'm' : 'in ' + mm + ' min');
+            var span = d > 0 ? d + L.d + ' ' + h + L.h : (h > 0 ? h + L.h + ' ' + mm + L.m : mm + ' ' + L.min);
+            el.textContent = L.inTpl.replace('{x}', span);
         });
     }
     render();
@@ -331,7 +343,7 @@ $barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v 
 })();
 document.querySelectorAll('[data-ask]').forEach(function (btn) {
     btn.addEventListener('click', function () {
-        if (window.StudyAssistant) window.StudyAssistant.ask(btn.getAttribute('data-ask'));
+        if (window.StudyAssistant) window.StudyAssistant.ask(btn.getAttribute('data-ask'), btn.textContent.trim());
     });
 });
 </script>

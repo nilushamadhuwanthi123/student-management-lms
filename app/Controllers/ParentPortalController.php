@@ -93,7 +93,7 @@ class ParentPortalController extends BaseController
         $this->logView($parentId, (int) $student['id'], 'marks');
 
         $this->view('portal/parent-marks', [
-            'pageTitle' => $student['full_name'] . ' - marks',
+            'pageTitle' => t('{name} - marks', ['name' => $student['full_name']]),
             'student'   => $student,
             'attempts'  => $stmt->fetchAll(PDO::FETCH_ASSOC),
         ], 'layouts/admin');
@@ -107,7 +107,7 @@ class ParentPortalController extends BaseController
         [$parentId, $student] = $this->requireParent();
 
         $stmt = $this->db->prepare(
-            "SELECT p.month_year, p.amount_due, p.amount_paid, p.payment_status, p.paid_at,
+            "SELECT p.id, p.month_year, p.amount_due, p.amount_paid, p.payment_status, p.paid_at,
                     c.class_name, c.grade
                FROM payments p
                JOIN classes c ON c.id = p.class_id
@@ -127,7 +127,7 @@ class ParentPortalController extends BaseController
         $this->logView($parentId, (int) $student['id'], 'fees');
 
         $this->view('portal/parent-fees', [
-            'pageTitle'   => $student['full_name'] . ' - fees',
+            'pageTitle'   => t('{name} - fees', ['name' => $student['full_name']]),
             'student'     => $student,
             'payments'    => $rows,
             'outstanding' => $outstanding,
