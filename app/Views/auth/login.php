@@ -49,10 +49,10 @@
         <?php endif; ?>
     </div>
 
-    <div class="form-check" style="margin-bottom: 1.5rem;">
-        <input type="checkbox" id="remember_me" name="remember_me" value="1">
-        <label for="remember_me"><?= te('Remember me') ?></label>
+    <div style="text-align:right; margin:-0.5rem 0 0.75rem; font-size:0.875rem;">
+        <a href="<?= BASE_URL ?>/reset-password"><?= te('Forgot password?') ?></a>
     </div>
+
 
     <button type="submit" class="btn btn--primary btn--block btn--lg"
             style="border-radius: 12px; padding: 0.75rem 1.5rem; font-weight: 600; transition: all 0.3s ease;">

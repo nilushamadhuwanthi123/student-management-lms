@@ -13,6 +13,16 @@ To be ticked by the teacher or office staff on the real server, using real accou
 - ☐ Each staff member, coordinator and teacher has the right branches under **Users → Edit**
 - ☐ The super admin sees all branches
 
+## Accounts
+- ☐ Registering a student shows a temporary password for the student (and parent, if a guardian phone was given), only once
+- ☐ The student and parent must choose their own password at first login
+- ☐ Forgotten password: the office issues a reset code after confirming identity; the person resets on "Forgot password?"
+- ☐ A deactivated account cannot keep using an open session
+- ☐ `php bin/accounts_audit.php` on the live server reports 0 accounts with default passwords
+
+## Dashboards
+- ☐ Admin, coordinator and staff see "Today's work" with real counts for their branch only, and each card opens the right page
+
 ## Fees and payment slips
 - ☐ Family uploads a slip → office sees it → approve → fee shows as paid → receipt downloads
 - ☐ Rejecting needs a reason, and the family sees that reason
@@ -35,6 +45,6 @@ To be ticked by the teacher or office staff on the real server, using real accou
 ## Operations
 - ☐ Daily backup set up and one restore tested (BACKUP_AND_RESTORE.md)
 - ☐ Scheduled jobs running (DEPLOYMENT.md)
-- ☐ Demo accounts removed or passwords changed
+- ☐ Demo accounts removed or deactivated (`bin/accounts_audit.php --disable --yes`)
 
 Signed off by: ______________________   Date: ____________

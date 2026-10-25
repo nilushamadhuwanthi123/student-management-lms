@@ -39,6 +39,79 @@ class AuthMiddleware
         self::checkSessionActivity();
         self::verifyFingerprint();
         self::checkDeactivated();
+        self::revalidateAccount();
+        self::enforcePasswordChange();
+    }
+
+    /**
+     * Re-read the account on every request, so that deactivating someone,
+     * changing their role or resetting their password takes effect at once
+     * instead of when their session happens to end.
+     */
+    public static function revalidateAccount(): void
+    {
+        $type = (string) session_get('user_type');
+        $id = (int) session_get('user_id');
+        if (!in_array($type, ['user', 'student', 'parent'], true) || $id <= 0) {
+            return;
+        }
+
+        try {
+            $state = (new \App\Services\AccountService())->liveState($type, $id);
+        } catch (\Throwable $e) {
+            // Fails open only when the 013 migration has not been applied.
+            error_log('Account revalidation unavailable: ' . $e->getMessage());
+            return;
+        }
+
+        $message = null;
+        if ($state === null) {
+            $message = 'Please log in again.';
+        } elseif ($type === 'user' ? $state['status'] === 'inactive' : $state['status'] === 'deactivated') {
+            $message = 'Your account has been deactivated. Please contact the administration for assistance.';
+        } elseif (session_get('credential_version') !== null && (int) session_get('credential_version') !== $state['version']) {
+            $message = 'Your password was changed. Please log in again.';
+        } elseif ($type === 'user' && $state['role'] !== session_get('user_role')) {
+            $message = 'Your access was changed. Please log in again.';
+        }
+
+        if ($message !== null) {
+            session_destroy_all();
+            session_start();
+            session_flash('error', t($message));
+            header('Location: ' . BASE_URL . '/login');
+            exit;
+        }
+
+        if (session_get('credential_version') === null) {
+            session_set('credential_version', $state['version']);
+        }
+        if ($state['must_change']) {
+            session_set('first_login', true);
+        }
+    }
+
+    /**
+     * While a temporary password is in use, the only pages are the
+     * password form itself, logout and the language switch.
+     */
+    public static function enforcePasswordChange(): void
+    {
+        if (!session_get('first_login')) {
+            return;
+        }
+        $path = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+        foreach ([BASE_URL . '/public', BASE_URL] as $prefix) {
+            if ($prefix !== '' && str_starts_with($path, $prefix)) {
+                $path = substr($path, strlen($prefix));
+                break;
+            }
+        }
+        if ($path === '/first-login-password' || $path === '/logout' || str_starts_with($path, '/lang/')) {
+            return;
+        }
+        header('Location: ' . BASE_URL . '/first-login-password');
+        exit;
     }
 
     /**

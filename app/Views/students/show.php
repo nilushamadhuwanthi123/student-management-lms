@@ -181,6 +181,13 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                         <button type="submit" class="btn btn--success btn--sm">Reactivate</button>
                     </form>
                 <?php endif; ?>
+                <?php if (in_array(session_get('user_role'), ['super_admin', 'admin', 'coordinator'], true)): ?>
+                    <form method="POST" action="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/reset-code" style="display:inline;"
+                          onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('Have you confirmed who is asking? A new code replaces any earlier one.')), ENT_QUOTES, 'UTF-8') ?>);">
+                        <?= csrfField() ?>
+                        <button type="submit" class="btn btn--ghost btn--sm"><?= te('Password reset code') ?></button>
+                    </form>
+                <?php endif; ?>
                 <button type="button" class="btn btn--danger btn--sm" onclick="openModal('deleteModal')">Delete</button>
             </div>
         </div>
@@ -207,6 +214,13 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                         <span class="badge <?= ($parent['status'] ?? 'active') === 'active' ? 'badge--success' : 'badge--danger' ?>" style="font-size:0.6875rem; margin-top:0.25rem;">
                             <?= ucfirst($e($parent['status'] ?? 'active')) ?>
                         </span>
+                        <?php if (in_array(session_get('user_role'), ['super_admin', 'admin', 'coordinator'], true) && !empty($parent['phone1'])): ?>
+                            <form method="POST" action="<?= BASE_URL ?>/parents/<?= (int) $parent['id'] ?>/reset-code" style="display:inline; margin-left:.5rem;"
+                                  onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('Have you confirmed who is asking? A new code replaces any earlier one.')), ENT_QUOTES, 'UTF-8') ?>);">
+                                <?= csrfField() ?>
+                                <button type="submit" class="btn btn--ghost btn--sm" style="font-size:.75rem;"><?= te('Parent reset code') ?></button>
+                            </form>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>

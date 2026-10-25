@@ -38,6 +38,10 @@ class AuthService
                 ];
             }
 
+            if (($blocked = $this->refuseDefaultPassword($password, (int) $user['id'], 'user')) !== null) {
+                return $blocked;
+            }
+
             $this->logAuthEvent('login_success', (int) $user['id'], 'user', null);
 
             return [
@@ -63,6 +67,10 @@ class AuthService
                     'success' => false,
                     'message' => $deactivationMsg,
                 ];
+            }
+
+            if (($blocked = $this->refuseDefaultPassword($password, (int) $student['id'], 'student')) !== null) {
+                return $blocked;
             }
 
             $this->logAuthEvent('login_success', (int) $student['id'], 'student', null);
@@ -91,6 +99,10 @@ class AuthService
                         'success' => false,
                         'message' => $deactivationMsg,
                     ];
+                }
+
+                if (($blocked = $this->refuseDefaultPassword($password, (int) $parent['id'], 'parent')) !== null) {
+                    return $blocked;
                 }
 
                 $this->logAuthEvent('login_success', (int) $parent['id'], 'parent', null);
@@ -214,6 +226,23 @@ class AuthService
     }
 
     // ─── Private Helpers ─────────────────────────────────────────────
+
+    /**
+     * On a live server, an account that still has a demo or old default
+     * password cannot be used until the office issues a reset code.
+     */
+    private function refuseDefaultPassword(string $password, int $id, string $type): ?array
+    {
+        if (env('APP_ENV', 'development') !== 'production' || !AccountService::isKnownDefault($password)) {
+            return null;
+        }
+        $this->logAuthEvent('login_failed', $id, $type, json_encode(['reason' => 'default_password']));
+
+        return [
+            'success' => false,
+            'message' => t('This account still has a default password, so it cannot be used. Please ask the branch office for a reset code.'),
+        ];
+    }
 
     /**
      * Check if a login ID looks like a phone number.

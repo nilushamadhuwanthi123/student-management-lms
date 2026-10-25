@@ -209,6 +209,18 @@ $roleColors      = $roleColors ?? \User::ROLE_COLORS;
     </div>
 </form>
 
+<?php if ((int) $user['id'] !== (int) session_get('user_id') && in_array(session_get('user_role'), ['super_admin', 'admin'], true)
+          && ($user['role'] !== 'super_admin' || session_get('user_role') === 'super_admin')): ?>
+<div class="card" style="margin-top:1rem;"><div class="card__body">
+    <h2 style="font-size:1rem; margin:0 0 .5rem;"><?= te('Forgotten password') ?></h2>
+    <p class="text-sm text-muted"><?= te('Confirm who is asking first (in person, or by calling the phone number on file). The code is shown once and works for 30 minutes.') ?></p>
+    <form method="POST" action="<?= BASE_URL ?>/users/<?= (int) $user['id'] ?>/reset-code">
+        <?= csrfField() ?>
+        <button type="submit" class="btn btn--secondary btn--sm"><?= te('Issue a password reset code') ?></button>
+    </form>
+</div></div>
+<?php endif; ?>
+
 <script>
 function previewEditPhoto(input) {
     if (input.files && input.files[0]) {

@@ -36,3 +36,8 @@ This is a manual step and overwrites live data, so the person doing it must be s
 4. Start Apache. Log in as an admin and check students, fees and one payment slip.
 
 There is **no automatic restore button** in the LMS, on purpose.
+
+## Restore drills done (25 Oct 2026, development PC)
+- **Database:** `mysqldump` of the live development database loaded into a separate database (`student_lms_rc`). A separate copy of the app ran on it, and the role, payment-material and login tests (218 checks) passed on the restored copy.
+- **Uploads:** `robocopy` backup of `storage/uploads` copied back to a separate folder; all 15 files restored byte-identical (SHA-256).
+- Not yet done: a restore on the production server. Do one in the first week.

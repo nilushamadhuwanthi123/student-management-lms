@@ -158,9 +158,16 @@ class Student extends BaseModel
         $where  = [];
 
         if ($term !== '') {
-            $where[] = "(s.full_name LIKE :term OR s.student_id_display LIKE :term
-                         OR s.email LIKE :term OR s.phone1 LIKE :term)";
-            $params[':term'] = "%{$term}%";
+            // One placeholder per use: with native prepares (EMULATE_PREPARES
+            // off) a repeated named placeholder fails with SQLSTATE HY093,
+            // which made every search return an error page.
+            $where[] = "(s.full_name LIKE :term1 OR s.student_id_display LIKE :term2
+                         OR s.email LIKE :term3 OR s.phone1 LIKE :term4)";
+            $like = '%' . addcslashes($term, '%_\\') . '%';
+            $params[':term1'] = $like;
+            $params[':term2'] = $like;
+            $params[':term3'] = $like;
+            $params[':term4'] = $like;
         }
 
         if (!empty($filters['status'])) {

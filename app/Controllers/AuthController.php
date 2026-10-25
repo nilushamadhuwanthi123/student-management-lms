@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
 use App\Middleware\RateLimiter;
+use App\Services\AccountService;
 use App\Services\AuthService;
 
 /**
@@ -64,6 +65,14 @@ class AuthController extends BaseController
         $rateLimitKey = 'login_' . $data['user_id'];
         $rateCheck    = $rateLimiter->checkRateLimit($rateLimitKey, 5, 15);
 
+        // ...and at most 30 per 15 minutes from one address, so guessing
+        // across many IDs is slowed down too.
+        $ipKey   = 'login_ip_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+        $ipCheck = $rateLimiter->checkRateLimit($ipKey, 30, 15);
+        if (!$ipCheck['allowed']) {
+            $rateCheck = $ipCheck;
+        }
+
         if (!$rateCheck['allowed']) {
             $minutes = (int) ceil(($rateCheck['retryAfter'] ?? 900) / 60);
             $this->flash('error', t('Too many login attempts. Please try again in {n} minutes.', ['n' => $minutes]));
@@ -75,6 +84,7 @@ class AuthController extends BaseController
 
         if ($result['success'] === false) {
             $rateLimiter->incrementAttempts($rateLimitKey);
+            $rateLimiter->incrementAttempts($ipKey);
 
             $message = $result['message'] ?? 'Invalid credentials. Please try again.';
             $this->flash('error', $message);
@@ -131,8 +141,14 @@ class AuthController extends BaseController
         // Track session activity
         session_set('last_activity', time());
 
-        // Check if first login (only for 'user' type with pending_first_login status)
-        if ($this->authService->isFirstLogin($user, $userType)) {
+        // Sessions end when the password changes (see AuthMiddleware).
+        session_set('credential_version', (int) ($user['credential_version'] ?? 1));
+
+        // A temporary password must be replaced before anything else:
+        // staff with pending_first_login, students and parents flagged.
+        $mustChange = $this->authService->isFirstLogin($user, $userType)
+            || (in_array($userType, ['student', 'parent'], true) && !empty($user['must_change_password']));
+        if ($mustChange) {
             session_set('first_login', true);
             $this->redirect('/first-login-password');
         }
@@ -192,22 +208,21 @@ class AuthController extends BaseController
             $this->redirect('/first-login-password');
         }
 
-        // Validate password complexity: 1 upper, 1 lower, 1 digit, 1 special
-        if (!$this->isPasswordComplex($data['new_password'])) {
-            $this->flash('error', 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.');
+        $problem = AccountController::passwordProblem($data['new_password'], $data['new_password_confirmation']);
+        if ($problem !== null) {
+            $this->flash('error', $problem);
             $this->redirect('/first-login-password');
         }
 
-        // Update password and set status to active
-        $userId = (int) session_get('user_id');
-        $hash   = password_hash($data['new_password'], PASSWORD_DEFAULT);
+        // Save it (users leave pending_first_login; students/parents drop the flag)
+        $userId   = (int) session_get('user_id');
+        $userType = (string) (session_get('user_type') ?? 'user');
 
         try {
-            $db  = \Database::connect();
-            $sql = "UPDATE users SET password_hash = :hash, status = 'active', updated_at = NOW() WHERE id = :id";
-            $stmt = $db->prepare($sql);
-            $stmt->execute([':hash' => $hash, ':id' => $userId]);
-        } catch (\PDOException $e) {
+            $accounts = new AccountService();
+            $accounts->setPassword($userType, $userId, $data['new_password'], false);
+            session_set('credential_version', $accounts->liveState($userType, $userId)['version'] ?? 1);
+        } catch (\Throwable $e) {
             error_log('Failed to update first-login password: ' . $e->getMessage());
             $this->flash('error', 'Failed to update password. Please try again.');
             $this->redirect('/first-login-password');
@@ -218,9 +233,9 @@ class AuthController extends BaseController
         session_set('user_status', 'active');
 
         // Log audit event
-        $this->logPasswordChange($userId, 'user');
+        $this->logPasswordChange($userId, $userType);
 
-        $this->flash('success', 'Password updated successfully. Welcome to the system!');
+        $this->flash('success', t('Password updated successfully. Welcome!'));
         $this->redirect('/dashboard');
     }
 
@@ -272,9 +287,9 @@ class AuthController extends BaseController
             $this->back();
         }
 
-        // Validate password complexity
-        if (!$this->isPasswordComplex($data['new_password'])) {
-            $this->flash('error', 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.');
+        $problem = AccountController::passwordProblem($data['new_password'], $data['new_password_confirmation']);
+        if ($problem !== null) {
+            $this->flash('error', $problem);
             $this->back();
         }
 
@@ -308,12 +323,12 @@ class AuthController extends BaseController
                 $this->back();
             }
 
-            // Update password hash
-            $newHash = password_hash($data['new_password'], PASSWORD_DEFAULT);
-            $sql     = "UPDATE {$table} SET password_hash = :hash, updated_at = NOW() WHERE id = :id";
-            $stmt    = $db->prepare($sql);
-            $stmt->execute([':hash' => $newHash, ':id' => $userId]);
-        } catch (\PDOException $e) {
+            // Update the password; other sessions of this account end,
+            // this one carries on with the new credential version.
+            $accounts = new AccountService($db);
+            $accounts->setPassword($userType, $userId, $data['new_password'], false);
+            session_set('credential_version', $accounts->liveState($userType, $userId)['version'] ?? 1);
+        } catch (\Throwable $e) {
             error_log('Failed to change password: ' . $e->getMessage());
             $this->flash('error', 'Failed to update password. Please try again.');
             $this->back();
