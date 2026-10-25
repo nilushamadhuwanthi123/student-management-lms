@@ -159,6 +159,12 @@ class Attendance extends BaseModel
             $params[':cid'] = (int) $filters['class_id'];
         }
 
+        // Branch restriction from App\Services\BranchScope (database ids).
+        if (array_key_exists('class_ids', $filters) && $filters['class_ids'] !== null) {
+            $ids = array_map('intval', (array) $filters['class_ids']);
+            $where[] = $ids === [] ? '1 = 0' : 'a.class_id IN (' . implode(',', $ids) . ')';
+        }
+
         if (!empty($filters['status'])) {
             $where[] = 'a.status = :st';
             $params[':st'] = $filters['status'];
@@ -195,7 +201,7 @@ class Attendance extends BaseModel
     /**
      * Get daily attendance summary counts
      */
-    public function getSummary(string $date): array
+    public function getSummary(string $date, ?array $classIds = null): array
     {
         $sql = "SELECT 
                     COUNT(*) AS total_records,
@@ -205,6 +211,10 @@ class Attendance extends BaseModel
                     SUM(CASE WHEN status = 'red_flag' THEN 1 ELSE 0 END) AS red_flag_count
                 FROM {$this->table} 
                 WHERE date = :dt";
+
+        if ($classIds !== null) {
+            $sql .= $classIds === [] ? ' AND 1 = 0' : ' AND class_id IN (' . implode(',', array_map('intval', $classIds)) . ')';
+        }
 
         $res = $this->query($sql, [':dt' => $date])->fetch();
         return [
@@ -260,6 +270,11 @@ class Attendance extends BaseModel
         if (!empty($filters['institute_id'])) {
             $where[] = 'c.institute_id = :iid';
             $params[':iid'] = (int) $filters['institute_id'];
+        }
+
+        if (array_key_exists('class_ids', $filters) && $filters['class_ids'] !== null) {
+            $ids = array_map('intval', (array) $filters['class_ids']);
+            $where[] = $ids === [] ? '1 = 0' : 'a.class_id IN (' . implode(',', $ids) . ')';
         }
 
         $whereClause = implode(' AND ', $where);

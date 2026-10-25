@@ -165,6 +165,10 @@ $router->get('/about', ['App\Controllers\HomeController', 'about']);
 $router->get('/features', ['App\Controllers\HomeController', 'features']);
 $router->get('/contact', ['App\Controllers\HomeController', 'contact']);
 $router->post('/contact', ['App\Controllers\HomeController', 'contactSubmit']);
+// Public tuition pages: timetable, branch pages and the enrolment inquiry.
+$router->get('/timetable', ['App\Controllers\HomeController', 'classes']);
+$router->get('/branches/{id}', ['App\Controllers\HomeController', 'branch']);
+$router->post('/inquiry', ['App\Controllers\HomeController', 'inquiry']);
 
 // Authentication routes
 $router->get('/login', ['App\Controllers\AuthController', 'showLogin']);
@@ -308,6 +312,52 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/family/marks', ['App\Controllers\ParentPortalController', 'marks']);
     $router->get('/family/fees', ['App\Controllers\ParentPortalController', 'fees']);
 
+    // ---- Homework ----
+    // Teacher side is under the class; access is checked against the
+    // class's teacher and the user's branch, never the URL alone.
+    $router->get('/classes/{classId}/assignments', ['App\Controllers\AssignmentController', 'index']);
+    $router->get('/classes/{classId}/assignments/create', ['App\Controllers\AssignmentController', 'create']);
+    $router->post('/classes/{classId}/assignments/create', ['App\Controllers\AssignmentController', 'store']);
+    $router->get('/classes/{classId}/assignments/{id}', ['App\Controllers\AssignmentController', 'show']);
+    $router->post('/classes/{classId}/assignments/{id}/publish', ['App\Controllers\AssignmentController', 'publish']);
+    $router->post('/classes/{classId}/assignments/{id}/archive', ['App\Controllers\AssignmentController', 'archive']);
+    $router->post('/classes/{classId}/assignments/{id}/mark', ['App\Controllers\AssignmentController', 'mark']);
+    $router->get('/assignments/submissions/{id}/file', ['App\Controllers\AssignmentController', 'file']);
+    $router->get('/my/assignments', ['App\Controllers\AssignmentController', 'mine']);
+    $router->get('/my/assignments/{id}', ['App\Controllers\AssignmentController', 'sit']);
+    $router->post('/my/assignments/{id}/submit', ['App\Controllers\AssignmentController', 'submit']);
+    $router->get('/family/assignments', ['App\Controllers\AssignmentController', 'family']);
+
+    // ---- Questions to the teacher, and support requests ----
+    $router->get('/my/help', ['App\Controllers\HelpController', 'mine']);
+    $router->post('/my/help', ['App\Controllers\HelpController', 'create']);
+    $router->get('/my/help/{id}', ['App\Controllers\HelpController', 'showMine']);
+    $router->post('/my/help/{id}/reply', ['App\Controllers\HelpController', 'replyMine']);
+    $router->post('/my/help/{id}/resolve', ['App\Controllers\HelpController', 'resolveMine']);
+    $router->get('/family/help', ['App\Controllers\HelpController', 'mine']);
+    $router->post('/family/help', ['App\Controllers\HelpController', 'create']);
+    $router->get('/family/help/{id}', ['App\Controllers\HelpController', 'showMine']);
+    $router->post('/family/help/{id}/reply', ['App\Controllers\HelpController', 'replyMine']);
+    $router->post('/family/help/{id}/resolve', ['App\Controllers\HelpController', 'resolveMine']);
+    $router->get('/help', ['App\Controllers\HelpController', 'inbox']);
+    $router->get('/help/messages/{id}/file', ['App\Controllers\HelpController', 'file']);
+    $router->get('/help/{id}', ['App\Controllers\HelpController', 'show']);
+    $router->post('/help/{id}/reply', ['App\Controllers\HelpController', 'reply']);
+    $router->post('/help/{id}/status', ['App\Controllers\HelpController', 'status']);
+
+    // ---- Notice board ----
+    $router->get('/notices', ['App\Controllers\NoticeController', 'index']);
+    $router->get('/notices/create', ['App\Controllers\NoticeController', 'create']);
+    $router->post('/notices/create', ['App\Controllers\NoticeController', 'store']);
+    $router->post('/notices/{id}/publish', ['App\Controllers\NoticeController', 'publish']);
+    $router->post('/notices/{id}/archive', ['App\Controllers\NoticeController', 'archive']);
+    $router->get('/my/notices', ['App\Controllers\NoticeController', 'mine']);
+    $router->get('/family/notices', ['App\Controllers\NoticeController', 'mine']);
+
+    // ---- Inquiries from the public website ----
+    $router->get('/inquiries', ['App\Controllers\InquiryController', 'index']);
+    $router->post('/inquiries/{id}/status', ['App\Controllers\InquiryController', 'status']);
+
     // Students
     $router->get('/students', ['App\Controllers\StudentController', 'index']);
     $router->get('/students/create', ['App\Controllers\StudentController', 'create']);
@@ -320,6 +370,17 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/students/{id}/delete', ['App\Controllers\StudentController', 'delete']);
     $router->post('/students/{id}/deactivate', ['App\Controllers\StudentController', 'deactivate']);
     $router->post('/students/{id}/reactivate', ['App\Controllers\StudentController', 'reactivate']);
+
+    // Payment slips (bank deposits). Declared before /payments/{studentId}
+    // so "slips" is never read as a student id.
+    $router->get('/payments/slips', ['App\Controllers\PaymentSlipController', 'queue']);
+    $router->post('/payments/slips/{id}/approve', ['App\Controllers\PaymentSlipController', 'approve']);
+    $router->post('/payments/slips/{id}/reject', ['App\Controllers\PaymentSlipController', 'reject']);
+    $router->get('/payment-slips/{id}/file', ['App\Controllers\PaymentSlipController', 'file']);
+    $router->get('/my/payments', ['App\Controllers\PaymentSlipController', 'mine']);
+    $router->post('/my/payments/slip', ['App\Controllers\PaymentSlipController', 'upload']);
+    $router->get('/family/payments', ['App\Controllers\PaymentSlipController', 'mine']);
+    $router->post('/family/payments/slip', ['App\Controllers\PaymentSlipController', 'upload']);
 
     // Payments
     $router->get('/payments', ['App\Controllers\PaymentController', 'index']);

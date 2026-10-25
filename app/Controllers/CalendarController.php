@@ -50,6 +50,24 @@ class CalendarController extends BaseController
         $instituteId = ($_GET['institute_id'] ?? '') !== '' ? (int) $_GET['institute_id'] : null;
         $scope = $instituteId !== null ? ['institute_id' => $instituteId] : [];
 
+        // Branch staff and teachers see their own branch's or classes'
+        // calendar; a branch id from elsewhere in the URL is ignored.
+        $branch = \App\Services\BranchScope::current();
+        if (!$branch->isGlobal()) {
+            if ($instituteId !== null && !$branch->allowsInstitute($instituteId)) {
+                $instituteId = null;
+            }
+            $allowed = $branch->classIds() ?? [];
+            if ($instituteId !== null) {
+                $allowed = array_values(array_filter($allowed, function (int $c) use ($instituteId): bool {
+                    $s = $this->db->prepare('SELECT institute_id FROM classes WHERE id = :c');
+                    $s->execute([':c' => $c]);
+                    return (int) $s->fetchColumn() === $instituteId;
+                }));
+            }
+            $scope = ['class_ids' => $allowed];
+        }
+
         $this->view('calendar/index', [
             'pageTitle'   => 'Calendar',
             'activePage'  => 'calendar',
@@ -118,6 +136,15 @@ class CalendarController extends BaseController
 
         $data['institute_id'] = $data['class_id'] !== null ? null : $this->instituteForRequest();
 
+        // The entry must belong to the poster's own class or branch, and
+        // an existing entry can only be edited by someone who could post it.
+        if (!$this->mayPostTo($data['class_id'], $data['institute_id'])
+            || ($id !== null && !$this->mayTouchEvent($id))) {
+            http_response_code(403);
+            $this->flash('error', 'You can only add calendar entries for your own classes or branch.');
+            $this->redirect('/calendar');
+        }
+
         if ($id !== null) {
             $this->updateEvent($id, $data);
             $this->flash('success', 'The calendar entry was updated.');
@@ -143,6 +170,12 @@ class CalendarController extends BaseController
         // teacher's tool before it is anyone else's.
         AuthMiddleware::requireTeacher();
         verifyCsrfToken();
+
+        if (!$this->mayTouchEvent((int) $id)) {
+            http_response_code(403);
+            $this->flash('error', 'That calendar entry is not in your branch.');
+            $this->back();
+        }
 
         $stmt = $this->db->prepare(
             "UPDATE calendar_events SET event_status = 'cancelled' WHERE id = :id"
@@ -322,6 +355,35 @@ class CalendarController extends BaseController
         return [$from, $to];
     }
 
+    /**
+     * A class entry needs that class in scope; a branch-wide entry needs
+     * the branch; an entry for every branch is the super admin's only.
+     */
+    private function mayPostTo(?int $classId, ?int $instituteId): bool
+    {
+        $branch = \App\Services\BranchScope::current();
+        if ($classId !== null) {
+            return $branch->allowsClass($classId);
+        }
+        if ($instituteId !== null) {
+            return $branch->allowsInstitute($instituteId);
+        }
+
+        return $branch->isGlobal();
+    }
+
+    private function mayTouchEvent(int $eventId): bool
+    {
+        $stmt = $this->db->prepare('SELECT class_id, institute_id FROM calendar_events WHERE id = :id');
+        $stmt->execute([':id' => $eventId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row !== false && $this->mayPostTo(
+            $row['class_id'] !== null ? (int) $row['class_id'] : null,
+            $row['institute_id'] !== null ? (int) $row['institute_id'] : null
+        );
+    }
+
     private function instituteForRequest(): ?int
     {
         return ($_POST['institute_id'] ?? '') !== '' ? (int) $_POST['institute_id'] : null;
@@ -392,7 +454,8 @@ class CalendarController extends BaseController
     private function classOptions(): array
     {
         return $this->db->query(
-            "SELECT id, class_name, grade FROM classes WHERE status = 'active' ORDER BY grade, class_name"
+            "SELECT id, class_name, grade FROM classes WHERE status = 'active'"
+            . \App\Services\BranchScope::current()->classSql('id') . " ORDER BY grade, class_name"
         )->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -402,7 +465,8 @@ class CalendarController extends BaseController
     private function instituteOptions(): array
     {
         return $this->db->query(
-            "SELECT id, name FROM institutes WHERE status = 'active' ORDER BY name"
+            "SELECT id, name FROM institutes WHERE status = 'active'"
+            . \App\Services\BranchScope::current()->instituteSql('id') . " ORDER BY name"
         )->fetchAll(PDO::FETCH_ASSOC);
     }
 }

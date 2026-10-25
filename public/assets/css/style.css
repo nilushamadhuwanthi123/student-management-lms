@@ -1979,3 +1979,22 @@ html[lang="si"] body { line-height: 1.6; }
 .lang-switch a:hover { color: var(--primary); }
 .lang-switch a.is-on { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25); }
 .lang-switch--floating { position: fixed; top: 16px; right: 16px; z-index: 50; box-shadow: var(--shadow-md); }
+
+/* ==========================================================================
+   32. Small-screen safety net (phones and small tablets)
+   --------------------------------------------------------------------------
+   Measured at 375px: report headers with four action buttons and the QR
+   terminal's status rows were wider than the screen and dragged the page
+   sideways. Flex rows wrap here instead, and flex/grid children may
+   shrink, so wide content scrolls inside its own box.
+   ========================================================================== */
+@media (max-width: 640px) {
+    .page-header { flex-wrap: wrap; }
+    .page-header > * { min-width: 0; max-width: 100%; }
+    .page-header__actions { flex-wrap: wrap; gap: .5rem; }
+    .page-header__actions .btn { flex: 1 1 auto; }
+
+    .card .d-flex { flex-wrap: wrap; }
+    .card .d-flex > * { min-width: 0; }
+    .card { max-width: 100%; }
+}

@@ -25,6 +25,7 @@ $notificationCount = $notificationCount ?? 0;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title><?= te((string) ($pageTitle ?? 'EduManager')) ?> - EduManager</title>
     <?php if (function_exists('csrfMeta')): ?><?= csrfMeta() ?><?php endif; ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=<?= @filemtime(BASE_PATH . '/public/assets/css/style.css') ?: 1 ?>">
@@ -339,6 +340,22 @@ $notificationCount = $notificationCount ?? 0;
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <?= te('My Calendar') ?>
             </a>
+            <a href="<?= BASE_URL ?>/my/assignments" class="sidebar__link <?= $isHere('/my/assignments') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                <?= te('My assignments') ?>
+            </a>
+            <a href="<?= BASE_URL ?>/my/payments" class="sidebar__link <?= $isHere('/my/payments') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <?= te('Payments') ?>
+            </a>
+            <a href="<?= BASE_URL ?>/my/notices" class="sidebar__link <?= $isHere('/my/notices') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <?= te('Notices') ?>
+            </a>
+            <a href="<?= BASE_URL ?>/my/help" class="sidebar__link <?= $isHere('/my/help') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <?= te('Help & questions') ?>
+            </a>
             <?php endif; ?>
 
             <?php if ($userType === 'parent'): ?>
@@ -358,6 +375,22 @@ $notificationCount = $notificationCount ?? 0;
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <?= te('Calendar') ?>
             </a>
+            <a href="<?= BASE_URL ?>/family/assignments" class="sidebar__link <?= $isHere('/family/assignments') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                <?= te('Assignments') ?>
+            </a>
+            <a href="<?= BASE_URL ?>/family/payments" class="sidebar__link <?= $isHere('/family/payments') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <?= te('Pay a fee') ?>
+            </a>
+            <a href="<?= BASE_URL ?>/family/notices" class="sidebar__link <?= $isHere('/family/notices') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <?= te('Notices') ?>
+            </a>
+            <a href="<?= BASE_URL ?>/family/help" class="sidebar__link <?= $isHere('/family/help') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <?= te('Help & questions') ?>
+            </a>
             <?php endif; ?>
 
             <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>
@@ -371,6 +404,20 @@ $notificationCount = $notificationCount ?? 0;
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 Calendar
             </a>
+            <a href="<?= BASE_URL ?>/notices" class="sidebar__link <?= $activePage === 'notices' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <?= te('Notice board') ?>
+            </a>
+            <a href="<?= BASE_URL ?>/help" class="sidebar__link <?= $activePage === 'help' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <?= te('Help desk') ?>
+            </a>
+            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff'])): ?>
+            <a href="<?= BASE_URL ?>/inquiries" class="sidebar__link <?= $activePage === 'inquiries' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                Inquiries
+            </a>
+            <?php endif; ?>
             <?php endif; ?>
 
             <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff'])): ?>
@@ -409,8 +456,8 @@ $notificationCount = $notificationCount ?? 0;
             </div>
             <?php endif; ?>
 
-            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>
-            <!-- Payments -->
+            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff'])): ?>
+            <!-- Payments (desk roles; teachers do not handle fees) -->
             <div class="sidebar__nav-group">
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'payments' ? 'active open' : '' ?>" data-toggle-sub="payments-sub">
                     <span style="display:flex;align-items:center;gap:0.75rem;">
@@ -421,6 +468,9 @@ $notificationCount = $notificationCount ?? 0;
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'payments' ? 'open' : '' ?>" id="payments-sub">
                     <a href="<?= BASE_URL ?>/payments" class="sidebar__sub-link <?= $activeSubPage === 'overview' ? 'active' : '' ?>">Overview</a>
+                    <?php if (in_array($userRole, ['super_admin', 'admin', 'staff'])): ?>
+                    <a href="<?= BASE_URL ?>/payments/slips" class="sidebar__sub-link">Payment slips</a>
+                    <?php endif; ?>
                     <?php if (in_array($userRole, ['super_admin', 'admin'])): ?>
                     <a href="<?= BASE_URL ?>/payments/generate" class="sidebar__sub-link <?= $activeSubPage === 'generate' ? 'active' : '' ?>">Generate Monthly</a>
                     <?php endif; ?>
@@ -445,7 +495,7 @@ $notificationCount = $notificationCount ?? 0;
             </div>
             <?php endif; ?>
 
-            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>
+            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff'])): ?>
             <!-- Workflows -->
             <div class="sidebar__nav-group">
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'workflows' ? 'active open' : '' ?>" data-toggle-sub="workflows-sub">
@@ -488,14 +538,16 @@ $notificationCount = $notificationCount ?? 0;
                     <?php endif; ?>
                     <a href="<?= BASE_URL ?>/reports/attendance" class="sidebar__sub-link <?= $activeSubPage === 'attendance' ? 'active' : '' ?>">Attendance Report</a>
                     <a href="<?= BASE_URL ?>/reports/classes" class="sidebar__sub-link <?= $activeSubPage === 'classes' ? 'active' : '' ?>">Class &amp; Enrollment</a>
+                    <?php if (in_array($userRole, ['super_admin', 'admin'])): ?>
                     <a href="<?= BASE_URL ?>/reports/users" class="sidebar__sub-link <?= $activeSubPage === 'users' ? 'active' : '' ?>">Users &amp; Staff</a>
                     <a href="<?= BASE_URL ?>/reports/payments" class="sidebar__sub-link <?= $activeSubPage === 'payments' ? 'active' : '' ?>">Payment Summary</a>
+                    <?php endif; ?>
                     <a href="<?= BASE_URL ?>/reports/students" class="sidebar__sub-link <?= $activeSubPage === 'students' ? 'active' : '' ?>">Student Status</a>
                 </div>
             </div>
             <?php endif; ?>
 
-            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator'])): ?>
+            <?php if ($userRole === 'super_admin'): ?>
             <div class="sidebar__section">Administration</div>
 
             <!-- Audit Log -->
@@ -505,8 +557,8 @@ $notificationCount = $notificationCount ?? 0;
             </a>
             <?php endif; ?>
 
-            <?php if (in_array($userRole, ['super_admin', 'admin'])): ?>
-            <!-- Settings -->
+            <?php if ($userRole === 'super_admin'): ?>
+            <!-- Settings (system-wide, so super admin only) -->
             <div class="sidebar__nav-group">
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'settings' ? 'active open' : '' ?>" data-toggle-sub="settings-sub">
                     <span style="display:flex;align-items:center;gap:0.75rem;">

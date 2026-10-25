@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
+use App\Services\BranchScope;
 
 class StudentController extends BaseController
 {
@@ -42,6 +43,13 @@ class StudentController extends BaseController
         }
         if ($classFilter !== '') {
             $filters['class_id'] = (int) $classFilter;
+        }
+
+        // Branch staff and teachers only ever list students in their own
+        // branch or classes, so the list always goes through search().
+        $scope = BranchScope::current();
+        if (!$scope->isGlobal()) {
+            $filters['scope_sql'] = $scope->studentSql('s.id');
         }
 
         // If there's a search term, use the search method
@@ -95,6 +103,9 @@ class StudentController extends BaseController
                 $institutes = $instituteModel->all('name ASC');
                 $classModel = new \ClassModel();
                 $classes = $classModel->all('class_name ASC');
+                $scope = BranchScope::current();
+                $institutes = array_values(array_filter($institutes, static fn (array $i): bool => $scope->allowsInstitute((int) $i['id'])));
+                $classes = array_values(array_filter($classes, static fn (array $c): bool => $scope->allowsClass((int) $c['id'])));
                 foreach ($classes as &$cls) {
                     $cls['name'] = $cls['name'] ?? $cls['class_name'] ?? '';
                     $cls['fee'] = $cls['fee'] ?? $cls['monthly_fee'] ?? 0;
@@ -166,7 +177,7 @@ class StudentController extends BaseController
                 $enrollStmt = $this->db->prepare("INSERT INTO enrollments (student_id, class_id, scholarship_type, enrollment_status, enrolled_at, updated_at) VALUES (:sid, :cid, :stype, 'active', NOW(), NOW())");
                 foreach ($classIds as $cid) {
                     $cid = (int) $cid;
-                    if ($cid > 0) {
+                    if ($cid > 0 && BranchScope::current()->allowsClass($cid)) {
                         $stype = $scholarshipTypes[$cid] ?? 'full_payment';
                         $enrollStmt->execute([
                             ':sid'   => $id,
@@ -207,6 +218,7 @@ class StudentController extends BaseController
             $this->flash('error', 'Student not found.');
             $this->redirect('/students');
         }
+        $this->requireStudentInScope((int) $id);
 
         // ─── Parent / Guardian info ──────────────────────────────────
         $parents = [];
@@ -330,6 +342,7 @@ class StudentController extends BaseController
             $this->flash('error', 'Student not found.');
             $this->redirect('/students');
         }
+        $this->requireStudentInScope((int) $id);
 
         $institutes = [];
         $classes = [];
@@ -340,6 +353,9 @@ class StudentController extends BaseController
                 $institutes = $instituteModel->all('name ASC');
                 $classModel = new \ClassModel();
                 $classes = $classModel->all('class_name ASC');
+                $scope = BranchScope::current();
+                $institutes = array_values(array_filter($institutes, static fn (array $i): bool => $scope->allowsInstitute((int) $i['id'])));
+                $classes = array_values(array_filter($classes, static fn (array $c): bool => $scope->allowsClass((int) $c['id'])));
                 foreach ($classes as &$cls) {
                     $cls['name'] = $cls['name'] ?? $cls['class_name'] ?? '';
                     $cls['fee']  = $cls['fee'] ?? $cls['monthly_fee'] ?? 0;
@@ -380,6 +396,7 @@ class StudentController extends BaseController
             $this->flash('error', 'Student not found.');
             $this->redirect('/students');
         }
+        $this->requireStudentInScope((int) $id);
 
         $fullName = trim($_POST['full_name'] ?? '');
         if ($fullName === '') {
@@ -466,6 +483,7 @@ class StudentController extends BaseController
             $this->flash('error', 'Student not found.');
             $this->redirect('/students');
         }
+        $this->requireStudentInScope((int) $id);
 
         $reason = trim($_POST['reason'] ?? '');
         if ($reason === '') {
@@ -528,6 +546,7 @@ class StudentController extends BaseController
             $this->flash('error', 'Student not found.');
             $this->redirect('/students');
         }
+        $this->requireStudentInScope((int) $id);
 
         try {
             $this->studentModel->reactivate((int) $id);
@@ -572,6 +591,7 @@ class StudentController extends BaseController
             $this->flash('error', 'Student not found.');
             $this->redirect('/students');
         }
+        $this->requireStudentInScope((int) $id);
 
         $reason = trim($_POST['reason'] ?? '');
         if ($reason === '') {
@@ -626,7 +646,7 @@ class StudentController extends BaseController
     private function buildDeactivationSteps(string $initiatorRole, int $initiatorId): array
     {
         $steps = [];
-        $userModel = new \User();
+        $userModel = new \BranchAwareApprovers(new \User(), $initiatorId);
 
         if (in_array($initiatorRole, ['staff', 'teacher'], true)) {
             $coordinators = $userModel->getByRole('coordinator', 'active');
@@ -650,6 +670,19 @@ class StudentController extends BaseController
         }
 
         return $steps;
+    }
+
+    /**
+     * Stop a branch admin, coordinator, staff member or teacher opening a
+     * student outside their branch or classes by changing the id.
+     */
+    private function requireStudentInScope(int $studentId): void
+    {
+        if (!BranchScope::current()->allowsStudent($studentId)) {
+            http_response_code(403);
+            $this->flash('error', 'That student is not in your branch.');
+            $this->redirect('/students');
+        }
     }
 
     /**

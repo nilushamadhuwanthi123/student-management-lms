@@ -22,10 +22,10 @@ class AuditController extends BaseController
     public function index(): void
     {
         AuthMiddleware::requireAuth();
-        AuthMiddleware::requireRole([
-            AuthMiddleware::ROLE_SUPER_ADMIN,
-            AuthMiddleware::ROLE_ADMIN,
-        ]);
+        // The full system audit log covers every branch and every account,
+        // so it is the super admin's. Branch admins can still open the
+        // history of a person in their own branch (userHistory).
+        AuthMiddleware::requireSuperAdmin();
 
         $filters = [
             'date_from'   => $_GET['date_from'] ?? '',
@@ -88,6 +88,16 @@ class AuditController extends BaseController
 
         $userType = $_GET['user_type'] ?? 'user';
 
+        $scope = \App\Services\BranchScope::current();
+        $allowed = $userType === 'student'
+            ? $scope->allowsStudent((int) $id)
+            : ($userType === 'user' ? $scope->allowsUser((int) $id) : $scope->isGlobal());
+        if (!$allowed) {
+            http_response_code(403);
+            $this->flash('error', 'That account is not in your branch.');
+            $this->redirect('/users');
+        }
+
         $entries = [];
         try {
             $entries = $this->auditModel->getByUser((int) $id, $userType);
@@ -134,6 +144,12 @@ class AuditController extends BaseController
             }
         } catch (\Throwable $e) {
             error_log('Workflow history error: ' . $e->getMessage());
+        }
+
+        $scope = \App\Services\BranchScope::current();
+        if (!$scope->isGlobal()) {
+            $history = array_values(array_filter($history, static fn (array $w): bool =>
+                ($w['entity_type'] ?? 'student') !== 'student' || $scope->allowsStudent((int) ($w['entity_id'] ?? 0))));
         }
 
         $this->view('audit/workflow-history', [

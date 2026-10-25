@@ -74,8 +74,25 @@ $gateMessage = match ($gate['reason'] ?? '') {
         <p class="text-sm text-muted" style="margin:0;">
             <?= te('Once the office records your payment this class opens again, with everything posted for the month.') ?>
         </p>
+        <?php if ($gate['amount_due'] !== null && $gate['amount_due'] > 0): ?>
+            <a href="<?= BASE_URL ?>/my/payments" class="btn btn--primary" style="margin-top:1rem;"><?= te('Paid at the bank? Upload the slip') ?></a>
+        <?php endif; ?>
     </div>
 <?php else: ?>
+
+    <?php
+    // Online classes: the meeting link is shown only here, to an enrolled
+    // student whose fee for the current month is settled.
+    $mode = (string) ($class['delivery_mode'] ?? 'physical');
+    if (in_array($mode, ['online', 'hybrid'], true) && !empty($class['meeting_url']) && $month === date('Y-m-01')): ?>
+        <div class="card" style="margin-bottom:1.25rem; border-color:var(--primary); display:flex; gap:1rem; align-items:center; justify-content:space-between; flex-wrap:wrap; padding:1rem 1.15rem;">
+            <div>
+                <div style="font-weight:700;">&#127909; <?= $mode === 'online' ? te('This is an online class') : te('This class also runs online') ?></div>
+                <div class="text-sm text-muted"><?= te('Please do not share this link. It is for enrolled students only.') ?></div>
+            </div>
+            <a href="<?= htmlspecialchars((string) $class['meeting_url'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer" class="btn btn--primary"><?= te('Join the online class') ?></a>
+        </div>
+    <?php endif; ?>
 
     <!-- Quizzes first: they have deadlines, material does not -->
     <?php if ($quizzes !== []): ?>

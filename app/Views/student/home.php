@@ -67,7 +67,9 @@ $whenLabel = static function (array $item) use ($now): string {
 .sh-stat__l { font-size:.8rem; color:var(--text-muted); margin-top:.2rem; }
 
 .sh-grid { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:1.25rem; align-items:start; }
-@media (max-width: 992px) { .sh-grid { grid-template-columns:1fr; } }
+@media (max-width: 992px) { .sh-grid { grid-template-columns:minmax(0,1fr); } }
+/* Let the columns shrink on a phone instead of widening the page. */
+.sh-grid > * { min-width:0; }
 .sh-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.15rem 1.25rem; margin-bottom:1.25rem; }
 .sh-card h3 { margin:0 0 .85rem; font-size:1rem; display:flex; align-items:center; gap:.5rem; }
 .sh-card h3 .sh-count { margin-left:auto; font-size:.75rem; font-weight:600; color:var(--text-muted); }

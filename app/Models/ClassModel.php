@@ -13,6 +13,7 @@ class ClassModel extends BaseModel
         'class_name', 'subject', 'medium', 'grade', 'institute_id',
         'room', 'teacher_id', 'staff_id', 'schedule_days', 'start_time',
         'end_time', 'monthly_fee', 'teacher_revenue_split', 'notes',
+        'delivery_mode', 'meeting_url', 'capacity',
         'status', 'created_at', 'updated_at',
     ];
 

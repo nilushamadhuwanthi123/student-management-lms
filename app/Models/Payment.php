@@ -45,10 +45,15 @@ class Payment extends BaseModel
     /**
      * Get all payment records with filters for overview grid.
      */
-    public function getAllPayments(?string $monthYear = null, ?int $classId = null, ?string $status = null): array
+    public function getAllPayments(?string $monthYear = null, ?int $classId = null, ?string $status = null, ?array $classIds = null): array
     {
         $where = [];
         $params = [];
+
+        // Branch restriction: null = every class, [] = none.
+        if ($classIds !== null) {
+            $where[] = $classIds === [] ? '1 = 0' : 'p.class_id IN (' . implode(',', array_map('intval', $classIds)) . ')';
+        }
 
         if (!empty($monthYear)) {
             $monthLike = substr($monthYear, 0, 7) . '%';
@@ -161,7 +166,7 @@ class Payment extends BaseModel
      * @param  string $monthYear  e.g. "2026-09"
      * @return int  Number of records created
      */
-    public function generateMonthlyPayments(string $monthYear): int
+    public function generateMonthlyPayments(string $monthYear, ?array $classIds = null): int
     {
         $monthClean = substr($monthYear, 0, 7);
         $monthDate  = $monthClean . '-01';
@@ -173,6 +178,7 @@ class Payment extends BaseModel
                 FROM enrollments e
                 INNER JOIN classes c ON e.class_id = c.id
                 WHERE e.enrollment_status = 'active'
+                  {$this->classIdSql('e.class_id', $classIds)}
                   AND NOT EXISTS (
                       SELECT 1 FROM {$this->table} p
                       WHERE p.enrollment_id = e.id AND (p.month_year = :mdate OR p.month_year LIKE :mlike)
@@ -206,7 +212,7 @@ class Payment extends BaseModel
     /**
      * Get overdue (pending) payments, optionally filtered by class.
      */
-    public function getOverdue(?int $classId = null): array
+    public function getOverdue(?int $classId = null, ?array $classIds = null): array
     {
         $currentMonthDate = date('Y-m-01');
         $params = [':my' => $currentMonthDate];
@@ -229,6 +235,7 @@ class Payment extends BaseModel
                 WHERE p.payment_status IN ('pending', 'overdue')
                   AND p.month_year < :my
                   {$classFilter}
+                  {$this->classIdSql('p.class_id', $classIds)}
                 ORDER BY p.month_year ASC, s.full_name ASC";
         $rows = $this->query($sql, $params)->fetchAll();
         return array_map([$this, 'decoratePayment'], $rows);
@@ -241,7 +248,7 @@ class Payment extends BaseModel
      *
      * @return array{total_collected: float, total_pending: float, by_class: array}
      */
-    public function getRevenueStats(string $monthYear): array
+    public function getRevenueStats(string $monthYear, ?array $classIds = null): array
     {
         $monthClean = substr($monthYear, 0, 7);
         $monthLike  = $monthClean . '%';
@@ -251,7 +258,8 @@ class Payment extends BaseModel
                     COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN amount_paid ELSE 0 END), 0) AS total_collected,
                     COALESCE(SUM(CASE WHEN payment_status IN ('pending', 'overdue') THEN (amount_due - amount_paid) ELSE 0 END), 0) AS total_pending
                 FROM {$this->table}
-                WHERE month_year LIKE :my OR DATE_FORMAT(month_year, '%Y-%m') = :my_raw";
+                WHERE (month_year LIKE :my OR DATE_FORMAT(month_year, '%Y-%m') = :my_raw)
+                {$this->classIdSql('class_id', $classIds)}";
         $totals = $this->query($sql, $params)->fetch();
 
         $sql = "SELECT c.id AS class_id, c.class_name,
@@ -260,7 +268,8 @@ class Payment extends BaseModel
                     COUNT(p.id) AS payment_count
                 FROM {$this->table} p
                 INNER JOIN classes c ON p.class_id = c.id
-                WHERE p.month_year LIKE :my OR DATE_FORMAT(p.month_year, '%Y-%m') = :my_raw
+                WHERE (p.month_year LIKE :my OR DATE_FORMAT(p.month_year, '%Y-%m') = :my_raw)
+                {$this->classIdSql('p.class_id', $classIds)}
                 GROUP BY c.id, c.class_name
                 ORDER BY c.class_name ASC";
         $byClass = $this->query($sql, $params)->fetchAll();
@@ -288,5 +297,22 @@ class Payment extends BaseModel
             'free_card', 'free'    => 0.00,
             default                => $monthlyFee,
         };
+    }
+
+    /**
+     * " AND col IN (...)" for a branch's classes; "" when unrestricted
+     * (null), and a clause matching nothing for an empty list.
+     *
+     * @param array<int, int>|null $classIds
+     */
+    private function classIdSql(string $column, ?array $classIds): string
+    {
+        if ($classIds === null) {
+            return '';
+        }
+
+        return $classIds === []
+            ? ' AND 1 = 0'
+            : " AND {$column} IN (" . implode(',', array_map('intval', $classIds)) . ')';
     }
 }

@@ -86,6 +86,25 @@ $mediums    = $mediums ?? ['Sinhala', 'English', 'Tamil'];
                 <input type="text" id="room" name="room" class="form-control" placeholder="e.g. Hall A1 / Online">
             </div>
 
+            <!-- Delivery -->
+            <div class="form-group">
+                <label class="form-label" for="delivery_mode">Delivery</label>
+                <select id="delivery_mode" name="delivery_mode" class="form-control">
+                    <option value="physical" >Physical (at the branch)</option>
+                    <option value="online" >Online</option>
+                    <option value="hybrid" >Both (physical and online)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="meeting_url">Online meeting link (private)</label>
+                <input type="url" id="meeting_url" name="meeting_url" class="form-control" placeholder="https://zoom.us/j/..." value="">
+                <div class="form-hint text-xs">Shown only to enrolled students whose fee is settled. Never on public pages.</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="capacity">Capacity (optional)</label>
+                <input type="number" id="capacity" name="capacity" class="form-control" min="0" max="65000" value="">
+            </div>
+
             <!-- Teacher (DDL) -->
             <div class="form-group">
                 <label class="form-label" for="teacherId">Teacher</label>

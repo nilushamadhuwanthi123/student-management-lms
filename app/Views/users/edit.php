@@ -138,6 +138,34 @@ $roleColors      = $roleColors ?? \User::ROLE_COLORS;
         </div>
     </div>
 
+    <!-- Branch membership: decides which branch's students, classes,
+         payments and reports this account can see. Super admin only. -->
+    <?php $assignedBranches = $assignedBranches ?? []; ?>
+    <?php if (!empty($canEditBranches)): ?>
+    <div class="card mb-3">
+        <h3 class="mb-2">Branches</h3>
+        <p class="text-sm text-muted" style="margin:0 0 .75rem;">
+            Admins, coordinators and staff see only the branches ticked here. Teachers are limited to the classes they teach.
+        </p>
+        <input type="hidden" name="branches_submitted" value="1">
+        <div style="display:flex; flex-wrap:wrap; gap:.6rem;">
+            <?php foreach ($institutes as $inst): ?>
+                <label style="display:flex; gap:.45rem; align-items:center; padding:.5rem .8rem; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer;">
+                    <input type="checkbox" name="branches[]" value="<?= (int) $inst['id'] ?>" <?= in_array((int) $inst['id'], $assignedBranches, true) ? 'checked' : '' ?>>
+                    <?= htmlspecialchars($inst['name'], ENT_QUOTES, 'UTF-8') ?>
+                </label>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php elseif ($assignedBranches !== []): ?>
+    <div class="card mb-3">
+        <h3 class="mb-2">Branches</h3>
+        <div class="text-sm">
+            <?= htmlspecialchars(implode(', ', array_map(static fn (array $i): string => $i['name'], array_filter($institutes, static fn (array $i): bool => in_array((int) $i['id'], $assignedBranches, true)))), ENT_QUOTES, 'UTF-8') ?>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- 4. Academic Details (Attached Classes) -->
     <div class="card mb-3">
         <h3 class="mb-2">4. Attached Classes</h3>

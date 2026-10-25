@@ -30,4 +30,8 @@ node_modules/
 
 # Compiled
 *.map
-"student-lms-project.tar.gz"  
+"student-lms-project.tar.gz"
+
+# Private uploads: homework, help-desk files, payment slips (never commit client files)
+storage/uploads/attachments/
+storage/uploads/materials/*

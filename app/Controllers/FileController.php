@@ -82,6 +82,12 @@ class FileController extends BaseController
             $this->redirect(BASE_URL . '/students');
         }
 
+        if (!\App\Services\BranchScope::current()->allowsStudent((int) $id)) {
+            http_response_code(403);
+            $this->flash('error', 'That student is not in your branch.');
+            $this->redirect(BASE_URL . '/students');
+        }
+
         $uploadService = new FileUploadService();
         $result        = $uploadService->upload('profile_photo', 'profiles');
 

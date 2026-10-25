@@ -40,7 +40,10 @@ $statusClass = ['paid' => 'pf-pill--ok', 'waived' => 'pf-pill--ok', 'pending' =>
 .pf-stat__l { font-size:.8rem; color:var(--text-muted); }
 
 .pf-grid { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:1.25rem; align-items:start; }
-@media (max-width: 1100px) { .pf-grid { grid-template-columns:1fr; } }
+@media (max-width: 1100px) { .pf-grid { grid-template-columns:minmax(0,1fr); } }
+/* Grid children must be allowed to shrink, or a wide table pushes the
+   whole page sideways on a phone instead of scrolling inside its card. */
+.pf-grid > * { min-width:0; }
 .pf-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.15rem 1.25rem; margin-bottom:1.25rem; }
 .pf-card h3 { margin:0 0 .9rem; font-size:1rem; display:flex; align-items:center; gap:.45rem; }
 

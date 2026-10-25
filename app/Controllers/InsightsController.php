@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
+use App\Services\BranchScope;
 use App\Services\ContentAccessService;
 use PDO;
 
@@ -99,7 +100,7 @@ class InsightsController extends BaseController
                              WHERE p.month_year = :month
                              GROUP BY c.institute_id
                        ) pay ON pay.institute_id = i.id
-                 WHERE i.status = 'active'
+                 WHERE i.status = 'active'" . BranchScope::current()->instituteSql('i.id') . "
                  ORDER BY COALESCE(pay.collected, 0) DESC, i.name";
 
         $stmt = $this->db->prepare($sql);
@@ -127,7 +128,7 @@ class InsightsController extends BaseController
                     COALESCE(SUM(amount_paid), 0) AS collected,
                     COUNT(*)                      AS invoices,
                     SUM(CASE WHEN payment_status IN ('pending','overdue') THEN 1 ELSE 0 END) AS unpaid
-               FROM payments WHERE month_year = :month"
+               FROM payments WHERE month_year = :month" . BranchScope::current()->classSql('class_id')
         );
         $stmt->execute([':month' => $month]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
@@ -160,7 +161,7 @@ class InsightsController extends BaseController
                     COALESCE(SUM(amount_due), 0)  AS billed,
                     COALESCE(SUM(amount_paid), 0) AS collected
                FROM payments
-              WHERE month_year >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL :months MONTH)
+              WHERE month_year >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL :months MONTH)" . BranchScope::current()->classSql('class_id') . "
               GROUP BY month_year
               ORDER BY month_year ASC"
         );
@@ -209,7 +210,7 @@ class InsightsController extends BaseController
                              GROUP BY q.class_id
                        ) qz ON qz.class_id = c.id
                  WHERE c.status = 'active'
-                   AND COALESCE(en.enrolled, 0) > 0
+                   AND COALESCE(en.enrolled, 0) > 0" . BranchScope::current()->classSql('c.id') . "
                  -- Classes with no sat quizzes sort last: an empty class is
                  -- not the weakest class. These are plain columns from the
                  -- subquery now, not aggregates, so they order directly.
@@ -241,7 +242,7 @@ class InsightsController extends BaseController
                   JOIN quiz_attempts a ON a.student_id = s.id AND a.attempt_status = 'graded'
                   JOIN quizzes q ON q.id = a.quiz_id
                   JOIN classes c ON c.id = q.class_id
-                 WHERE s.status = 'active'
+                 WHERE s.status = 'active'" . BranchScope::current()->classSql('q.class_id') . "
                  GROUP BY s.id, s.full_name, s.student_id_display
                 HAVING quizzes_sat >= 2 AND average < 50
                  ORDER BY average ASC
@@ -260,7 +261,8 @@ class InsightsController extends BaseController
                        AVG(a.percentage) AS average
                   FROM students s
                   JOIN quiz_attempts a ON a.student_id = s.id AND a.attempt_status = 'graded'
-                 WHERE s.status = 'active'
+                  JOIN quizzes q ON q.id = a.quiz_id
+                 WHERE s.status = 'active'" . BranchScope::current()->classSql('q.class_id') . "
                  GROUP BY s.id, s.full_name, s.student_id_display
                 HAVING quizzes_sat >= 2
                  ORDER BY average DESC
@@ -286,7 +288,7 @@ class InsightsController extends BaseController
                FROM quizzes q
                JOIN quiz_attempts a
                     ON a.quiz_id = q.id AND a.attempt_status = 'graded'
-              WHERE q.quiz_status = 'published'
+              WHERE q.quiz_status = 'published'" . BranchScope::current()->classSql('q.class_id') . "
               ORDER BY q.month_year DESC
               LIMIT 1"
         )->fetchColumn();

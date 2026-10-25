@@ -58,7 +58,12 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
 
 .s360-kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem; }
 .s360-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; text-align: center; }
-.s360-kpi__value { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+.s360-kpi__value { font-size: 1.5rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+/* Let the two page columns shrink: without this the KPI row's longest
+   figure (a rupee amount) widened the right column past the screen at
+   tablet and small-laptop widths. */
+.s360-layout > *, .s360-grid > * { min-width: 0; }
+.s360-kpi { min-width: 0; }
 .s360-kpi__label { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
 .s360-kpi--green .s360-kpi__value { color: var(--success); }
 .s360-kpi--blue .s360-kpi__value { color: var(--primary); }

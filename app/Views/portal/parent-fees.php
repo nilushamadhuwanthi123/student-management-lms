@@ -10,6 +10,7 @@ $outstanding = $outstanding ?? 0.0;
     </div>
     <div class="page-header__actions">
         <a href="<?= BASE_URL ?>/family" class="btn btn--ghost">&larr; <?= te('Overview') ?></a>
+        <a href="<?= BASE_URL ?>/family/payments" class="btn btn--primary">&#128179; <?= te('Pay by bank slip') ?></a>
     </div>
 </div>
 

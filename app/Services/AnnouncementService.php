@@ -172,6 +172,79 @@ class AnnouncementService
         return $recipients;
     }
 
+    // ------------------------------------------------------------------
+    // Used by homework and the notice board
+    // ------------------------------------------------------------------
+
+    /**
+     * Students (and their guardians) of one class, one branch, or every
+     * branch. The same people the class announcements above reach.
+     *
+     * @return array<int, array{type: string, id: int}>
+     */
+    public function familiesFor(?int $classId, ?int $instituteId, bool $students = true, bool $parents = true): array
+    {
+        if ($classId !== null) {
+            $where = 'e.class_id = :id';
+            $param = [':id' => $classId];
+        } elseif ($instituteId !== null) {
+            $where = 'c.institute_id = :id';
+            $param = [':id' => $instituteId];
+        } else {
+            $where = '1 = 1';
+            $param = [];
+        }
+
+        $stmt = $this->db->prepare(
+            "SELECT DISTINCT s.id
+               FROM enrollments e
+               JOIN classes c ON c.id = e.class_id AND c.status = 'active'
+               JOIN students s ON s.id = e.student_id AND s.status = 'active'
+              WHERE e.enrollment_status = 'active' AND {$where}"
+        );
+        $stmt->execute($param);
+        $studentIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+
+        $out = [];
+        if ($students) {
+            foreach ($studentIds as $id) {
+                $out[] = ['type' => 'student', 'id' => $id];
+            }
+        }
+        if ($parents && $studentIds !== []) {
+            $in = implode(',', $studentIds);
+            foreach ($this->db->query("SELECT id FROM parents WHERE status = 'active' AND student_id IN ($in)")->fetchAll(PDO::FETCH_COLUMN) as $pid) {
+                $out[] = ['type' => 'parent', 'id' => (int) $pid];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * One in-app notification to each recipient. Callers guard against
+     * sending twice (each notice/assignment records when it announced).
+     *
+     * @param array<int, array{type: string, id: int}> $recipients
+     */
+    public function notifyAll(array $recipients, string $title, string $body, string $entityType, int $entityId): int
+    {
+        $stmt = $this->db->prepare(
+            "INSERT INTO notifications (recipient_id, recipient_type, title, body, notification_type, is_read, related_entity_type, related_entity_id, created_at)
+             VALUES (:rid, :rtype, :title, :body, 'info', 0, :etype, :eid, NOW())"
+        );
+        $n = 0;
+        foreach ($recipients as $r) {
+            $stmt->execute([
+                ':rid' => $r['id'], ':rtype' => $r['type'], ':title' => mb_substr($title, 0, 500),
+                ':body' => $body, ':etype' => $entityType, ':eid' => $entityId,
+            ]);
+            $n++;
+        }
+
+        return $n;
+    }
+
     private function materialLabel(string $type): string
     {
         return match ($type) {

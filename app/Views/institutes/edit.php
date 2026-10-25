@@ -73,6 +73,18 @@ $coordinators = $coordinators ?? [];
 
         <!-- Notes -->
         <div class="form-group mt-2">
+            <?php if (session_get('user_role') === 'super_admin'): ?>
+            <div style="display:flex; gap:1.25rem; flex-wrap:wrap; margin:0 0 1rem;">
+                <label style="display:flex; gap:.45rem; align-items:center;">
+                    <input type="checkbox" name="is_public" value="1" <?= !empty($institute['is_public']) ? 'checked' : '' ?>>
+                    Show this branch and its classes on the public website
+                </label>
+                <label style="display:flex; gap:.45rem; align-items:center;">
+                    <input type="checkbox" name="public_show_fees" value="1" <?= !empty($institute['public_show_fees']) ? 'checked' : '' ?>>
+                    Show monthly fees publicly
+                </label>
+            </div>
+            <?php endif; ?>
             <label class="form-label" for="notes">Notes</label>
             <textarea id="notes" name="notes" class="form-control" rows="3"><?= htmlspecialchars($institute['notes'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
         </div>

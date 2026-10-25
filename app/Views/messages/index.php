@@ -30,7 +30,7 @@ $role          = $currentUser['role'] ?? 'user';
             </form>
         <?php endif; ?>
 
-        <?php if (in_array($role, ['super_admin', 'admin'])): ?>
+        <?php if ($role === 'super_admin'): ?>
             <button type="button" class="btn btn--primary btn--sm" onclick="openBroadcastModal()">
                 + Compose Broadcast
             </button>

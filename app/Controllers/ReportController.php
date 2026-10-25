@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
+use App\Services\BranchScope;
 
 class ReportController extends BaseController
 {
@@ -61,9 +62,10 @@ class ReportController extends BaseController
             'institute_id' => $instituteId,
         ];
 
-        $reportData = $this->attendanceModel->getAttendanceReport($startDate, $endDate, $filters);
-        $classes    = $this->classModel->getActiveClasses();
-        $institutes = $this->instituteModel->getActiveInstitutes();
+        $scope = BranchScope::current();
+        $reportData = $this->attendanceModel->getAttendanceReport($startDate, $endDate, $filters + ['class_ids' => $scope->classIds()]);
+        $classes    = array_values(array_filter($this->classModel->getActiveClasses(), static fn (array $c): bool => $scope->allowsClass((int) $c['id'])));
+        $institutes = array_values(array_filter($this->instituteModel->getActiveInstitutes(), static fn (array $i): bool => $scope->allowsInstitute((int) $i['id'])));
 
         // Export to CSV if requested
         if (($_GET['export'] ?? '') === 'csv') {
@@ -98,8 +100,9 @@ class ReportController extends BaseController
         AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
 
         $instituteId = !empty($_GET['institute_id']) ? (int) $_GET['institute_id'] : null;
-        $classes = $this->classModel->getGridList(['institute_id' => $instituteId]);
-        $institutes = $this->instituteModel->getActiveInstitutes();
+        $scope = BranchScope::current();
+        $classes = array_values(array_filter($this->classModel->getGridList(['institute_id' => $instituteId]), static fn (array $c): bool => $scope->allowsClass((int) $c['id'])));
+        $institutes = array_values(array_filter($this->instituteModel->getActiveInstitutes(), static fn (array $i): bool => $scope->allowsInstitute((int) $i['id'])));
 
         if (($_GET['export'] ?? '') === 'csv') {
             $this->exportCsv('class_report_' . date('Ymd') . '.csv', [
@@ -127,14 +130,20 @@ class ReportController extends BaseController
     public function users(): void
     {
         AuthMiddleware::requireAuth();
-        // access: role-checked -- same as the Reports hub; this lists every staff member
-        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
+        // access: the staff directory is an admin report (it carries phone
+        // numbers and roles); a branch admin sees their own branch's people.
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN]);
 
         $role = trim($_GET['role'] ?? '');
         $status = trim($_GET['status'] ?? '');
 
         $users = $this->userModel->getFilteredUsers(['role' => $role, 'status' => $status]);
         $kpi = $this->userModel->getStatistics();
+        $scope = BranchScope::current();
+        if (!$scope->isGlobal()) {
+            $users = array_values(array_filter($users, static fn (array $u): bool => $scope->allowsUser((int) $u['id'])));
+            $kpi = $this->kpiFrom($users);
+        }
 
         if (($_GET['export'] ?? '') === 'csv') {
             $this->exportCsv('user_report_' . date('Ymd') . '.csv', [
@@ -163,10 +172,16 @@ class ReportController extends BaseController
     public function payments(): void
     {
         AuthMiddleware::requireAuth();
-        // access: role-checked -- same as the Reports hub; this is everyone's payments
-        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF]);
+        // access: financial summary (with the teacher's revenue share) is for
+        // the super admin and branch admins, each seeing their own scope.
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN]);
 
         $month = trim($_GET['month'] ?? date('Y-m'));
+        // The month used to be pasted into the SQL text. Only YYYY-MM is
+        // accepted now, and it travels as a bound parameter.
+        if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month)) {
+            $month = date('Y-m');
+        }
         $db = \Database::connect();
 
         $sql = "SELECT 
@@ -177,18 +192,25 @@ class ReportController extends BaseController
                     t.full_name AS teacher_name,
                     c.monthly_fee,
                     c.teacher_revenue_split,
-                    COUNT(DISTINCT e.student_id) AS enrolled_students,
-                    COALESCE(SUM(CASE WHEN p.payment_status = 'paid' THEN p.amount_paid ELSE 0 END), 0) AS total_collected,
-                    COALESCE(SUM(CASE WHEN p.payment_status IN ('pending', 'overdue') THEN (p.amount_due - p.amount_paid) ELSE 0 END), 0) AS total_pending
+                    -- Each figure is its own subquery. Joining enrollments and
+                    -- payments together multiplied every payment by the number
+                    -- of students in the class, so totals were overstated.
+                    (SELECT COUNT(DISTINCT e.student_id) FROM enrollments e
+                      WHERE e.class_id = c.id AND e.enrollment_status = 'active') AS enrolled_students,
+                    COALESCE((SELECT SUM(p.amount_paid) FROM payments p
+                      WHERE p.class_id = c.id AND p.payment_status = 'paid'
+                        AND (DATE_FORMAT(p.month_year, '%Y-%m') = :m1 OR DATE_FORMAT(p.paid_at, '%Y-%m') = :m2)), 0) AS total_collected,
+                    COALESCE((SELECT SUM(p.amount_due - p.amount_paid) FROM payments p
+                      WHERE p.class_id = c.id AND p.payment_status IN ('pending', 'overdue')
+                        AND DATE_FORMAT(p.month_year, '%Y-%m') = :m3), 0) AS total_pending
                 FROM classes c
                 LEFT JOIN institutes i ON c.institute_id = i.id
                 LEFT JOIN users t ON c.teacher_id = t.id
-                LEFT JOIN enrollments e ON c.id = e.class_id AND e.enrollment_status = 'active'
-                LEFT JOIN payments p ON c.id = p.class_id AND (p.month_year LIKE '{$month}%' OR DATE_FORMAT(p.paid_at, '%Y-%m') = '{$month}')
-                GROUP BY c.id
+                WHERE 1 = 1" . BranchScope::current()->classSql('c.id') . "
                 ORDER BY total_collected DESC";
-
-        $reportData = $db->query($sql)->fetchAll();
+        $stmt = $db->prepare($sql);
+        $stmt->execute([':m1' => $month, ':m2' => $month, ':m3' => $month]);
+        $reportData = $stmt->fetchAll();
 
         // Calculate totals
         $totCollected = 0.0;
@@ -247,14 +269,15 @@ class ReportController extends BaseController
                         SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_count,
                         SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) AS inactive_count,
                         SUM(CASE WHEN status = 'deactivated' THEN 1 ELSE 0 END) AS deactivated_count
-                    FROM students";
+                    FROM students s
+                    WHERE 1 = 1" . BranchScope::current()->studentSql('s.id');
         $stats = $db->query($statSql)->fetch();
 
         // Students list with deactivation status and class counts
         $statusFilter = trim($_GET['status'] ?? '');
-        $where = '';
+        $where = 'WHERE 1 = 1' . BranchScope::current()->studentSql('s.id');
         if ($statusFilter !== '') {
-            $where = "WHERE s.status = " . $db->quote($statusFilter);
+            $where .= " AND s.status = " . $db->quote($statusFilter);
         }
 
         $sql = "SELECT 
@@ -290,6 +313,40 @@ class ReportController extends BaseController
     /**
      * Helper to export data as CSV download
      */
+    /**
+     * The staff-directory headline numbers, counted from the rows a
+     * branch admin is allowed to see rather than the whole system.
+     *
+     * @param array<int, array<string, mixed>> $users
+     */
+    private function kpiFrom(array $users): array
+    {
+        $count = static function (array $roles, bool $activeOnly) use ($users): int {
+            return count(array_filter($users, static fn (array $u): bool =>
+                in_array($u['role'], $roles, true) && (!$activeOnly || $u['status'] === 'active')));
+        };
+
+        return [
+            'total'        => count($users),
+            'active_users' => count(array_filter($users, static fn (array $u): bool => $u['status'] === 'active')),
+            'admins'       => ['active' => $count(['admin', 'super_admin'], true), 'total' => $count(['admin', 'super_admin'], false)],
+            'coordinators' => ['active' => $count(['coordinator'], true), 'total' => $count(['coordinator'], false)],
+            'staff'        => ['active' => $count(['staff'], true), 'total' => $count(['staff'], false)],
+            'teachers'     => ['active' => $count(['teacher'], true), 'total' => $count(['teacher'], false)],
+        ];
+    }
+
+    /** Report exports are recorded in the audit log. */
+    private function logExport(string $filename): void
+    {
+        try {
+            $user = $this->getCurrentUser();
+            (new \AuditLog())->log((int) ($user['id'] ?? 0), 'user', $user['role'] ?? 'unknown', 'export_report', 'report', null, ['file' => $filename]);
+        } catch (\Throwable $e) {
+            error_log('Export audit failed: ' . $e->getMessage());
+        }
+    }
+
     private function exportCsv(string $filename, array $headers, array $rows): never
     {
         header('Content-Type: text/csv; charset=utf-8');
@@ -298,11 +355,19 @@ class ReportController extends BaseController
         header('Expires: 0');
 
         $out = fopen('php://output', 'w');
+        fwrite($out, "\xEF\xBB\xBF");
         fputcsv($out, $headers);
-
         foreach ($rows as $row) {
-            fputcsv($out, $row);
+            // A cell starting with = + - @ would run as a formula when the
+            // file is opened in Excel; prefix it so it stays text.
+            fputcsv($out, array_map(static function ($v) {
+                if (is_string($v) && $v !== '' && in_array($v[0], ['=', '+', '-', '@', "\t", "\r"], true) && !is_numeric($v)) {
+                    return "'" . $v;
+                }
+                return $v;
+            }, $row));
         }
+        $this->logExport($filename);
 
         fclose($out);
         exit;

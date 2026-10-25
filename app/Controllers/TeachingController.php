@@ -57,6 +57,9 @@ class TeachingController extends BaseController
         if (!$seesEverything) {
             $sql .= " AND c.teacher_id = :teacher";
             $params[':teacher'] = $userId;
+        } else {
+            // Admins and coordinators: their own branch's classes.
+            $sql .= \App\Services\BranchScope::current()->classSql('c.id');
         }
 
         $sql .= " ORDER BY i.name ASC, c.grade ASC, c.class_name ASC";

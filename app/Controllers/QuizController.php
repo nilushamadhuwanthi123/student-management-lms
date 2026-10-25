@@ -438,7 +438,10 @@ class QuizController extends BaseController
     {
         $role = (string) session_get('user_role');
 
-        if (in_array($role, ['super_admin', 'admin', 'coordinator'], true)) {
+        // Super admin: every class. Branch admins and coordinators: the
+        // classes of their own branch, not every branch's.
+        if (in_array($role, ['super_admin', 'admin', 'coordinator'], true)
+            && \App\Services\BranchScope::current()->allowsClass((int) ($class['id'] ?? 0))) {
             return;
         }
 

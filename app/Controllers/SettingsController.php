@@ -38,6 +38,8 @@ class SettingsController extends BaseController
     public function update(): void
     {
         AuthMiddleware::requireAuth();
+        // System-wide settings apply to every branch: super admin only.
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
@@ -91,6 +93,8 @@ class SettingsController extends BaseController
     public function updateDeactivation(): void
     {
         AuthMiddleware::requireAuth();
+        // System-wide settings apply to every branch: super admin only.
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
@@ -142,6 +146,8 @@ class SettingsController extends BaseController
     public function updateDeletion(): void
     {
         AuthMiddleware::requireAuth();
+        // System-wide settings apply to every branch: super admin only.
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
@@ -198,6 +204,8 @@ class SettingsController extends BaseController
     public function updateDashboardItems(): void
     {
         AuthMiddleware::requireAuth();
+        // System-wide settings apply to every branch: super admin only.
+        AuthMiddleware::requireSuperAdmin();
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,

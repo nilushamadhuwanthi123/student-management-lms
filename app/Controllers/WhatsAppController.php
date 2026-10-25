@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
+use App\Services\BranchScope;
 use App\Services\ContentAccessService;
 use App\Services\WhatsAppService;
 use PDO;
@@ -46,6 +47,9 @@ class WhatsAppController extends BaseController
 
         $template = $this->wa->template($templateKey) ?? $this->wa->template('fee_reminder');
         $rows = $this->wa->unpaidRecipients($month, $classId, $instituteId);
+        // Only this branch's families appear on a branch admin's list.
+        $scope = BranchScope::current();
+        $rows = array_values(array_filter($rows, static fn (array $r): bool => $scope->allowsClass((int) $r['class_id'])));
 
         $teacherName = $this->teacherName();
         $monthLabel = date('F Y', strtotime($month));
@@ -71,7 +75,9 @@ class WhatsAppController extends BaseController
                 'class'   => $row['class_name'],
                 'month'   => $monthLabel,
                 'amount'  => number_format($outstanding, 2),
-                'teacher' => $teacherName,
+                // The class's own teacher signs the message; the first
+                // teacher in the table was signing every branch's reminders.
+                'teacher' => $this->classTeacher((int) $row['class_id']) ?? $teacherName,
                 'branch'  => $row['institute_name'] ?? '',
             ]);
 
@@ -119,6 +125,16 @@ class WhatsAppController extends BaseController
             $this->json(['ok' => false, 'message' => 'That number or message is not usable.'], 422);
         }
 
+        $scope = BranchScope::current();
+        $qClass = ($_POST['class_id'] ?? '') !== '' ? (int) $_POST['class_id'] : null;
+        $qStudent = ($_POST['student_id'] ?? '') !== '' ? (int) $_POST['student_id'] : null;
+        if (!$scope->isGlobal()
+            && (($qClass === null && $qStudent === null)
+                || ($qClass !== null && !$scope->allowsClass($qClass))
+                || ($qStudent !== null && !$scope->allowsStudent($qStudent)))) {
+            $this->json(['ok' => false, 'message' => 'That family is not in your branch.'], 403);
+        }
+
         $id = $this->wa->queue([
             'student_id'     => ($_POST['student_id'] ?? '') !== '' ? (int) $_POST['student_id'] : null,
             'class_id'       => ($_POST['class_id'] ?? '') !== '' ? (int) $_POST['class_id'] : null,
@@ -145,6 +161,10 @@ class WhatsAppController extends BaseController
         $id = (int) ($_POST['id'] ?? 0);
         $userId = (int) session_get('user_id');
 
+        if (!$this->messageInScope($id)) {
+            $this->json(['ok' => false, 'message' => 'That message is not in your branch.'], 403);
+        }
+
         $ok = ($_POST['outcome'] ?? 'sent') === 'skipped'
             ? $this->wa->markSkipped($id, $userId, trim($_POST['note'] ?? '') ?: null)
             : $this->wa->markSent($id, $userId);
@@ -162,16 +182,68 @@ class WhatsAppController extends BaseController
         $status = in_array($_GET['status'] ?? '', ['queued', 'sent', 'skipped', 'failed'], true)
             ? $_GET['status'] : null;
 
+        $messages = $this->wa->log(200, $status);
+        $counts = $this->wa->counts();
+        $scope = BranchScope::current();
+        if (!$scope->isGlobal()) {
+            $messages = array_values(array_filter($messages, fn (array $m): bool => $this->rowInScope($m)));
+            $all = array_values(array_filter($this->wa->log(500, null), fn (array $m): bool => $this->rowInScope($m)));
+            $counts = ['queued' => 0, 'sent' => 0, 'skipped' => 0, 'failed' => 0];
+            foreach ($all as $m) {
+                $counts[$m['send_status']] = ($counts[$m['send_status']] ?? 0) + 1;
+            }
+        }
+
         $this->view('whatsapp/log', [
             'pageTitle'  => 'Message log',
             'activePage' => 'whatsapp',
-            'messages'   => $this->wa->log(200, $status),
-            'counts'     => $this->wa->counts(),
+            'messages'   => $messages,
+            'counts'     => $counts,
             'status'     => $status,
         ]);
     }
 
     // ---------- helpers ----------
+
+    /** @var array<int, string|null> */
+    private array $teacherByClass = [];
+
+    private function classTeacher(int $classId): ?string
+    {
+        if (!array_key_exists($classId, $this->teacherByClass)) {
+            $stmt = $this->db->prepare(
+                "SELECT u.full_name FROM classes c JOIN users u ON u.id = c.teacher_id WHERE c.id = :c"
+            );
+            $stmt->execute([':c' => $classId]);
+            $name = $stmt->fetchColumn();
+            $this->teacherByClass[$classId] = $name !== false ? (string) $name : null;
+        }
+
+        return $this->teacherByClass[$classId];
+    }
+
+    /** @param array<string, mixed> $m */
+    private function rowInScope(array $m): bool
+    {
+        $scope = BranchScope::current();
+        if (!empty($m['class_id'])) {
+            return $scope->allowsClass((int) $m['class_id']);
+        }
+        if (!empty($m['student_id'])) {
+            return $scope->allowsStudent((int) $m['student_id']);
+        }
+
+        return $scope->isGlobal();
+    }
+
+    private function messageInScope(int $id): bool
+    {
+        $stmt = $this->db->prepare('SELECT class_id, student_id FROM whatsapp_messages WHERE id = :id');
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row !== false && $this->rowInScope($row);
+    }
 
     private function teacherName(): string
     {
@@ -203,7 +275,8 @@ class WhatsAppController extends BaseController
     private function classOptions(): array
     {
         return $this->db->query(
-            "SELECT id, class_name FROM classes WHERE status = 'active' ORDER BY grade, class_name"
+            "SELECT id, class_name FROM classes WHERE status = 'active'"
+            . BranchScope::current()->classSql('id') . " ORDER BY grade, class_name"
         )->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -213,7 +286,8 @@ class WhatsAppController extends BaseController
     private function instituteOptions(): array
     {
         return $this->db->query(
-            "SELECT id, name FROM institutes WHERE status = 'active' ORDER BY name"
+            "SELECT id, name FROM institutes WHERE status = 'active'"
+            . BranchScope::current()->instituteSql('id') . " ORDER BY name"
         )->fetchAll(PDO::FETCH_ASSOC);
     }
 }

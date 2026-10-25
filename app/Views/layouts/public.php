@@ -283,6 +283,7 @@
 
         <ul class="navbar__links" id="navLinks">
             <li><a href="<?= BASE_URL ?>/" class="<?= ($activePage ?? '') === 'home' ? 'active' : '' ?>">Home</a></li>
+            <li><a href="<?= BASE_URL ?>/timetable" class="<?= ($activePage ?? '') === 'classes' ? 'active' : '' ?>"><?= te('Timetable') ?></a></li>
             <li><a href="<?= BASE_URL ?>/about" class="<?= ($activePage ?? '') === 'about' ? 'active' : '' ?>">About</a></li>
             <li><a href="<?= BASE_URL ?>/features" class="<?= ($activePage ?? '') === 'features' ? 'active' : '' ?>">Features</a></li>
             <li><a href="<?= BASE_URL ?>/contact" class="<?= ($activePage ?? '') === 'contact' ? 'active' : '' ?>">Contact</a></li>
@@ -339,6 +340,7 @@
                     <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4">Quick Links</h4>
                     <ul class="space-y-2">
                         <li><a href="<?= BASE_URL ?>/" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">Home</a></li>
+                        <li><a href="<?= BASE_URL ?>/timetable" class="text-sm hover:text-white transition-colors" style="color: #8494AC;"><?= te('Timetable') ?></a></li>
                         <li><a href="<?= BASE_URL ?>/about" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">About Us</a></li>
                         <li><a href="<?= BASE_URL ?>/features" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">Features</a></li>
                         <li><a href="<?= BASE_URL ?>/contact" class="text-sm hover:text-white transition-colors" style="color: #8494AC;">Contact</a></li>
