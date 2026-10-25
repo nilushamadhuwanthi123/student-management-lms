@@ -237,6 +237,19 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     // a class id by heart.
     $router->get('/teaching', ['App\Controllers\TeachingController', 'index']);
 
+    // Syllabus topics, past papers, learning gaps
+    $router->get('/topics', ['App\Controllers\TopicController', 'index']);
+    $router->post('/topics', ['App\Controllers\TopicController', 'store']);
+    $router->post('/topics/{id}/edit', ['App\Controllers\TopicController', 'update']);
+    $router->post('/topics/{id}/archive', ['App\Controllers\TopicController', 'archive']);
+    $router->get('/past-papers', ['App\Controllers\PastPaperController', 'index']);
+    $router->get('/past-papers/create', ['App\Controllers\PastPaperController', 'create']);
+    $router->post('/past-papers', ['App\Controllers\PastPaperController', 'store']);
+    $router->post('/past-papers/{id}/status', ['App\Controllers\PastPaperController', 'status']);
+    $router->get('/past-papers/{id}/file/{which}', ['App\Controllers\PastPaperController', 'file']);
+    $router->get('/my/papers', ['App\Controllers\PastPaperController', 'mine']);
+    $router->get('/classes/{classId}/learning-gaps', ['App\Controllers\LearningGapController', 'show']);
+
     // ---- LMS: class material ----
     // Nested under the class because material has no meaning apart from
     // one, and the class id in the path is what the ownership check reads.
@@ -410,6 +423,8 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/attendance/qr', ['App\Controllers\AttendanceController', 'terminal']);
     $router->post('/attendance/scan', ['App\Controllers\AttendanceController', 'scan']);
     $router->post('/attendance/mark-manual', ['App\Controllers\AttendanceController', 'markManual']);
+    $router->get('/attendance/register', ['App\Controllers\AttendanceController', 'register']);
+    $router->post('/attendance/register', ['App\Controllers\AttendanceController', 'saveRegister']);
 
     // In-app Messages & Notifications
     $router->get('/messages', ['App\Controllers\MessageController', 'index']);

@@ -171,6 +171,8 @@ class MaterialController extends BaseController
             'uploaded_by'     => (int) session_get('user_id'),
         ]);
 
+        (new \App\Services\TopicService($this->db))->tag('class_materials', (int) $materialId, (int) $classId, $_POST['topic_id'] ?? null);
+
         // Tell the class it is there. Uploading something nobody hears
         // about is the failure this whole module exists to prevent.
         // Drafts announce nothing -- AnnouncementService checks the

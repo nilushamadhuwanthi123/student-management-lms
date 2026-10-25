@@ -160,6 +160,9 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
                               placeholder="e.g. Which gas do plants take in during photosynthesis?"></textarea>
                 </div>
 
+                <?php $topicSelected = (int) ($quiz['topic_id'] ?? 0); $topicFieldId = 'question_topic'; ?>
+                <?php include __DIR__ . '/../components/topic-select.php'; ?>
+
                 <div class="form-group">
                     <label class="form-label" for="marks">Marks</label>
                     <input type="number" id="marks" name="marks" class="form-control"

@@ -20,6 +20,8 @@ $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'
             <label class="form-label" for="title"><?= te('Title') ?> *</label>
             <input type="text" id="title" name="title" class="form-control" maxlength="255" required>
         </div>
+        <?php include __DIR__ . '/../components/topic-select.php'; ?>
+
         <div class="form-group">
             <label class="form-label" for="instructions"><?= te('Instructions') ?></label>
             <textarea id="instructions" name="instructions" class="form-control" rows="6" placeholder="<?= te('What should the students do? Which pages, which questions?') ?>"></textarea>

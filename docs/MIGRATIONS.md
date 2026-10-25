@@ -25,15 +25,16 @@ It stops at the first error and records nothing for that file.
 | 011_slip_details_and_delivery.sql | Slip `bank_name` and `approved_amount`; class `delivery_mode`, `meeting_url`, `capacity` | Yes on MariaDB (`ADD COLUMN IF NOT EXISTS`). See the MySQL 8 note below |
 | 012_public_site.sql | `institutes.is_public` and `public_show_fees`; enrolment fields on `contact_messages` | Yes on MariaDB. See the MySQL 8 note below |
 | 013_account_security.sql | `must_change_password` and `credential_version` on accounts; `password_resets` (hashed one-time codes); `schema_migrations` | Yes on MariaDB |
+| 014_learning_tools.sql | `topics`; `topic_id` on materials, quizzes, questions, homework; `past_papers`; `absence_alerts`; a **unique key on attendance (student, class, day)** | Yes on MariaDB. Before running on a server, check for duplicate attendance rows (query in the file's header); the key cannot be added while duplicates exist |
 
 ## MySQL 8 note
 
-Files 011, 012 and 013 use `ADD COLUMN IF NOT EXISTS`. MariaDB (XAMPP) supports this; **MySQL 8 does not**.
+Files 011 to 014 use `ADD COLUMN IF NOT EXISTS`. MariaDB (XAMPP) supports this; **MySQL 8 does not**.
 On a MySQL 8 host, delete the words `IF NOT EXISTS` after `ADD COLUMN` in those files and run each one exactly once.
 
 ## Tested
 - Empty database → `bin/migrate.php` applied 001-013 (43 tables), a second run applied nothing, `create_admin.php` worked and the new admin could log in (MariaDB 10.4.32, 25 Oct 2026).
-- Existing development database → `--baseline=012` then 013 applied (backup taken first).
+- Existing development database → `--baseline=012`, then 013 and 014 applied (a backup was taken before each).
 
 ## After 008: check the branch assignments
 

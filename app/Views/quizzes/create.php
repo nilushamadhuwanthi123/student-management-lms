@@ -36,6 +36,8 @@ $defaultClose = date('Y-m-d\TH:i', strtotime('+7 days 21:00'));
                        placeholder="e.g. Chemical Reactions - monthly test">
             </div>
 
+            <?php include __DIR__ . '/../components/topic-select.php'; ?>
+
             <div class="form-group">
                 <label class="form-label" for="description">Description</label>
                 <input type="text" id="description" name="description" class="form-control"
