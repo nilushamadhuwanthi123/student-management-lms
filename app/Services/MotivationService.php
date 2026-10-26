@@ -46,8 +46,16 @@ class MotivationService
             'history'    => array_slice($history, -12),
             'best'       => $history === [] ? null : max(array_column($history, 'percentage')),
             'streak'     => $streak,
-            'badges'     => $this->badges($studentId, $history, $streak, $progress),
+            // Every achievement, earned or not, with the date it was first
+            // earned (kept in student_achievements, so it never moves).
+            'badges'     => (new AchievementService($this->db))->forStudent($studentId, $progress),
             'goals'      => $this->goals($studentId, $progress),
+            // Named level from the same official score (never a school grade).
+            'level'      => LevelService::forScore(!empty($progress['has_data']) ? (float) $progress['score'] : null) + ['has_data' => !empty($progress['has_data'])],
+            // Days with real learning activity; one rest day does not break it.
+            'learning_streak' => (new StreakService($this->db))->summary($studentId),
+            // Goals the student or a teacher set (migration 015).
+            'personal_goals'  => $this->personalGoals($studentId),
             'headline'   => $this->headline($progress, $this->trend($history)),
         ];
     }
@@ -91,31 +99,19 @@ class MotivationService
             return null;
         }
 
-        $score = (float) $progress['score'];
-        $thresholds = array_keys(ProgressService::LEVELS);
-        sort($thresholds);
-
-        $current = 0;
-        foreach ($thresholds as $t) {
-            if ($score >= $t) {
-                $current = $t;
-            }
+        // The student-facing level names (LevelService) share their lower
+        // bands with ProgressService's labels, so both always agree on
+        // where a student is; they only add a top band above 95.
+        $l = LevelService::forScore((float) $progress['score']);
+        if ($l['next_level'] === null) {
+            return null;
         }
-
-        foreach ($thresholds as $t) {
-            if ($t > $score) {
-                $span = max(1, $t - $current);
-                return [
-                    'label'   => ProgressService::LEVELS[$t]['label'],
-                    'at'      => $t,
-                    'to_go'   => (int) ceil($t - $score),
-                    // How far through the current band, for the bar.
-                    'percent' => (int) round((($score - $current) / $span) * 100),
-                ];
-            }
-        }
-
-        return null;
+        return [
+            'label'   => $l['next_name'],
+            'at'      => $l['next_at'],
+            'to_go'   => (int) ceil($l['next_at'] - (float) $progress['score']),
+            'percent' => $l['band_progress'],
+        ];
     }
 
     /**
@@ -188,84 +184,16 @@ class MotivationService
     }
 
     /**
-     * Achievements, earned or not, each with how it is earned.
-     *
-     * @param array<int, array<string, mixed>> $history
-     * @param array{current: int, best: int, sessions: int} $streak
-     * @param array<string, mixed> $progress
      * @return array<int, array<string, mixed>>
      */
-    private function badges(int $studentId, array $history, array $streak, array $progress): array
+    private function personalGoals(int $studentId): array
     {
-        $pcts = array_column($history, 'percentage');
-
-        $firstOn = $history[0]['submitted_at'] ?? null;
-        $highOn = $this->firstWhere($history, static fn (array $h): bool => $h['percentage'] >= 80);
-        $perfectOn = $this->firstWhere($history, static fn (array $h): bool => $h['percentage'] >= 100);
-
-        // Three in a row at 70% or more.
-        $rollOn = null;
-        $run = 0;
-        foreach ($history as $h) {
-            $run = $h['percentage'] >= 70 ? $run + 1 : 0;
-            if ($run >= 3) {
-                $rollOn = $h['submitted_at'];
-                break;
-            }
+        try {
+            return (new GoalService($this->db))->forStudent($studentId);
+        } catch (\Throwable $e) {
+            error_log('Personal goals unavailable: ' . $e->getMessage()); // before migration 015
+            return [];
         }
-
-        // Beat the previous quiz by 15 points or more.
-        $comebackOn = null;
-        for ($i = 1, $n = count($history); $i < $n; $i++) {
-            if ($history[$i]['percentage'] - $history[$i - 1]['percentage'] >= 15) {
-                $comebackOn = $history[$i]['submitted_at'];
-                break;
-            }
-        }
-
-        // Handed in within a day of the quiz opening.
-        $earlyOn = $this->firstWhere($history, static function (array $h): bool {
-            if (empty($h['opens_at']) || empty($h['submitted_at'])) {
-                return false;
-            }
-            return strtotime((string) $h['submitted_at']) - strtotime((string) $h['opens_at']) <= 86400;
-        });
-
-        $materials = $progress['engagement']['materials_total'] ?? 0;
-        $opened = $progress['engagement']['materials_opened'] ?? null;
-        $bookworm = $materials >= 5 && (float) ($progress['engagement']['rate'] ?? 0) >= 100;
-
-        return [
-            $this->badge('first_quiz', '&#127891;', $firstOn !== null, $firstOn),
-            $this->badge('high_flyer', '&#128640;', $highOn !== null, $highOn),
-            $this->badge('on_a_roll', '&#128293;', $rollOn !== null, $rollOn),
-            $this->badge('comeback', '&#128170;', $comebackOn !== null, $comebackOn),
-            $this->badge('early_bird', '&#9200;', $earlyOn !== null, $earlyOn),
-            $this->badge('never_missed', '&#128197;', $streak['best'] >= 8, null),
-            $this->badge('bookworm', '&#128218;', $bookworm, null),
-            $this->badge('perfect', '&#127942;', $perfectOn !== null, $perfectOn),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function badge(string $key, string $icon, bool $earned, ?string $on): array
-    {
-        return ['key' => $key, 'icon' => $icon, 'earned' => $earned, 'earned_on' => $on];
-    }
-
-    /**
-     * @param array<int, array<string, mixed>> $history
-     */
-    private function firstWhere(array $history, callable $test): ?string
-    {
-        foreach ($history as $h) {
-            if ($test($h)) {
-                return (string) $h['submitted_at'];
-            }
-        }
-        return null;
     }
 
     /**
@@ -367,7 +295,7 @@ class MotivationService
         if ($trend !== null && $trend['delta'] <= -3) {
             return ['key' => 'dip', 'vars' => ['delta' => abs($trend['delta'])]];
         }
-        if ((float) $progress['score'] >= 85) {
+        if (LevelService::forScore((float) $progress['score'])['next_level'] === null) {
             return ['key' => 'top', 'vars' => []];
         }
         return ['key' => 'steady', 'vars' => []];

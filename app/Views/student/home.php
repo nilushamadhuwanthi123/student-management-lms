@@ -153,6 +153,10 @@ $whenLabel = static function (array $item) use ($now): string {
     </div>
 <?php endif; ?>
 
+<!-- Level, a real motivational message, next steps, streaks, achievements
+     and goals -- all from this student's own record. -->
+<?php include __DIR__ . '/_motivation.php'; ?>
+
 <!-- Four numbers, all about this student -->
 <div class="sh-stats">
     <div class="sh-stat">

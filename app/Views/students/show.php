@@ -4,7 +4,8 @@
  *
  * Variables: $student, $parents, $enrollments, $payments, $paymentSummary,
  *            $attendanceRecords, $attendanceSummary, $feeRiskRecords,
- *            $workflows, $auditTrail, $createdByName
+ *            $workflows, $auditTrail, $createdByName, $studentGoals,
+ *            $goalOptions, $goalStudentId
  */
 
 $student            = $student ?? [];
@@ -18,6 +19,9 @@ $feeRiskRecords     = $feeRiskRecords ?? [];
 $workflows          = $workflows ?? [];
 $auditTrail         = $auditTrail ?? [];
 $createdByName      = $createdByName ?? '';
+$studentGoals       = $studentGoals ?? [];
+$goalOptions        = $goalOptions ?? ['classes' => [], 'topics' => []];
+$goalStudentId      = $goalStudentId ?? (int) ($student['id'] ?? 0);
 
 $status = $student['status'] ?? 'active';
 $badgeClass = match ($status) {
@@ -257,6 +261,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
             <button class="s360-tab" role="tab" data-tab="payments" onclick="s360Tab('payments', this)">Payments</button>
             <button class="s360-tab" role="tab" data-tab="attendance" onclick="s360Tab('attendance', this)">Attendance</button>
             <button class="s360-tab" role="tab" data-tab="fee-risk" onclick="s360Tab('fee-risk', this)">Fee Risk</button>
+            <button class="s360-tab" role="tab" data-tab="goals" onclick="s360Tab('goals', this)">Goals<?= $studentGoals !== [] ? ' (' . count($studentGoals) . ')' : '' ?></button>
             <button class="s360-tab" role="tab" data-tab="workflows" onclick="s360Tab('workflows', this)">Workflows</button>
             <button class="s360-tab" role="tab" data-tab="audit" onclick="s360Tab('audit', this)">Audit Trail</button>
         </div>
@@ -503,6 +508,11 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                     <div class="empty-state__text">This student has no fee-risk entries. All clear!</div>
                 </div>
             <?php endif; ?>
+        </div>
+
+        <!-- ─── Goals Tab ─── -->
+        <div class="s360-panel" id="panel-goals" style="display:none;">
+            <?php include __DIR__ . '/_goals.php'; ?>
         </div>
 
         <!-- ─── Workflows Tab ─── -->
