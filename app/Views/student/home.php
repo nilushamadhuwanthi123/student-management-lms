@@ -10,6 +10,8 @@ $comingUp      = $comingUp ?? [];
 $classes       = $classes ?? [];
 $quizzes       = $quizzes ?? [];
 $materials     = $materials ?? [];
+$homework      = $homework ?? [];
+$homeworkLocked = $homeworkLocked ?? 0;
 $marks         = $marks ?? [];
 $progress      = $progress ?? ['has_data' => false];
 $notifications = $notifications ?? [];
@@ -168,6 +170,10 @@ $whenLabel = static function (array $item) use ($now): string {
         <div class="sh-stat__l"><?= count($quizzes) === 1 ? te('Quiz waiting') : te('Quizzes waiting') ?></div>
     </div>
     <div class="sh-stat">
+        <div class="sh-stat__n" style="color:<?= count($homework) > 0 ? 'var(--danger)' : 'var(--success)' ?>;"><?= count($homework) ?></div>
+        <div class="sh-stat__l"><?= te('Homework due') ?></div>
+    </div>
+    <div class="sh-stat">
         <div class="sh-stat__n"><?= $avgMark !== null ? $avgMark . '%' : '&ndash;' ?></div>
         <div class="sh-stat__l"><?= te('Average, last {n} quizzes', ['n' => count($marks)]) ?></div>
     </div>
@@ -195,6 +201,32 @@ $whenLabel = static function (array $item) use ($now): string {
                         </div>
                     </div>
                     <a class="btn btn--primary btn--sm" href="<?= BASE_URL ?>/my/quizzes/<?= (int) $q['id'] ?>/sit"><?= te('Start') ?></a>
+                </div>
+            <?php endforeach; endif; ?>
+        </div>
+
+        <!-- Homework to hand in -->
+        <div class="sh-card">
+            <h3>&#128221; <?= te('Homework to hand in') ?> <span class="sh-count"><?= count($homework) ?></span></h3>
+            <?php if ($homework === []): ?>
+                <p class="sh-empty"><?= te("Nothing waiting to be handed in.") ?> <?= $homeworkLocked > 0 ? te("{n} more locked until this month's fee is settled.", ['n' => $homeworkLocked]) : '' ?></p>
+            <?php else: foreach ($homework as $hw):
+                $overdue = strtotime((string) $hw['due_at']) < $now->getTimestamp();
+                ?>
+                <div class="sh-row">
+                    <div class="sh-row__icon" style="<?= $overdue ? 'background:rgba(180,35,24,.10);' : '' ?>">&#128221;</div>
+                    <div class="sh-row__main">
+                        <div class="sh-row__title"><?= $e($hw['title']) ?></div>
+                        <div class="sh-row__meta">
+                            <?= $e($hw['class_name']) ?> &middot;
+                            <?php if ($overdue): ?>
+                                <span style="color:var(--danger);"><?= te('was due {when}', ['when' => lang_date('D j M', (string) $hw['due_at'])]) ?></span>
+                            <?php else: ?>
+                                <?= te('due {when}', ['when' => lang_date('D j M', (string) $hw['due_at'])]) ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <a class="btn btn--primary btn--sm" href="<?= BASE_URL ?>/my/assignments/<?= (int) $hw['id'] ?>"><?= te('Hand in') ?></a>
                 </div>
             <?php endforeach; endif; ?>
         </div>

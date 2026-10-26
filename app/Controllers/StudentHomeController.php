@@ -90,6 +90,12 @@ class StudentHomeController extends BaseController
             // this student's own record, never compared with anyone else's.
             'motivation'    => (new MotivationService())->forStudent($studentId, $progress),
             'goalOptions'   => (new GoalService())->formOptions($studentId),
+            // Homework still to hand in -- the one thing that was missing
+            // from "today's learning": quizzes, new material and marks
+            // were already here, but a published assignment never showed
+            // up on this page at all.
+            'homework'       => $this->pendingHomework($studentId, $openMap),
+            'homeworkLocked' => $this->lockedHomeworkCount($studentId, $openMap),
         ]);
     }
 
@@ -236,6 +242,61 @@ class StudentHomeController extends BaseController
         $stmt->execute([':sid' => $studentId]);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Published homework the student has not handed in yet, for a class
+     * whose month is open -- the same gate "New for you" and the quiz
+     * list already use, so a student never sees a hand-in button for
+     * something they could not actually open.
+     *
+     * @param array<int, bool> $openMap
+     * @return array<int, array<string, mixed>>
+     */
+    private function pendingHomework(int $studentId, array $openMap): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT a.id, a.title, a.due_at, a.class_id, c.class_name
+               FROM assignments a
+               JOIN classes c ON c.id = a.class_id
+               JOIN enrollments e ON e.class_id = a.class_id AND e.student_id = :sid1
+                                 AND e.enrollment_status = 'active'
+               LEFT JOIN assignment_submissions sub ON sub.assignment_id = a.id AND sub.student_id = :sid2
+              WHERE a.status = 'published' AND sub.id IS NULL
+              ORDER BY a.due_at ASC"
+        );
+        $stmt->execute([':sid1' => $studentId, ':sid2' => $studentId]);
+
+        $pending = array_values(array_filter(
+            $stmt->fetchAll(PDO::FETCH_ASSOC),
+            static fn (array $a): bool => $openMap[(int) $a['class_id']] ?? false
+        ));
+
+        return array_slice($pending, 0, 6);
+    }
+
+    /**
+     * How many more are waiting, but locked behind an unpaid month --
+     * counted so the empty state can mention them, never listed.
+     *
+     * @param array<int, bool> $openMap
+     */
+    private function lockedHomeworkCount(int $studentId, array $openMap): int
+    {
+        $stmt = $this->db->prepare(
+            "SELECT a.class_id
+               FROM assignments a
+               JOIN enrollments e ON e.class_id = a.class_id AND e.student_id = :sid1
+                                 AND e.enrollment_status = 'active'
+               LEFT JOIN assignment_submissions sub ON sub.assignment_id = a.id AND sub.student_id = :sid2
+              WHERE a.status = 'published' AND sub.id IS NULL"
+        );
+        $stmt->execute([':sid1' => $studentId, ':sid2' => $studentId]);
+
+        return count(array_filter(
+            $stmt->fetchAll(PDO::FETCH_COLUMN),
+            static fn ($classId): bool => !($openMap[(int) $classId] ?? false)
+        ));
     }
 
     /**
