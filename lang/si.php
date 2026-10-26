@@ -1075,4 +1075,5 @@ return [
     'Paper practice' => 'ප්‍රශ්න පත්‍ර පුහුණුව',
     'Photos from the classes' => 'පන්තිවල ඡායාරූප',
     'Choose a photo' => 'ඡායාරූපයක් තෝරන්න',
+    'Photo {n}' => 'ඡායාරූපය {n}',
 ];

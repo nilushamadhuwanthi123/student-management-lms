@@ -25,8 +25,47 @@ $facts = \App\Services\PublicSite::facts();
 $isSi = function_exists('lang_current') && lang_current() === 'si';
 $mediumLabel = $facts['media'] !== [] ? implode(' / ', array_map(static fn ($m) => t($m), $facts['media'])) : '';
 ?>
+<?php
+$bgSlides = [
+    ['teacher-board.jpg', '70% 35%'],
+    ['students-experiment.jpg', '50% 35%'],
+    ['science-lab.jpg', '60% 45%'],
+    ['students-exam.jpg', '50% 45%'],
+];
+$bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE_PATH . '/public/assets/img/' . $sl[0])));
+?>
 <section class="ts-hero">
+    <?php if ($bgSlides !== []): ?>
+    <div class="ts-hero-bg" id="ts-hero-bg" aria-hidden="true">
+        <?php foreach ($bgSlides as $i => [$file, $pos]): ?>
+            <img class="ts-bg-slide<?= $i === 0 ? ' is-on' : '' ?>" src="<?= BASE_URL ?>/assets/img/<?= $e($file) ?>" style="object-position:<?= $e($pos) ?>;" alt="" decoding="async"<?= $i === 0 ? ' fetchpriority="high"' : '' ?>>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
     <div class="ts-float" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.6"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3c0 6 10 6 10 12s-10 6-10 6"/><path d="M17 3c0 6-10 6-10 12s10 6 10 6"/><path d="M8 7h8M8 17h8"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v6"/><path d="m4.9 4.9 4.2 4.2"/><path d="M2 12h6"/><circle cx="12" cy="12" r="4"/><path d="M16 12h6"/><path d="m14.9 14.9 4.2 4.2"/><path d="M12 16v6"/></svg></div>
+    <?php if (count($bgSlides) > 1): ?>
+    <div class="ts-bg-dots" role="group" aria-label="<?= te('Photos from the classes') ?>">
+        <?php foreach ($bgSlides as $i => $sl): ?><button type="button" aria-label="<?= te('Photo {n}', ['n' => $i + 1]) ?>" aria-current="<?= $i === 0 ? 'true' : 'false' ?>"></button><?php endforeach; ?>
+    </div>
+    <script>
+    (function () {
+        var box = document.getElementById('ts-hero-bg');
+        if (!box) { return; }
+        var slides = box.querySelectorAll('.ts-bg-slide'), dots = document.querySelectorAll('.ts-bg-dots button'), cur = 0, timer = null,
+            still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        function show(n) {
+            slides[cur].classList.remove('is-on'); dots[cur].setAttribute('aria-current', 'false');
+            cur = (n + slides.length) % slides.length;
+            slides[cur].classList.add('is-on'); dots[cur].setAttribute('aria-current', 'true');
+        }
+        function play() { if (!still && !timer) { timer = setInterval(function () { show(cur + 1); }, 5000); } }
+        function stop() { clearInterval(timer); timer = null; }
+        dots.forEach(function (d, i) { d.addEventListener('click', function () { stop(); show(i); play(); }); });
+        document.addEventListener('visibilitychange', function () { document.hidden ? stop() : play(); });
+        play();
+    })();
+    </script>
+    <?php endif; ?>
     <svg class="ts-wave" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40c240 30 480 30 720 10s480-30 720 0v20H0z"/></svg>
     <div class="ts-wrap ts-hero-grid">
         <div>
@@ -56,49 +95,9 @@ $mediumLabel = $facts['media'] !== [] ? implode(' / ', array_map(static fn ($m) 
         </div>
         <?php if ($teacher): ?>
         <div class="ts-photo">
-            <?php
-            $slides = [
-                ['teacher-smartboard.jpg', '50% 18%', t('{name} teaching a Science lesson', ['name' => $teacher]), t('In class')],
-                ['teacher-board.jpg', '78% 40%', t('{name} explaining a lesson on the board', ['name' => $teacher]), t('Lesson time')],
-                ['students-experiment.jpg', '45% 40%', t('Students doing an experiment'), t('Experiments')],
-                ['science-lab.jpg', '100% 50%', t('Students in the science lab'), t('Science lab')],
-                ['students-exam.jpg', '50% 50%', t('Students sitting a paper'), t('Paper practice')],
-            ];
-            $slides = array_values(array_filter($slides, static fn ($sl) => is_file(BASE_PATH . '/public/assets/img/' . $sl[0])));
-            ?>
-            <div class="ts-photo__frame" id="ts-slides" aria-roledescription="carousel" aria-label="<?= te('Photos from the classes') ?>">
-                <?php foreach ($slides as $i => [$file, $pos, $alt, $cap]): ?>
-                    <img class="ts-slide<?= $i === 0 ? ' is-on' : '' ?>" src="<?= BASE_URL ?>/assets/img/<?= $e($file) ?>" style="object-position:<?= $e($pos) ?>;" alt="<?= $e($alt) ?>"<?= $i === 0 ? ' fetchpriority="high"' : ' decoding="async"' ?> data-cap="<?= $e($cap) ?>"<?= $i === 0 ? '' : ' aria-hidden="true"' ?>>
-                <?php endforeach; ?>
-                <?php if (count($slides) > 1): ?><span class="ts-slide__cap" aria-live="polite"><?= $e($slides[0][3]) ?></span><?php endif; ?>
+            <div class="ts-photo__frame">
+                <img src="<?= BASE_URL ?>/assets/img/teacher-smartboard.jpg" width="1600" height="2000" alt="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>" fetchpriority="high">
             </div>
-            <?php if (count($slides) > 1): ?>
-            <div class="ts-dots" role="group" aria-label="<?= te('Choose a photo') ?>">
-                <?php foreach ($slides as $i => $sl): ?><button type="button" aria-label="<?= $e($sl[3]) ?>" aria-current="<?= $i === 0 ? 'true' : 'false' ?>"></button><?php endforeach; ?>
-            </div>
-            <script>
-            (function () {
-                var frame = document.getElementById('ts-slides');
-                if (!frame) { return; }
-                var slides = frame.querySelectorAll('.ts-slide'), dots = frame.parentNode.querySelectorAll('.ts-dots button'),
-                    cap = frame.querySelector('.ts-slide__cap'), cur = 0, timer = null,
-                    still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                function show(n) {
-                    slides[cur].classList.remove('is-on'); slides[cur].setAttribute('aria-hidden', 'true'); dots[cur].setAttribute('aria-current', 'false');
-                    cur = (n + slides.length) % slides.length;
-                    slides[cur].classList.add('is-on'); slides[cur].removeAttribute('aria-hidden'); dots[cur].setAttribute('aria-current', 'true');
-                    if (cap) { cap.textContent = slides[cur].getAttribute('data-cap'); }
-                }
-                function play() { if (!still && !timer) { timer = setInterval(function () { show(cur + 1); }, 4500); } }
-                function stop() { clearInterval(timer); timer = null; }
-                dots.forEach(function (d, i) { d.addEventListener('click', function () { stop(); show(i); play(); }); });
-                frame.parentNode.addEventListener('mouseenter', stop);
-                frame.parentNode.addEventListener('mouseleave', play);
-                document.addEventListener('visibilitychange', function () { document.hidden ? stop() : play(); });
-                play();
-            })();
-            </script>
-            <?php endif; ?>
             <div class="ts-photo__badge"><?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
             <div class="ts-photo__tag">
                 <div class="ts-photo__dot"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5z"/><path d="M6 12v5c3 2.5 9 2.5 12 0v-5"/></svg></div>

@@ -9,6 +9,7 @@ function Get($w, $p) { $out = Join-Path $tmp "pub.html"; $c = curl.exe -s -o $ou
 function Tok($w, $p) { return [regex]::Match((Get $w $p).body, 'name="_csrf_token" value="([^"]+)"').Groups[1].Value }
 function Login($w, $id) { Remove-Item (Jar $w) -ea 0; $t = Tok $w '/login'; $null = curl.exe -s -o NUL -b (Jar $w) -c (Jar $w) --data-urlencode "_csrf_token=$t" --data-urlencode "user_id=$id" --data-urlencode "password=Demo@12345" "$base/login"; return ((Get $w '/dashboard').url -notlike '*/login') }
 function Inquire($w, $fields) { $t = Tok $w '/'; $a = @('-s','-o','NUL','-b',(Jar $w),'-c',(Jar $w),'--data-urlencode',"_csrf_token=$t"); foreach ($k in $fields.Keys) { $a += '--data-urlencode'; $a += "$k=$($fields[$k])" }; $a += "$base/inquiry"; $null = & curl.exe @a }
+Get-ChildItem $tmp -Filter "pub_*.jar" -ErrorAction SilentlyContinue | Remove-Item -Force   # fresh sessions: the form allows 3 inquiries per visitor per hour
 $start = [int](Q "SELECT COALESCE(MAX(id),0) FROM contact_messages;")
 
 $r = Get 'v' '/'; Check "home page loads with public branches only" ($r.code -eq 200 -and $r.body -match 'Galle Science Centre' -and $r.body -notmatch 'Sepala')
