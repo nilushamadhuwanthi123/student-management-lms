@@ -1198,4 +1198,11 @@ return [
     'Note for the student (optional)' => 'සිසුවාට සටහනක් (අත්‍යවශ්‍ය නොවේ)',
     'e.g. Let\'s aim for this before the term test' => 'උදා: වාර විභාගයට පෙර මෙය ඉලක්ක කරමු',
     'Set goal' => 'ඉලක්කය සකසන්න',
+    // Today's learning: pending homework on My Home
+    'Homework due' => 'ගෙදර වැඩ හිමිව ඇත',
+    'Homework to hand in' => 'භාර දිය යුතු ගෙදර වැඩ',
+    'Nothing waiting to be handed in.' => 'භාර දීමට කිසිවක් ඉතිරි නැත.',
+    'was due {when}' => '{when} ට භාර දීමට තිබුණි',
+    'due {when}' => '{when} ට භාර දිය යුතුයි',
+    'Hand in' => 'භාර දෙන්න',
 ];
