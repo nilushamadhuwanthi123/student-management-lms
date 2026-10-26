@@ -292,6 +292,14 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     // A student's own home page, instead of the institute dashboard.
     $router->get('/my/home', ['App\Controllers\StudentHomeController', 'index']);
 
+    // A student's own learning goals (up to 3), and the goals a teacher
+    // sets for a student from the student's page. Progress is always
+    // measured live from the records.
+    $router->post('/my/goals', ['App\Controllers\GoalController', 'storeMine']);
+    $router->post('/my/goals/{id}/remove', ['App\Controllers\GoalController', 'removeMine']);
+    $router->post('/students/{id}/goals', ['App\Controllers\GoalController', 'storeForStudent']);
+    $router->post('/students/{id}/goals/{goalId}/remove', ['App\Controllers\GoalController', 'removeForStudent']);
+
     // A student's profile, receipts and downloadable reports. Whose
     // record it is comes from the session; a parent gets their own
     // child's receipts and reports. No route here takes a student id.

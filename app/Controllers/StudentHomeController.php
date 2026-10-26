@@ -8,6 +8,8 @@ use App\Middleware\AuthMiddleware;
 use App\Services\AssistantService;
 use App\Services\CalendarService;
 use App\Services\ContentAccessService;
+use App\Services\GoalService;
+use App\Services\MotivationService;
 use App\Services\ProgressService;
 use DateTimeImmutable;
 use PDO;
@@ -66,6 +68,8 @@ class StudentHomeController extends BaseController
             static fn (array $i): bool => $i['type'] === 'quiz_closes' || $i['type'] === 'event'
         )), 0, 6);
 
+        $progress = (new ProgressService())->forStudent($studentId);
+
         $this->view('student/home', [
             'pageTitle'     => 'My Home',
             'activePage'    => 'my-home',
@@ -79,9 +83,13 @@ class StudentHomeController extends BaseController
             'lockedQuizzes' => $this->lockedQuizCount($studentId, $nowString, $openMap),
             'materials'     => $this->newMaterials($studentId, $openMap),
             'marks'         => $this->recentMarks($studentId),
-            'progress'      => (new ProgressService())->forStudent($studentId),
+            'progress'      => $progress,
             'notifications' => $this->notifications($studentId),
             'suggestions'   => AssistantService::SUGGESTIONS,
+            // Level, achievements, learning streak and goals -- all from
+            // this student's own record, never compared with anyone else's.
+            'motivation'    => (new MotivationService())->forStudent($studentId, $progress),
+            'goalOptions'   => (new GoalService())->formOptions($studentId),
         ]);
     }
 

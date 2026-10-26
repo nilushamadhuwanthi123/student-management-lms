@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Middleware\AuthMiddleware;
 use App\Services\BranchScope;
+use App\Services\GoalService;
 
 class StudentController extends BaseController
 {
@@ -352,11 +353,25 @@ class StudentController extends BaseController
             }
         }
 
+        // ─── Learning goals (migration 015) ───────────────────────────
+        $studentGoals = [];
+        $goalOptions = ['classes' => [], 'topics' => []];
+        try {
+            $goalService = new GoalService();
+            $studentGoals = $goalService->forStudent((int) $id);
+            $goalOptions = $goalService->formOptions((int) $id);
+        } catch (\Throwable $e) {
+            error_log('Goals fetch failed: ' . $e->getMessage());
+        }
+
         $this->view('students/show', [
             'pageTitle'          => $student['full_name'] . ' - Student 360',
             'activePage'         => 'students',
             'activeSubPage'      => 'list',
             'student'            => $student,
+            'studentGoals'       => $studentGoals,
+            'goalOptions'        => $goalOptions,
+            'goalStudentId'      => (int) $id,
             'parents'            => $parents,
             'enrollments'        => $student['enrollments'] ?? [],
             'payments'           => $payments,

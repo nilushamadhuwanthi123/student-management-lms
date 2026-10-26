@@ -228,7 +228,13 @@ $partName = ['marks' => 'quiz marks', 'attendance' => 'attendance', 'material' =
         <div class="pg-card">
             <h3>&#127942; <?= te('Achievements') ?> <span class="text-muted" style="font-weight:500; font-size:.85rem;">&middot; <?= te('{a} of {b} unlocked', ['a' => $earnedCount, 'b' => count($badges)]) ?></span></h3>
             <div class="pg-badges">
-                <?php foreach ($badges as $b): [$title, $earnedText, $howText] = $badgeText[$b['key']]; ?>
+                <?php foreach ($badges as $b):
+                    // The original 8 badges' wording still comes from $badgeText
+                    // (same text, kept so nothing changes for them); the newer
+                    // achievements supply their own title/done/how, built the
+                    // same way, from AchievementService.
+                    [$title, $earnedText, $howText] = $badgeText[$b['key']] ?? [$b['title'], $b['done'], $b['how']];
+                ?>
                     <div class="pg-badge <?= $b['earned'] ? 'pg-badge--earned' : 'pg-badge--locked' ?>"
                          title="<?= $b['earned'] ? te($earnedText) : te('How to unlock: {how}', ['how' => t($howText)]) ?>">
                         <?php if ($b['earned']): ?><span class="pg-badge__tick">&#10003;</span><?php endif; ?>
