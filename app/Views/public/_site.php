@@ -186,6 +186,20 @@ if (!function_exists('site_days')) {
 .ts-dots button[aria-current="true"] { width: 26px; background: #FACC15; }
 .ts-photo { margin-bottom: 1.6rem; }
 @media (prefers-reduced-motion: reduce) { .ts-slide { transition: none; transform: none; } }
+
+/* ---- hero background slideshow (photos behind the blue) -------------- */
+.ts-hero-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.ts-hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, rgba(8,32,88,.93) 0%, rgba(14,52,150,.80) 40%, rgba(19,64,181,.52) 70%, rgba(29,78,216,.42) 100%); }
+.ts-bg-slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.12); filter: saturate(1.1); transition: opacity 1.6s ease, transform 7s ease-out; }
+.ts-bg-slide.is-on { opacity: 1; transform: scale(1.02); }
+.ts-hero > .ts-float, .ts-hero > .ts-wave { z-index: 1; }
+.ts-hero > .ts-wrap { z-index: 2; }
+.ts-hero::after { z-index: 1; }
+.ts-bg-dots { position: absolute; left: 0; right: 0; bottom: 82px; z-index: 2; display: flex; justify-content: center; gap: .45rem; }
+.ts-bg-dots button { width: 9px; height: 9px; border-radius: 999px; border: 0; padding: 0; cursor: pointer; background: rgba(255,255,255,.5); transition: width .3s ease, background .3s ease; }
+.ts-bg-dots button[aria-current="true"] { width: 26px; background: #FACC15; }
+@media (max-width: 880px) { .ts-hero-bg::after { background: linear-gradient(180deg, rgba(8,32,88,.9) 0%, rgba(14,52,150,.84) 60%, rgba(19,64,181,.8) 100%); } .ts-bg-dots { bottom: 76px; } }
+@media (prefers-reduced-motion: reduce) { .ts-bg-slide { transition: none; transform: none; } }
 </style>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
