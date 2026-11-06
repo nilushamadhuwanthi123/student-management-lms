@@ -211,6 +211,12 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/users/{id}/reset-code', ['App\Controllers\AccountController', 'userCode']);
     $router->post('/students/{id}/reset-code', ['App\Controllers\AccountController', 'studentCode']);
     $router->post('/parents/{id}/reset-code', ['App\Controllers\AccountController', 'parentCode']);
+    $router->get('/students/{studentId}/parents/create', ['App\Controllers\ParentController', 'create']);
+    $router->post('/students/{studentId}/parents/create', ['App\Controllers\ParentController', 'store']);
+    $router->get('/parents/{id}/edit', ['App\Controllers\ParentController', 'edit']);
+    $router->post('/parents/{id}/edit', ['App\Controllers\ParentController', 'update']);
+    $router->post('/parents/{id}/deactivate', ['App\Controllers\ParentController', 'deactivate']);
+    $router->post('/parents/{id}/reactivate', ['App\Controllers\ParentController', 'reactivate']);
     $router->get('/accounts/issued', ['App\Controllers\AccountController', 'issued']);
     $router->get('/users/{id}/id-card', ['App\Controllers\UserController', 'idCard']);
 
