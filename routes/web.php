@@ -393,6 +393,23 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/my/notices', ['App\Controllers\NoticeController', 'mine']);
     $router->get('/family/notices', ['App\Controllers\NoticeController', 'mine']);
 
+    // Seminars & Events -- same branch/grade/class targeting idea as
+    // notices, plus an event date, a venue/online link and optional
+    // registration.
+    $router->get('/seminars', ['App\Controllers\SeminarController', 'index']);
+    $router->get('/seminars/create', ['App\Controllers\SeminarController', 'create']);
+    $router->post('/seminars/create', ['App\Controllers\SeminarController', 'store']);
+    $router->get('/seminars/{id}', ['App\Controllers\SeminarController', 'show']);
+    $router->post('/seminars/{id}/publish', ['App\Controllers\SeminarController', 'publish']);
+    $router->post('/seminars/{id}/cancel', ['App\Controllers\SeminarController', 'cancel']);
+    $router->post('/seminars/{id}/delete', ['App\Controllers\SeminarController', 'delete']);
+    $router->get('/my/seminars', ['App\Controllers\SeminarController', 'mine']);
+    $router->post('/my/seminars/{id}/register', ['App\Controllers\SeminarController', 'register']);
+    $router->post('/my/seminars/{id}/unregister', ['App\Controllers\SeminarController', 'unregister']);
+    $router->get('/family/seminars', ['App\Controllers\SeminarController', 'mine']);
+    $router->post('/family/seminars/{id}/register', ['App\Controllers\SeminarController', 'register']);
+    $router->post('/family/seminars/{id}/unregister', ['App\Controllers\SeminarController', 'unregister']);
+
     // ---- Inquiries from the public website ----
     $router->get('/inquiries', ['App\Controllers\InquiryController', 'index']);
     $router->post('/inquiries/{id}/status', ['App\Controllers\InquiryController', 'status']);

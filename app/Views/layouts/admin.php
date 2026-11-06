@@ -387,6 +387,12 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <?= te('Notices') ?>
             </a>
             <?php endif; ?>
+<?php if ($featureOn('seminars')): ?>
+            <a href="<?= BASE_URL ?>/my/seminars" class="sidebar__link <?= $isHere('/my/seminars') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="15" r="2"/></svg>
+                <?= te('Seminars & Events') ?>
+            </a>
+            <?php endif; ?>
 <?php if ($featureOn('help')): ?>
             <a href="<?= BASE_URL ?>/my/help" class="sidebar__link <?= $isHere('/my/help') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -438,6 +444,12 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <?= te('Notices') ?>
             </a>
             <?php endif; ?>
+<?php if ($featureOn('seminars')): ?>
+            <a href="<?= BASE_URL ?>/family/seminars" class="sidebar__link <?= $isHere('/family/seminars') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="15" r="2"/></svg>
+                <?= te('Seminars & Events') ?>
+            </a>
+            <?php endif; ?>
 <?php if ($featureOn('help')): ?>
             <a href="<?= BASE_URL ?>/family/help" class="sidebar__link <?= $isHere('/family/help') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -475,6 +487,12 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             <a href="<?= BASE_URL ?>/notices" class="sidebar__link <?= $activePage === 'notices' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 <?= te('Notice board') ?>
+            </a>
+            <?php endif; ?>
+<?php if ($featureOn('seminars')): ?>
+            <a href="<?= BASE_URL ?>/seminars" class="sidebar__link <?= $activePage === 'seminars' ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="15" r="2"/></svg>
+                <?= te('Seminars & Events') ?>
             </a>
             <?php endif; ?>
 <?php if ($featureOn('help')): ?>

@@ -267,6 +267,50 @@ class AnnouncementService
     }
 
     /**
+     * Families of every student in one grade -- across every branch
+     * when $instituteId is null, or narrowed to just that branch when
+     * it is set. The one targeting shape familiesFor() cannot already
+     * do, so seminars get their own small method instead of overloading
+     * that one's parameters.
+     *
+     * @return array<int, array{type: string, id: int}>
+     */
+    public function familiesForGrade(string $grade, ?int $instituteId, bool $students = true, bool $parents = true): array
+    {
+        $where = 'c.grade = :grade';
+        $param = [':grade' => $grade];
+        if ($instituteId !== null) {
+            $where .= ' AND c.institute_id = :iid';
+            $param[':iid'] = $instituteId;
+        }
+
+        $stmt = $this->db->prepare(
+            "SELECT DISTINCT s.id
+               FROM enrollments e
+               JOIN classes c ON c.id = e.class_id AND c.status = 'active'
+               JOIN students s ON s.id = e.student_id AND s.status = 'active'
+              WHERE e.enrollment_status = 'active' AND {$where}"
+        );
+        $stmt->execute($param);
+        $studentIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+
+        $out = [];
+        if ($students) {
+            foreach ($studentIds as $id) {
+                $out[] = ['type' => 'student', 'id' => $id];
+            }
+        }
+        if ($parents && $studentIds !== []) {
+            $in = implode(',', $studentIds);
+            foreach ($this->db->query("SELECT id FROM parents WHERE status = 'active' AND student_id IN ($in)")->fetchAll(PDO::FETCH_COLUMN) as $pid) {
+                $out[] = ['type' => 'parent', 'id' => (int) $pid];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
      * One in-app notification to each recipient. Callers guard against
      * sending twice (each notice/assignment records when it announced).
      *
