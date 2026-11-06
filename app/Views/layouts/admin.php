@@ -19,6 +19,17 @@ $userName      = htmlspecialchars($currentUser['full_name'] ?? $currentUser['nam
 $userRole      = $currentUser['role'] ?? 'student';
 $userRoleLabel = ucwords(str_replace('_', ' ', $userRole));
 $notificationCount = $notificationCount ?? 0;
+
+// Role-based feature show/hide (nav only -- never an auth check; see
+// Setting::FEATURE_MODULES). A missing table or any error here just
+// means "show everything", same fail-open convention already used for
+// the dashboard widgets below.
+try {
+    $featureVisibility = (new Setting())->getFeatureVisibility($userRole);
+} catch (\Throwable $e) {
+    $featureVisibility = [];
+}
+$featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
 ?>
 <!DOCTYPE html>
 <html lang="<?= lang_current() ?>" data-theme="light">
@@ -334,38 +345,54 @@ $notificationCount = $notificationCount ?? 0;
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
                 <?= te('My Marks') ?>
             </a>
+<?php if ($featureOn('my_progress')): ?>
             <a href="<?= BASE_URL ?>/my/progress" class="sidebar__link <?= $isHere('/my/progress') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                 <?= te('My Progress') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('calendar')): ?>
             <a href="<?= BASE_URL ?>/my/calendar" class="sidebar__link <?= $isHere('/my/calendar') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <?= te('My Calendar') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('homework')): ?>
             <a href="<?= BASE_URL ?>/my/assignments" class="sidebar__link <?= $isHere('/my/assignments') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
                 <?= te('My assignments') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('recordings')): ?>
             <a href="<?= BASE_URL ?>/my/recordings" class="sidebar__link <?= $isHere('/my/recordings') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
                 <?= te('Class Recordings') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('past_papers')): ?>
             <a href="<?= BASE_URL ?>/my/papers" class="sidebar__link <?= $isHere('/my/papers') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/><path d="M8 7h8M8 11h6"/></svg>
                 <?= te('Past papers') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('payments')): ?>
             <a href="<?= BASE_URL ?>/my/payments" class="sidebar__link <?= $isHere('/my/payments') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                 <?= te('Payments') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('notices')): ?>
             <a href="<?= BASE_URL ?>/my/notices" class="sidebar__link <?= $isHere('/my/notices') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 <?= te('Notices') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('help')): ?>
             <a href="<?= BASE_URL ?>/my/help" class="sidebar__link <?= $isHere('/my/help') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 <?= te('Help & questions') ?>
             </a>
+            <?php endif; ?>
             <?php endif; ?>
 
             <?php if ($userType === 'parent'): ?>
@@ -381,30 +408,42 @@ $notificationCount = $notificationCount ?? 0;
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
                 <?= te('Fees') ?>
             </a>
+<?php if ($featureOn('calendar')): ?>
             <a href="<?= BASE_URL ?>/family/calendar" class="sidebar__link <?= $isHere('/family/calendar') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <?= te('Calendar') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('homework')): ?>
             <a href="<?= BASE_URL ?>/family/assignments" class="sidebar__link <?= $isHere('/family/assignments') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
                 <?= te('Assignments') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('recordings')): ?>
             <a href="<?= BASE_URL ?>/family/recordings" class="sidebar__link <?= $isHere('/family/recordings') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
                 <?= te('Class Recordings') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('payments')): ?>
             <a href="<?= BASE_URL ?>/family/payments" class="sidebar__link <?= $isHere('/family/payments') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                 <?= te('Pay a fee') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('notices')): ?>
             <a href="<?= BASE_URL ?>/family/notices" class="sidebar__link <?= $isHere('/family/notices') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 <?= te('Notices') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('help')): ?>
             <a href="<?= BASE_URL ?>/family/help" class="sidebar__link <?= $isHere('/family/help') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 <?= te('Help & questions') ?>
             </a>
+            <?php endif; ?>
             <?php endif; ?>
 
             <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>
@@ -418,24 +457,32 @@ $notificationCount = $notificationCount ?? 0;
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                 <?= te('Topics') ?>
             </a>
+<?php if ($featureOn('past_papers')): ?>
             <a href="<?= BASE_URL ?>/past-papers" class="sidebar__link <?= $isHere('/past-papers') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/><path d="M8 7h8M8 11h6"/></svg>
                 <?= te('Past papers') ?>
             </a>
             <?php endif; ?>
+            <?php endif; ?>
             <!-- Classes, quizzes and tests on one grid -->
+<?php if ($featureOn('calendar')): ?>
             <a href="<?= BASE_URL ?>/calendar" class="sidebar__link <?= $activePage === 'calendar' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 Calendar
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('notices')): ?>
             <a href="<?= BASE_URL ?>/notices" class="sidebar__link <?= $activePage === 'notices' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 <?= te('Notice board') ?>
             </a>
+            <?php endif; ?>
+<?php if ($featureOn('help')): ?>
             <a href="<?= BASE_URL ?>/help" class="sidebar__link <?= $activePage === 'help' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 <?= te('Help desk') ?>
             </a>
+            <?php endif; ?>
             <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff'])): ?>
             <a href="<?= BASE_URL ?>/inquiries" class="sidebar__link <?= $activePage === 'inquiries' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
@@ -597,6 +644,7 @@ $notificationCount = $notificationCount ?? 0;
                     <a href="<?= BASE_URL ?>/settings/deactivation" class="sidebar__sub-link <?= $activeSubPage === 'deactivation' ? 'active' : '' ?>">Deactivation</a>
                     <a href="<?= BASE_URL ?>/settings/deletion" class="sidebar__sub-link <?= $activeSubPage === 'deletion' ? 'active' : '' ?>">Deletion</a>
                     <a href="<?= BASE_URL ?>/settings/dashboard-items" class="sidebar__sub-link <?= $activeSubPage === 'dashboard-items' ? 'active' : '' ?>">Dashboard Items</a>
+                    <a href="<?= BASE_URL ?>/settings/feature-visibility" class="sidebar__sub-link <?= $activeSubPage === 'feature-visibility' ? 'active' : '' ?>">Feature Visibility</a>
                 </div>
             </div>
             <?php endif; ?>
@@ -737,7 +785,9 @@ $notificationCount = $notificationCount ?? 0;
     </script>
 
     <?php if (in_array(session_get('user_type'), ['student', 'parent'], true)): ?>
+        <?php if ($featureOn('ai_assistant')): ?>
         <?php require BASE_PATH . '/app/Views/partials/assistant.php'; ?>
+        <?php endif; ?>
     <?php endif; ?>
 </body>
 </html>
