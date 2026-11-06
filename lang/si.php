@@ -1231,4 +1231,18 @@ return [
     'Draft — only you can see it' => 'කටුව — එය දැකිය හැක්කේ ඔබට පමණි',
     'Published — the class can see it' => 'පළ කර ඇත — පන්තියට එය දැකිය හැක',
     'e.g. Chemical Reactions - full lesson recording' => 'උදා: රසායනික ප්‍රතික්‍රියා - සම්පූර්ණ පාඩම් පටිගත කිරීම',
+
+    // Goals and recordings follow-ups (pre-existing gaps, filled in now)
+    'Goals you set appear on the student\'s home page with live progress. The student can also set up to three of their own.' => 'ඔබ සකසන ඉලක්ක සිසුවාගේ මුල් පිටුවේ සජීවී ප්‍රගතියක් සමඟ පෙනේ. සිසුවාට තමාගේම ඉලක්ක තුනක් දක්වා සැකසිය හැක.',
+    'No Goals Yet' => 'තවම ඉලක්ක නැත',
+    'Target' => 'ඉලක්කය',
+    'Published.' => 'ප්‍රකාශයට පත් කළා.',
+    'Recording added to {class}.' => '{class} සඳහා පටිගත කිරීම එකතු කළා.',
+    'Taken down. Students can no longer see it.' => 'ඉවත් කළා. සිසුන්ට මින් පසු එය දැකිය නොහැක.',
+    'That recording is not available.' => 'එම පටිගත කිරීම ලබා ගත නොහැක.',
+    'That recording link does not look like a web address.' => 'එම පටිගත කිරීමේ සබැඳිය වෙබ් ලිපිනයක් ලෙස නොපෙනේ.',
+    'That thumbnail link does not look like a web address.' => 'එම සිඟිති රූපයේ සබැඳිය වෙබ් ලිපිනයක් ලෙස නොපෙනේ.',
+    'Watch that lesson\'s recording again before the next quiz.' => 'ඊළඟ ප්‍රශ්නාවලියට පෙර එම පාඩමේ පටිගත කිරීම නැවත බලන්න.',
+    '{n} students and guardians have been notified.' => 'සිසුන් සහ භාරකරුවන් {n} දෙනෙකුට දැනුම් දී ඇත.',
+
 ];

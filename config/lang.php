@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 /**
- * English / Sinhala for the student and parent side of the site.
+ * English / Sinhala for every role on the site -- students, parents,
+ * teachers and office staff alike.
  *
- * The children this is for are taught in Sinhala as well as English, and
- * so are many of their parents, so every page they use can be read in
- * either. Staff pages stay in English.
+ * Sinhala is the default (the client's own instruction); anyone can still
+ * switch to English with the EN/Si toggle on any page, and the choice is
+ * remembered on that device.
  *
  * How it works, deliberately simple:
  *
@@ -34,8 +35,8 @@ function lang_current(): string
     static $current = null;
 
     if ($current === null) {
-        $choice = $_COOKIE[LANG_COOKIE] ?? 'en';
-        $current = in_array($choice, LANG_SUPPORTED, true) ? $choice : 'en';
+        $choice = $_COOKIE[LANG_COOKIE] ?? 'si';
+        $current = in_array($choice, LANG_SUPPORTED, true) ? $choice : 'si';
     }
 
     return $current;

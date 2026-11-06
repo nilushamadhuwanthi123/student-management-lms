@@ -65,7 +65,7 @@ $pages = @(
 foreach ($x in $pages) { $r = Page $s $x.p; $ok = Good $r; Check $x.n $ok; if (-not $ok) { $fails++ } }
 
 $r = Page $s "/my/classes"
-Check "student sidebar shows My Classes" ($r.Content -match 'My Classes')
+Check "student sidebar shows My Classes" ($r.Content -match 'My Classes' -or $r.Content -match 'මගේ පන්ති')
 Check "student sidebar hides Teaching" ($r.Content -notmatch '>\s*Teaching\s*<')
 
 ""
@@ -79,7 +79,7 @@ foreach ($x in @(
 )) { $r = Page $p $x.p; $ok = Good $r; Check $x.n $ok; if (-not $ok) { $fails++ } }
 
 $r = Page $p "/family"
-Check "parent sidebar shows My Child" ($r.Content -match 'My Child')
+Check "parent sidebar shows My Child" ($r.Content -match 'My Child' -or $r.Content -match 'මගේ දරුවා')
 
 ""
 "=== SUPER ADMIN ==="
