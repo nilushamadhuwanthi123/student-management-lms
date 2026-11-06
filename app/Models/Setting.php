@@ -50,6 +50,7 @@ class Setting extends BaseModel
         'my_progress'  => 'My Progress (motivation)',
         'calendar'     => 'Calendar',
         'ai_assistant' => 'AI Assistant (floating helper)',
+        'seminars'     => 'Seminars & Events',
     ];
 
     // Roles each feature is even meaningful for; the admin UI only
@@ -64,6 +65,7 @@ class Setting extends BaseModel
         'my_progress'  => ['student'],
         'calendar'     => ['student', 'parent', 'teacher'],
         'ai_assistant' => ['student', 'parent', 'teacher', 'staff', 'coordinator', 'admin'],
+        'seminars'     => ['student', 'parent', 'teacher', 'staff', 'coordinator', 'admin'],
     ];
 
     // ─── Key-value access ────────────────────────────────────────────

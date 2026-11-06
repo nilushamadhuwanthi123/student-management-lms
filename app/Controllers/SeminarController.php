@@ -1,0 +1,349 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Middleware\AuthMiddleware;
+use App\Services\BranchScope;
+use App\Services\SeminarService;
+use PDO;
+
+/**
+ * Seminar / event management -- same posting-rights shape as the
+ * notice board, with one addition: admin/coordinator/super_admin (not
+ * teacher) may also target a whole grade, optionally across every
+ * branch at once.
+ *
+ *   super admin        every branch, one branch, one grade (any/own branch), or one class
+ *   admin/coordinator   their own branch, their own branch's grade, or a class in it
+ *   teacher             the classes they teach
+ *   staff                read only
+ */
+class SeminarController extends BaseController
+{
+    private const POSTERS = ['super_admin', 'admin', 'coordinator', 'teacher'];
+
+    public function index(): void
+    {
+        $this->requireStaffUser();
+        $scope = BranchScope::current();
+
+        $sql = "SELECT s.*, c.class_name, i.name AS institute_name, u.full_name AS author,
+                       (SELECT COUNT(*) FROM seminar_registrations r WHERE r.seminar_id = s.id) AS registered_count
+                  FROM seminars s
+                  LEFT JOIN classes c ON c.id = s.class_id
+                  LEFT JOIN institutes i ON i.id = s.institute_id
+                  LEFT JOIN users u ON u.id = s.created_by
+                 WHERE s.status <> 'archived'";
+        if (!$scope->isGlobal()) {
+            $sql .= " AND (s.target_scope = 'all' AND s.for_staff = 1
+                       OR (s.target_scope = 'branch'" . $scope->instituteSql('s.institute_id') . ")
+                       OR (s.target_scope = 'grade'" . $scope->instituteSql('s.institute_id') . ")
+                       OR (s.target_scope = 'class'" . $scope->classSql('s.class_id') . "))";
+        }
+        $rows = $this->db->query($sql . " ORDER BY s.event_date DESC, s.id DESC LIMIT 200")->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($rows as &$r) {
+            $r['can_manage'] = $this->mayPost(
+                $r['target_scope'],
+                $r['institute_id'] !== null ? (int) $r['institute_id'] : null,
+                $r['grade'],
+                $r['class_id'] !== null ? (int) $r['class_id'] : null
+            );
+        }
+
+        $this->view('seminars/index', [
+            'pageTitle'  => 'Seminars & Events',
+            'activePage' => 'seminars',
+            'seminars'   => $rows,
+            'canPost'    => in_array((string) session_get('user_role'), self::POSTERS, true),
+        ]);
+    }
+
+    public function create(): void
+    {
+        $this->requirePoster();
+        $scope = BranchScope::current();
+
+        $this->view('seminars/create', [
+            'pageTitle'  => 'New seminar',
+            'activePage' => 'seminars',
+            'institutes' => $scope->isTeacher() ? [] : $this->db->query(
+                "SELECT id, name FROM institutes WHERE status = 'active'" . $scope->instituteSql('id') . " ORDER BY name"
+            )->fetchAll(PDO::FETCH_ASSOC),
+            'classes'    => $this->db->query(
+                "SELECT id, class_name FROM classes WHERE status = 'active'" . $scope->classSql('id') . " ORDER BY grade, class_name"
+            )->fetchAll(PDO::FETCH_ASSOC),
+            'grades'     => $this->db->query("SELECT DISTINCT grade FROM classes WHERE grade IS NOT NULL ORDER BY grade")->fetchAll(PDO::FETCH_COLUMN),
+            'isGlobal'   => $scope->isGlobal(),
+            'canTargetGrade' => !$scope->isTeacher(),
+        ]);
+    }
+
+    public function store(): void
+    {
+        $this->requirePoster();
+        verifyCsrfToken();
+
+        $title = trim((string) ($_POST['title'] ?? ''));
+        $description = trim((string) ($_POST['description'] ?? ''));
+        $eventDate = trim((string) ($_POST['event_date'] ?? ''));
+        $eventTs = $eventDate !== '' ? strtotime($eventDate) : false;
+        $startTime = trim((string) ($_POST['start_time'] ?? ''));
+        $endTime = trim((string) ($_POST['end_time'] ?? ''));
+        $venue = trim((string) ($_POST['venue'] ?? ''));
+        $onlineUrl = trim((string) ($_POST['online_url'] ?? ''));
+        $coverImageUrl = trim((string) ($_POST['cover_image_url'] ?? ''));
+
+        $scope = in_array($_POST['target_scope'] ?? '', ['all', 'branch', 'grade', 'class'], true) ? $_POST['target_scope'] : 'class';
+        $instituteId = in_array($scope, ['branch', 'grade'], true) && (int) ($_POST['institute_id'] ?? 0) > 0
+            ? (int) $_POST['institute_id'] : null;
+        $grade = $scope === 'grade' ? trim((string) ($_POST['grade'] ?? '')) : null;
+        $classId = $scope === 'class' ? (int) ($_POST['class_id'] ?? 0) : null;
+
+        $registrationRequired = isset($_POST['registration_required']) ? 1 : 0;
+        $publish = ($_POST['action'] ?? '') === 'publish';
+
+        $students = isset($_POST['for_students']) ? 1 : 0;
+        $parents = isset($_POST['for_parents']) ? 1 : 0;
+        $staff = isset($_POST['for_staff']) ? 1 : 0;
+
+        if ($title === '' || $eventTs === false || ($students + $parents + $staff) === 0
+            || ($scope === 'grade' && $grade === '')
+            || ($onlineUrl !== '' && filter_var($onlineUrl, FILTER_VALIDATE_URL) === false)
+            || ($coverImageUrl !== '' && filter_var($coverImageUrl, FILTER_VALIDATE_URL) === false)) {
+            $this->flash('error', t('Write a title, pick a date, choose who should see it, and check any links.'));
+            $this->redirect('/seminars/create');
+        }
+        if (!$this->mayPost($scope, $instituteId, $grade, $classId)) {
+            http_response_code(403);
+            $this->flash('error', t('You can only post seminars for your own branch, grade or classes.'));
+            $this->redirect('/seminars/create');
+        }
+
+        $this->db->prepare(
+            "INSERT INTO seminars (title, description, cover_image_url, event_date, start_time, end_time, venue, online_url,
+                                    target_scope, institute_id, grade, class_id, for_students, for_parents, for_staff,
+                                    registration_required, status, created_by)
+             VALUES (:t, :d, :img, :ed, :st, :et, :v, :ou, :ts, :i, :g, :c, :fs, :fp, :ff, :rr, :status, :by)"
+        )->execute([
+            ':t' => mb_substr($title, 0, 255), ':d' => $description !== '' ? $description : null,
+            ':img' => $coverImageUrl !== '' ? $coverImageUrl : null,
+            ':ed' => date('Y-m-d', $eventTs), ':st' => $startTime !== '' ? $startTime : null, ':et' => $endTime !== '' ? $endTime : null,
+            ':v' => $venue !== '' ? $venue : null, ':ou' => $onlineUrl !== '' ? $onlineUrl : null,
+            ':ts' => $scope, ':i' => $instituteId, ':g' => $grade, ':c' => $classId,
+            ':fs' => $students, ':fp' => $parents, ':ff' => $staff,
+            ':rr' => $registrationRequired,
+            ':status' => $publish ? 'published' : 'draft',
+            ':by' => (int) session_get('user_id'),
+        ]);
+        $id = (int) $this->db->lastInsertId();
+        $this->audit('create_seminar', $id, ['target_scope' => $scope, 'published' => $publish]);
+
+        $sent = $publish ? (new SeminarService($this->db))->announce($id) : 0;
+        $this->flash('success', $publish ? t('Published. {n} people notified.', ['n' => $sent]) : t('Saved as a draft.'));
+        $this->redirect('/seminars');
+    }
+
+    public function show(string $id): void
+    {
+        $this->requireStaffUser();
+        $seminar = $this->findSeminar((int) $id);
+        if ($seminar === null) {
+            $this->flash('error', t('That seminar is not available.'));
+            $this->redirect('/seminars');
+        }
+
+        $this->view('seminars/show', [
+            'pageTitle'  => $seminar['title'],
+            'activePage' => 'seminars',
+            'seminar'    => $seminar,
+            'registeredCount' => (new SeminarService($this->db))->registrationCount((int) $seminar['id']),
+            'canManage'  => $this->mayPost(
+                $seminar['target_scope'],
+                $seminar['institute_id'] !== null ? (int) $seminar['institute_id'] : null,
+                $seminar['grade'],
+                $seminar['class_id'] !== null ? (int) $seminar['class_id'] : null
+            ),
+        ]);
+    }
+
+    public function publish(string $id): void
+    {
+        $seminar = $this->managedSeminar((int) $id);
+        verifyCsrfToken();
+        $this->db->prepare("UPDATE seminars SET status = 'published' WHERE id = :id")->execute([':id' => (int) $seminar['id']]);
+        $sent = (new SeminarService($this->db))->announce((int) $seminar['id']);
+        $this->audit('publish_seminar', (int) $seminar['id']);
+        $this->flash('success', t('Published. {n} people notified.', ['n' => $sent]));
+        $this->redirect('/seminars');
+    }
+
+    public function cancel(string $id): void
+    {
+        $seminar = $this->managedSeminar((int) $id);
+        verifyCsrfToken();
+        $this->db->prepare("UPDATE seminars SET status = 'cancelled' WHERE id = :id")->execute([':id' => (int) $seminar['id']]);
+        $this->audit('cancel_seminar', (int) $seminar['id']);
+        $this->flash('success', t('Seminar cancelled.'));
+        $this->redirect('/seminars');
+    }
+
+    /** A draft that was never published/notified can be removed outright; anything else is cancelled instead. */
+    public function delete(string $id): void
+    {
+        $seminar = $this->managedSeminar((int) $id);
+        verifyCsrfToken();
+        if ($seminar['status'] !== 'draft') {
+            $this->flash('error', t('Only a draft can be deleted; publish it then cancel it instead.'));
+            $this->redirect('/seminars');
+        }
+        $this->db->prepare("DELETE FROM seminars WHERE id = :id AND status = 'draft'")->execute([':id' => (int) $seminar['id']]);
+        $this->audit('delete_seminar', (int) $seminar['id']);
+        $this->flash('success', t('Draft deleted.'));
+        $this->redirect('/seminars');
+    }
+
+    // Students, parents and staff registering ---------------------------
+
+    public function mine(): void
+    {
+        AuthMiddleware::requireAuth();
+        $type = (string) session_get('user_type');
+        if ($type === 'student') {
+            $studentId = (int) session_get('user_id');
+        } elseif ($type === 'parent') {
+            $s = $this->db->prepare("SELECT student_id FROM parents WHERE id = :p");
+            $s->execute([':p' => (int) session_get('user_id')]);
+            $studentId = (int) $s->fetchColumn();
+        } else {
+            $this->redirect('/seminars');
+        }
+
+        $service = new SeminarService($this->db);
+        $rows = $service->forStudent($studentId, $type === 'parent');
+        foreach ($rows as &$r) {
+            $r['is_registered'] = $service->isRegistered((int) $r['id'], $type, (int) session_get('user_id'));
+        }
+
+        $this->view('seminars/mine', [
+            'pageTitle'  => 'Seminars & Events',
+            'activePage' => $type === 'parent' ? 'family-seminars' : 'my-seminars',
+            'seminars'   => $rows,
+            'isParent'   => $type === 'parent',
+        ]);
+    }
+
+    public function register(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        verifyCsrfToken();
+        $type = (string) session_get('user_type');
+        $userId = (int) session_get('user_id');
+        $back = $type === 'parent' ? '/family/seminars' : '/my/seminars';
+
+        if (!in_array($type, ['student', 'parent'], true)) {
+            $this->redirect($back);
+        }
+
+        $seminar = $this->findSeminar((int) $id);
+        if ($seminar === null || $seminar['status'] !== 'published' || (int) $seminar['registration_required'] !== 1) {
+            $this->flash('error', t('Registration is not open for that seminar.'));
+            $this->redirect($back);
+        }
+
+        (new SeminarService($this->db))->register((int) $id, $type, $userId);
+        $this->flash('success', t('You are registered.'));
+        $this->redirect($back);
+    }
+
+    public function unregister(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        verifyCsrfToken();
+        $type = (string) session_get('user_type');
+        $userId = (int) session_get('user_id');
+        $back = $type === 'parent' ? '/family/seminars' : '/my/seminars';
+
+        if (in_array($type, ['student', 'parent'], true)) {
+            (new SeminarService($this->db))->unregister((int) $id, $type, $userId);
+            $this->flash('success', t('Registration cancelled.'));
+        }
+        $this->redirect($back);
+    }
+
+    // Helpers -----------------------------------------------------------
+
+    private function requireStaffUser(): void
+    {
+        AuthMiddleware::requireAuth();
+        if (session_get('user_type') !== 'user') {
+            $this->redirect('/dashboard');
+        }
+    }
+
+    private function requirePoster(): void
+    {
+        $this->requireStaffUser();
+        if (!in_array((string) session_get('user_role'), self::POSTERS, true)) {
+            $this->flash('error', 'You do not have permission to access this page.');
+            $this->redirect('/seminars');
+        }
+    }
+
+    private function mayPost(string $scope, ?int $instituteId, ?string $grade, ?int $classId): bool
+    {
+        $branchScope = BranchScope::current();
+        if (!in_array((string) session_get('user_role'), self::POSTERS, true)) {
+            return false;
+        }
+
+        return match ($scope) {
+            'all'    => $branchScope->isGlobal(),
+            'branch' => !$branchScope->isTeacher() && $instituteId !== null && $branchScope->allowsInstitute($instituteId),
+            'grade'  => !$branchScope->isTeacher() && $grade !== null && $grade !== ''
+                            && ($instituteId === null ? $branchScope->isGlobal() : $branchScope->allowsInstitute($instituteId)),
+            'class'  => $classId !== null && $branchScope->allowsClass($classId),
+            default  => false,
+        };
+    }
+
+    /** @return array<string, mixed>|null */
+    private function findSeminar(int $id): ?array
+    {
+        $s = $this->db->prepare("SELECT * FROM seminars WHERE id = :id AND status <> 'archived'");
+        $s->execute([':id' => $id]);
+        $row = $s->fetch(PDO::FETCH_ASSOC);
+
+        return $row === false ? null : $row;
+    }
+
+    /** @return array<string, mixed> */
+    private function managedSeminar(int $id): array
+    {
+        $this->requirePoster();
+        $n = $this->findSeminar($id);
+        if ($n === null || !$this->mayPost(
+            $n['target_scope'],
+            $n['institute_id'] !== null ? (int) $n['institute_id'] : null,
+            $n['grade'],
+            $n['class_id'] !== null ? (int) $n['class_id'] : null
+        )) {
+            http_response_code(403);
+            $this->flash('error', t('That seminar is not yours to change.'));
+            $this->redirect('/seminars');
+        }
+
+        return $n;
+    }
+
+    private function audit(string $action, int $id, array $details = []): void
+    {
+        try {
+            (new \AuditLog())->log((int) session_get('user_id'), 'user', (string) session_get('user_role'), $action, 'seminar', $id, $details);
+        } catch (\Throwable $e) {
+            error_log('Seminar audit failed: ' . $e->getMessage());
+        }
+    }
+}
