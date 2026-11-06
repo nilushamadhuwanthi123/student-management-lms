@@ -83,7 +83,7 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
                     <?= te('Science classes for') ?> <span class="ts-name"><?= te('Grades 6 to 11') ?></span>
                 <?php endif; ?>
             </h1>
-            <p><?= te('Weekly Science classes for Grades {r}, following the school syllabus. Every lesson is backed by recordings, notes, quizzes and homework in the portal, and parents can follow their child\'s progress.', ['r' => \App\Services\PublicSite::gradeRange()]) ?></p>
+            <p><?= $e(\App\Services\PublicSite::content('home_hero_text', ['r' => \App\Services\PublicSite::gradeRange()])) ?></p>
             <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
                 <a href="#inquiry" class="ts-btn ts-btn--yellow"><?= te('Join a class') ?></a>
                 <a href="<?= BASE_URL ?>/timetable" class="ts-btn ts-btn--ghost"><?= te('See the timetable') ?></a>

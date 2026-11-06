@@ -42,10 +42,18 @@ require __DIR__ . '/_site.php';
         <div>
             <div class="ts-kicker"><?= te('In class') ?></div>
             <h2><?= te('Learning together, every week') ?></h2>
-            <p class="ts-lead"><?= te('Each grade has its own weekly class at the branch. Students who miss a lesson can catch up from the recording and notes, and the class register lets parents know about an absence.') ?></p>
+            <p class="ts-lead"><?= $e(PublicSite::content('about_in_class_text')) ?></p>
             <a href="<?= BASE_URL ?>/timetable" class="ts-btn ts-btn--blue"><?= te('See the timetable') ?></a>
         </div>
         <div class="ts-teacher__img"><img src="<?= BASE_URL ?>/assets/img/teacher-classroom.jpg" width="2048" height="1365" loading="lazy" alt="<?= $e(t('{name} with her students in class', ['name' => $teacher])) ?>"></div>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php $extraText = PublicSite::content('about_extra_text'); if (trim($extraText) !== ''): ?>
+<section class="ts-section">
+    <div class="ts-wrap ts-reveal" style="max-width:70ch;">
+        <p class="ts-lead"><?= $e($extraText) ?></p>
     </div>
 </section>
 <?php endif; ?>

@@ -121,4 +121,22 @@ final class PublicSite
     {
         return 'tel:' . preg_replace('/[^\d+]/', '', (string) $phone);
     }
+
+    /**
+     * One of the small, fixed set of editable text blocks (see
+     * SiteContentService) -- the only free text anywhere on this page,
+     * everything else above stays strictly from real records.
+     */
+    public static function content(string $key, array $params = []): string
+    {
+        $cacheKey = 'content:' . $key . ':' . md5(serialize($params));
+        if (!array_key_exists($cacheKey, self::$cache)) {
+            try {
+                self::$cache[$cacheKey] = (new SiteContentService())->get($key, $params);
+            } catch (\Throwable $e) {
+                self::$cache[$cacheKey] = SiteContentService::FIELDS[$key]['default'] ?? '';
+            }
+        }
+        return self::$cache[$cacheKey];
+    }
 }
