@@ -34,6 +34,38 @@ class Setting extends BaseModel
         'this_month_income'          => 'This Month Income (Institutes & Teachers)',
     ];
 
+    // All role-based, hide-only-from-the-nav feature toggles. Each key
+    // maps to one logical feature; the controller/view side decides which
+    // nav links it gates. The "Settings" area itself is deliberately NOT
+    // in this list -- it is shown to super_admin only, by role, in the
+    // layout, so there is no row here that could ever hide the page that
+    // manages this table and lock Super Admin out.
+    public const FEATURE_MODULES = [
+        'homework'     => 'Homework / Assignments',
+        'recordings'   => 'Class Recordings',
+        'past_papers'  => 'Past Papers',
+        'payments'     => 'Payments (student/parent view)',
+        'notices'      => 'Notices',
+        'help'         => 'Help & Questions',
+        'my_progress'  => 'My Progress (motivation)',
+        'calendar'     => 'Calendar',
+        'ai_assistant' => 'AI Assistant (floating helper)',
+    ];
+
+    // Roles each feature is even meaningful for; the admin UI only
+    // offers a toggle for a role where it would do something.
+    public const FEATURE_ROLES = [
+        'homework'     => ['student', 'parent'],
+        'recordings'   => ['student', 'parent'],
+        'past_papers'  => ['student', 'teacher', 'staff', 'coordinator', 'admin'],
+        'payments'     => ['student', 'parent'],
+        'notices'      => ['student', 'parent', 'teacher', 'staff', 'coordinator', 'admin'],
+        'help'         => ['student', 'parent', 'teacher', 'staff', 'coordinator', 'admin'],
+        'my_progress'  => ['student'],
+        'calendar'     => ['student', 'parent', 'teacher'],
+        'ai_assistant' => ['student', 'parent', 'teacher', 'staff', 'coordinator', 'admin'],
+    ];
+
     // ─── Key-value access ────────────────────────────────────────────
 
     public function get(string $key, mixed $default = null): mixed
@@ -116,6 +148,79 @@ class Setting extends BaseModel
             ':opt2' => $opt,
             ':ub2' => $updatedBy,
         ]);
+        return true;
+    }
+
+    // ─── Feature visibility (nav-only, never an auth check) ─────────
+
+    /**
+     * Visibility map for every feature that applies to this role.
+     * Default (no row yet) is visible, same convention as the
+     * dashboard widgets above.
+     *
+     * @return array<string, bool>
+     */
+    public function getFeatureVisibility(string $role): array
+    {
+        $result = [];
+        foreach (self::FEATURE_MODULES as $key => $label) {
+            if (in_array($role, self::FEATURE_ROLES[$key] ?? [], true)) {
+                $result[$key] = true;
+            }
+        }
+
+        try {
+            $sql = "SELECT feature_key, is_visible FROM feature_settings WHERE role = :role";
+            $rows = $this->query($sql, [':role' => $role])->fetchAll();
+            foreach ($rows as $row) {
+                if (array_key_exists($row['feature_key'], $result)) {
+                    $result[$row['feature_key']] = (bool) $row['is_visible'];
+                }
+            }
+        } catch (\Throwable $e) {
+            // Table might not exist yet; fall back to "everything visible".
+        }
+
+        return $result;
+    }
+
+    /**
+     * Whether one feature's nav link should render for this role.
+     * This is UI only -- it must never be used as an authorization
+     * check. The route behind it keeps its own independent guard.
+     */
+    public function isFeatureVisible(string $role, string $featureKey): bool
+    {
+        if (!in_array($role, self::FEATURE_ROLES[$featureKey] ?? [], true)) {
+            return true; // not a feature this role has an opinion on -- never hide by accident
+        }
+        $map = $this->getFeatureVisibility($role);
+        return $map[$featureKey] ?? true;
+    }
+
+    public function updateFeatureVisibility(
+        string $role,
+        string $featureKey,
+        bool $isVisible,
+        int $updatedBy = 1
+    ): bool {
+        if (!array_key_exists($featureKey, self::FEATURE_MODULES)) {
+            return false;
+        }
+
+        $sql = "INSERT INTO feature_settings (role, feature_key, is_visible, updated_by, updated_at)
+                VALUES (:role, :fk, :vis, :ub, NOW())
+                ON DUPLICATE KEY UPDATE is_visible = :vis2, updated_by = :ub2, updated_at = NOW()";
+
+        $this->query($sql, [
+            ':role' => $role,
+            ':fk'   => $featureKey,
+            ':vis'  => $isVisible ? 1 : 0,
+            ':ub'   => $updatedBy,
+            ':vis2' => $isVisible ? 1 : 0,
+            ':ub2'  => $updatedBy,
+        ]);
+
         return true;
     }
 

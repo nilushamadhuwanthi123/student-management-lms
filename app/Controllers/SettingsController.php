@@ -245,6 +245,79 @@ class SettingsController extends BaseController
     }
 
     /**
+     * Role-based feature visibility (nav-only) configuration page.
+     */
+    public function featureVisibility(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+
+        $roles = array_values(array_filter(
+            AuthMiddleware::ALL_ROLES,
+            static fn (string $r): bool => $r !== AuthMiddleware::ROLE_SUPER_ADMIN
+        ));
+        $visibilityByRole = [];
+
+        try {
+            foreach ($roles as $role) {
+                $visibilityByRole[$role] = $this->settingModel->getFeatureVisibility($role);
+            }
+        } catch (\Throwable $e) {
+            error_log('Feature visibility load error: ' . $e->getMessage());
+        }
+
+        $this->view('settings/feature-visibility', [
+            'pageTitle'        => 'Feature Visibility',
+            'roles'            => $roles,
+            'visibilityByRole' => $visibilityByRole,
+        ]);
+    }
+
+    /**
+     * Update role-based feature visibility (POST).
+     */
+    public function updateFeatureVisibility(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+        verifyCsrfToken();
+
+        $userId = (int) session_get('user_id');
+        $role = (string) ($_POST['active_role'] ?? '');
+        $features = $_POST['features'] ?? [];
+
+        if ($role === '' || $role === AuthMiddleware::ROLE_SUPER_ADMIN || !in_array($role, AuthMiddleware::ALL_ROLES, true)) {
+            $this->flash('error', 'Choose a valid role.');
+            $this->redirect(BASE_URL . '/settings/feature-visibility');
+        }
+
+        try {
+            foreach (\Setting::FEATURE_MODULES as $key => $label) {
+                if (!in_array($role, \Setting::FEATURE_ROLES[$key] ?? [], true)) {
+                    continue; // not offered for this role; nothing was submitted for it either
+                }
+                $isVisible = !empty($features[$key]);
+                $this->settingModel->updateFeatureVisibility($role, (string) $key, $isVisible, $userId);
+            }
+            $this->logAudit('update_feature_visibility', 'settings', 0, ['role' => $role]);
+            $this->flash('success', 'Feature visibility updated for ' . $role . '.');
+        } catch (\Throwable $e) {
+            error_log('Feature visibility update error: ' . $e->getMessage());
+            $this->flash('error', 'Failed to update feature visibility.');
+        }
+
+        $this->redirect(BASE_URL . '/settings/feature-visibility?role=' . urlencode($role));
+    }
+
+    /**
      * Log an audit entry.
      */
     private function logAudit(string $action, string $entityType, int $entityId, array $details = []): void
