@@ -257,6 +257,13 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/classes/{classId}/materials/create', ['App\Controllers\MaterialController', 'create']);
     $router->post('/classes/{classId}/materials/create', ['App\Controllers\MaterialController', 'store']);
     $router->post('/classes/{classId}/materials/{id}/archive', ['App\Controllers\MaterialController', 'archive']);
+    // Class Recordings -- kept separate from materials/homework/quizzes,
+    // per the client's explicit request; same class/branch/grade targeting.
+    $router->get('/classes/{classId}/recordings', ['App\Controllers\RecordingController', 'index']);
+    $router->get('/classes/{classId}/recordings/create', ['App\Controllers\RecordingController', 'create']);
+    $router->post('/classes/{classId}/recordings/create', ['App\Controllers\RecordingController', 'store']);
+    $router->post('/classes/{classId}/recordings/{id}/publish', ['App\Controllers\RecordingController', 'publish']);
+    $router->post('/classes/{classId}/recordings/{id}/archive', ['App\Controllers\RecordingController', 'archive']);
 
     // Downloads are flat: the file is served by its own id, and the
     // controller re-derives the class so the link cannot assert one.
@@ -327,6 +334,8 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/my/classes', ['App\Controllers\StudentPortalController', 'classes']);
     $router->get('/my/classes/{classId}', ['App\Controllers\StudentPortalController', 'classDetail']);
     $router->get('/my/materials/{id}/open', ['App\Controllers\StudentPortalController', 'openMaterial']);
+    $router->get('/my/recordings', ['App\Controllers\RecordingController', 'mine']);
+    $router->get('/my/recordings/{id}/open', ['App\Controllers\RecordingController', 'open']);
     $router->get('/my/marks', ['App\Controllers\StudentPortalController', 'marks']);
     $router->get('/my/progress', ['App\Controllers\StudentPortalController', 'progress']);
     $router->get('/my/quizzes/{quizId}/sit', ['App\Controllers\StudentPortalController', 'sitQuiz']);
@@ -356,6 +365,7 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/my/assignments/{id}', ['App\Controllers\AssignmentController', 'sit']);
     $router->post('/my/assignments/{id}/submit', ['App\Controllers\AssignmentController', 'submit']);
     $router->get('/family/assignments', ['App\Controllers\AssignmentController', 'family']);
+    $router->get('/family/recordings', ['App\Controllers\RecordingController', 'family']);
 
     // ---- Questions to the teacher, and support requests ----
     $router->get('/my/help', ['App\Controllers\HelpController', 'mine']);

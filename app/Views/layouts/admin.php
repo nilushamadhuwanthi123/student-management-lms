@@ -346,6 +346,10 @@ $notificationCount = $notificationCount ?? 0;
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
                 <?= te('My assignments') ?>
             </a>
+            <a href="<?= BASE_URL ?>/my/recordings" class="sidebar__link <?= $isHere('/my/recordings') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                <?= te('Class Recordings') ?>
+            </a>
             <a href="<?= BASE_URL ?>/my/papers" class="sidebar__link <?= $isHere('/my/papers') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/><path d="M8 7h8M8 11h6"/></svg>
                 <?= te('Past papers') ?>
@@ -384,6 +388,10 @@ $notificationCount = $notificationCount ?? 0;
             <a href="<?= BASE_URL ?>/family/assignments" class="sidebar__link <?= $isHere('/family/assignments') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
                 <?= te('Assignments') ?>
+            </a>
+            <a href="<?= BASE_URL ?>/family/recordings" class="sidebar__link <?= $isHere('/family/recordings') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                <?= te('Class Recordings') ?>
             </a>
             <a href="<?= BASE_URL ?>/family/payments" class="sidebar__link <?= $isHere('/family/payments') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>

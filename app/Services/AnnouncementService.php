@@ -88,6 +88,51 @@ class AnnouncementService
     }
 
     /**
+     * Announce a newly published class recording to its class.
+     *
+     * Same one-shot rule as material and quizzes: only a published
+     * recording announces, and only once, however many times the
+     * publish action is retried.
+     *
+     * @return array{sent: int, skipped: int}
+     */
+    public function recordingPublished(int $recordingId): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT r.id, r.class_id, r.title, r.status, r.recording_date, r.created_at,
+                    c.class_name
+               FROM recordings r
+               JOIN classes c ON c.id = r.class_id
+              WHERE r.id = :id
+              LIMIT 1"
+        );
+        $stmt->execute([':id' => $recordingId]);
+        $recording = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($recording === false || $recording['status'] !== 'published') {
+            return ['sent' => 0, 'skipped' => 0];
+        }
+
+        $detail = !empty($recording['recording_date'])
+            ? date('j F', strtotime($recording['recording_date'])) . ' lesson'
+            : null;
+
+        $body = $recording['class_name'] . ' - ' . $recording['title']
+            . ($detail !== null ? " ({$detail})" : '')
+            . '. Open it from Class Recordings.';
+
+        return $this->reminders->notifyOnce(
+            'recording_published',
+            $recordingId,
+            (string) $recording['created_at'],
+            0,
+            $this->familiesOf((int) $recording['class_id']),
+            "New recording: {$recording['title']}",
+            $body
+        );
+    }
+
+    /**
      * Announce a newly published quiz to its class.
      *
      * The closing time is in the body because that is the part people
