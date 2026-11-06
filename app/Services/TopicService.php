@@ -13,7 +13,7 @@ use PDO;
 final class TopicService
 {
     /** Tables that may carry a topic_id, and nothing else. */
-    private const TAGGABLE = ['class_materials', 'quizzes', 'quiz_questions', 'assignments'];
+    private const TAGGABLE = ['class_materials', 'quizzes', 'quiz_questions', 'assignments', 'recordings'];
 
     private PDO $db;
 
