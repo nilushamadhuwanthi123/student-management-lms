@@ -8,6 +8,7 @@ use App\Middleware\AuthMiddleware;
 use App\Services\AnnouncementService;
 use App\Services\AttachmentService;
 use App\Services\BranchScope;
+use App\Services\MentionService;
 use PDO;
 
 /**
@@ -250,6 +251,7 @@ class HelpController extends BaseController
             $recipients = [['type' => 'parent', 'id' => (int) $thread['parent_id']]];
         }
         (new AnnouncementService())->notifyAll($recipients, 'Reply: ' . $thread['subject'], mb_substr($body, 0, 200), 'help_thread', (int) $thread['id']);
+        $this->notifyMentions($body, (int) $thread['id'], $thread['subject']);
 
         $this->flash('success', t('Reply sent.'));
         $this->redirect('/help/' . (int) $thread['id']);
@@ -505,6 +507,27 @@ class HelpController extends BaseController
             array_map(static fn (int $id): array => ['type' => 'user', 'id' => $id], array_unique($ids)),
             mb_substr($title, 0, 480),
             'Open the help desk to reply.',
+            'help_thread',
+            $threadId
+        );
+    }
+
+    /**
+     * "@Full Name" inside a staff reply notifies that colleague directly
+     * -- a personal nudge on top of the normal student/parent notice,
+     * through the same AnnouncementService::notifyAll() every module
+     * already uses. See MentionService for the scoping rule.
+     */
+    private function notifyMentions(string $body, int $threadId, string $subject): void
+    {
+        $ids = (new MentionService($this->db))->mentionedStaffIds($body, (int) session_get('user_id'));
+        if ($ids === []) {
+            return;
+        }
+        (new AnnouncementService())->notifyAll(
+            array_map(static fn (int $id): array => ['type' => 'user', 'id' => $id], $ids),
+            t('You were mentioned') . ': ' . $subject,
+            mb_substr($body, 0, 200),
             'help_thread',
             $threadId
         );

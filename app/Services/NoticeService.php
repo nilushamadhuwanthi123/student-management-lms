@@ -117,6 +117,32 @@ class NoticeService
             }
         }
 
-        return $ann->notifyAll($recipients, 'Notice: ' . $n['title'], mb_substr((string) $n['body'], 0, 300), 'notice', $noticeId);
+        $sent = $ann->notifyAll($recipients, 'Notice: ' . $n['title'], mb_substr((string) $n['body'], 0, 300), 'notice', $noticeId);
+        $this->notifyMentions($ann, (string) $n['body'], $noticeId, (string) $n['title'], (int) $n['created_by']);
+
+        return $sent;
+    }
+
+    /**
+     * "@Full Name" inside a notice's body notifies that colleague
+     * personally, on top of whoever the notice's audience already
+     * reaches -- through the same notifyAll() path, one extra row per
+     * mention. Runs exactly once, at the same moment the notice itself
+     * is actually announced (immediately, or later via announceDue() for
+     * a scheduled one) -- never for a draft, and never twice.
+     */
+    private function notifyMentions(AnnouncementService $ann, string $body, int $noticeId, string $title, int $authorUserId): void
+    {
+        $ids = (new MentionService($this->db))->mentionedStaffIds($body, $authorUserId);
+        if ($ids === []) {
+            return;
+        }
+        $ann->notifyAll(
+            array_map(static fn (int $id): array => ['type' => 'user', 'id' => $id], $ids),
+            t('You were mentioned') . ': ' . $title,
+            mb_substr($body, 0, 200),
+            'notice',
+            $noticeId
+        );
     }
 }

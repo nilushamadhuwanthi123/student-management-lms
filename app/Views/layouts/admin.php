@@ -18,7 +18,21 @@ $currentUser   = $currentUser ?? [];
 $userName      = htmlspecialchars($currentUser['full_name'] ?? $currentUser['name'] ?? 'User', ENT_QUOTES, 'UTF-8');
 $userRole      = $currentUser['role'] ?? 'student';
 $userRoleLabel = ucwords(str_replace('_', ' ', $userRole));
-$notificationCount = $notificationCount ?? 0;
+// The real unread count for the bell/Messages badge, read from the same
+// `notifications` table every module already writes to via
+// AnnouncementService::notifyAll() (homework, notices, seminars, help
+// desk, fee approvals, and now @mentions). No controller has to compute
+// this itself -- it was previously hard-coded to 0 here, which is why
+// the bell never showed anything. Fail-open to 0, same convention as
+// the feature-visibility block below.
+if (!isset($notificationCount)) {
+    try {
+        $notifRecipientType = in_array($userRole, ['student', 'parent'], true) ? $userRole : 'user';
+        $notificationCount = (new Notification())->getUnreadCount((int) session_get('user_id'), $notifRecipientType);
+    } catch (\Throwable $e) {
+        $notificationCount = 0;
+    }
+}
 
 // Role-based feature show/hide (nav only -- never an auth check; see
 // Setting::FEATURE_MODULES). A missing table or any error here just
