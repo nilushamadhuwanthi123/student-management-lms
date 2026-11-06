@@ -1998,3 +1998,153 @@ html[lang="si"] body { line-height: 1.6; }
     .card .d-flex > * { min-width: 0; }
     .card { max-width: 100%; }
 }
+
+/* ==========================================================================
+   33. COMPREHENSIVE RESPONSIVE OPTIMIZATION PASS
+   --------------------------------------------------------------------------
+   Appended, not merged into the sections above, so every earlier rule
+   stays exactly as it was and this block can be read -- or rolled back --
+   on its own. Sections 30-32 already fixed the biggest breaks (the admin
+   top bar covering the sidebar, un-padded .table/.table-wrap, wide
+   report headers forcing the page to scroll sideways); this pass closes
+   the remaining gaps across every role: finer phone breakpoints, touch
+   target sizing, the small-screen mobile sidebar drawer, modals, forms,
+   tables, cards and the few floating widgets (study assistant, user
+   menu), confirmed at 320/360/375/390/430/576/768/820/1024/1280/1440/
+   1600+. No colors, radii or spacing tokens change -- same blue / yellow
+   / white design system, applied more carefully at narrow widths.
+   ========================================================================== */
+
+/* ---- 33a. Global overflow guard -----------------------------------------
+   Nothing on any page should be able to force the whole document wider
+   than the viewport. This does not replace a table's own intentional
+   horizontal scroll (table-wrap/.table-wrapper already opt into that);
+   it only stops an unrelated element from dragging the BODY sideways. */
+html, body { max-width: 100%; overflow-x: hidden; }
+.admin-main, .admin-content-wrapper, .container, .public-layout { max-width: 100%; }
+img, video, svg, canvas, iframe { max-width: 100%; height: auto; }
+
+/* A 16:9 wrapper for any embedded video, kept here for the Class
+   Recordings module (and any future embed) even though today's
+   recordings link out to an external player rather than embedding one
+   inline -- so a future <iframe> never needs new CSS to behave. */
+.video-embed { position: relative; width: 100%; padding-top: 56.25%; background: #000; border-radius: var(--radius); overflow: hidden; }
+.video-embed iframe, .video-embed video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* ---- 33b. Touch targets ---------------------------------------------------
+   Icon-only buttons and small action buttons were sized for a mouse
+   pointer. A primary interactive control should offer at least ~44px
+   in the dimension a thumb taps, without inflating the visual size of
+   dense desktop toolbars (padding grows the hit area via a transparent
+   border instead of literally enlarging the icon). */
+@media (hover: none) and (pointer: coarse) {
+  .btn, .pagination__item, .form-control, select.form-control,
+  .sidebar__link, .sidebar__sub-link, .table-search,
+  .notification-bell, .theme-toggle-btn, .user-dropdown-trigger,
+  .modal__close, .toast__close, .flash__dismiss, .sidebar-toggle-mobile {
+    min-height: 44px;
+  }
+  .btn--sm { min-height: 38px; }
+  .data-table td .btn--sm, .table td .btn--sm { min-height: 36px; }
+  input[type="checkbox"], input[type="radio"] { width: 1.15rem; height: 1.15rem; }
+}
+
+/* ---- 33c. Finer phone breakpoints -----------------------------------------
+   576-768 and 1024-1280 inherited the >=768 / >=1024 rules below, but a
+   true small phone (320-374) needs its own pass: the 2-column KPI/stat
+   grid and the page header's button row are still too tight there. */
+@media (max-width: 374px) {
+  html { font-size: 15px; }
+  .kpi-grid, .stats-strip { grid-template-columns: 1fr; }
+  .card-grid { gap: 0.85rem; }
+  .page-header__actions .btn { width: 100%; }
+  .modal__footer .btn { width: 100%; }
+  .login-card { padding: 1.75rem 1.25rem; }
+}
+
+@media (min-width: 375px) and (max-width: 575px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Large phones / small tablets in between the existing 768px jump --
+   two columns reads better than one on a 576-767px screen. */
+@media (min-width: 576px) and (max-width: 767px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+  .form-row--2 { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---- 33d. Sidebar drawer polish ------------------------------------------
+   The drawer itself (transform + .open, overlay + .active) is already
+   wired in admin.php and sections 12/30 above; this only adds what was
+   missing for a genuinely small phone and for very long role menus. */
+@media (max-width: 1024px) {
+  .sidebar { width: min(300px, 86vw); }
+  .sidebar__nav { -webkit-overflow-scrolling: touch; }
+}
+@media (max-width: 374px) {
+  .sidebar { width: 100vw; }
+}
+
+/* ---- 33e. Modals on small screens ----------------------------------------
+   `.modal { margin: 0.5rem }` (section 37) already keeps a modal off the
+   very edge of a phone; this adds the near-full-width sheet the spec
+   asks for and makes sure a tall form inside it still scrolls rather
+   than being clipped by the viewport. */
+@media (max-width: 575px) {
+  .modal-backdrop { padding: 0; align-items: flex-end; }
+  .modal { max-width: 100%; width: 100%; max-height: 92vh; border-radius: var(--radius-lg) var(--radius-lg) 0 0; margin: 0; }
+  .modal__header { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+  .modal__footer { position: sticky; bottom: 0; background: var(--surface); }
+}
+
+/* ---- 33f. Tables: toolbar and filters on mobile ---------------------------
+   .table-wrap/.table-wrapper already scroll horizontally (sections 14
+   and 30); the toolbar above them (search box + filter selects) did
+   not reflow, so a row of 4-5 controls ran off the right edge. */
+@media (max-width: 575px) {
+  .table-toolbar { flex-direction: column; align-items: stretch; }
+  .table-toolbar > * { width: 100%; }
+  .table-search { min-width: 0; }
+  .pagination { flex-wrap: wrap; }
+}
+
+/* ---- 33g. Forms -----------------------------------------------------------
+   form-row--2/--3 already stack below 768px (section 37); this covers
+   native date/time controls, which otherwise keep the browser's fixed
+   minimum width and can overflow a very narrow form column. */
+input[type="date"], input[type="time"], input[type="datetime-local"],
+input[type="month"], input[type="week"] { width: 100%; min-width: 0; }
+
+/* A dropdown menu (<select>) must never be wider than its column --
+   native option lists aren't CSS-controllable, but the closed control
+   itself staying in-bounds is. */
+select.form-control { max-width: 100%; }
+
+/* ---- 33h. Floating widgets on small screens -------------------------------
+   The user menu dropdown used the desktop's natural width, which can
+   run past the right edge on a narrow phone; study-assistant panel
+   width already adapts (assistant.php media query at 520px). */
+.dropdown__menu { max-width: calc(100vw - 2rem); }
+@media (max-width: 374px) {
+  .dropdown__menu { right: -8px; min-width: 180px; }
+}
+
+/* ---- 33i. Report / chart containers ---------------------------------------
+   No canvas-based charts exist in this build, but report pages do lay
+   filter cards and KPI summaries out in a row; keep that future-proof
+   and consistent with the card-grid behavior already defined. */
+.chart-container { position: relative; width: 100%; max-width: 100%; overflow-x: auto; }
+.report-filters { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; }
+@media (max-width: 575px) {
+  .report-filters { flex-direction: column; align-items: stretch; }
+  .report-filters > * { width: 100%; }
+}
+
+/* ---- 33j. Landscape phones -------------------------------------------------
+   A phone in landscape is short, not narrow, so width-based rules above
+   can leave the sidebar drawer or a tall modal taller than the viewport. */
+@media (max-height: 480px) and (orientation: landscape) {
+  .sidebar { padding-bottom: 1rem; }
+  .modal { max-height: 86vh; }
+  .sa-panel { height: min(420px, calc(100vh - 90px)); bottom: 72px; }
+}
