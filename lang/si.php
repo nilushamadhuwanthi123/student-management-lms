@@ -1284,5 +1284,6 @@ return [
     'e.g. Main Hall, Pannipitiya branch' => 'උදා: ප්‍රධාන ශාලාව, පන්නිපිටිය ශාඛාව',
     'every branch' => 'සියලු ශාඛා',
     '{n} registered' => '{n} දෙනෙක් ලියාපදිංචි වී ඇත',
+    'You were mentioned' => 'ඔබව සඳහන් කර ඇත',
 
 ];
