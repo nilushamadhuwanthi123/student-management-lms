@@ -677,6 +677,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                     <a href="<?= BASE_URL ?>/settings/deletion" class="sidebar__sub-link <?= $activeSubPage === 'deletion' ? 'active' : '' ?>">Deletion</a>
                     <a href="<?= BASE_URL ?>/settings/dashboard-items" class="sidebar__sub-link <?= $activeSubPage === 'dashboard-items' ? 'active' : '' ?>">Dashboard Items</a>
                     <a href="<?= BASE_URL ?>/settings/feature-visibility" class="sidebar__sub-link <?= $activeSubPage === 'feature-visibility' ? 'active' : '' ?>">Feature Visibility</a>
+                    <a href="<?= BASE_URL ?>/settings/site-content" class="sidebar__sub-link <?= $activeSubPage === 'site-content' ? 'active' : '' ?>">Website Content</a>
                 </div>
             </div>
             <?php endif; ?>

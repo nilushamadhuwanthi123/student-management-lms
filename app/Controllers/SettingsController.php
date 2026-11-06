@@ -320,6 +320,56 @@ class SettingsController extends BaseController
     /**
      * Log an audit entry.
      */
+    /**
+     * The small, fixed set of editable public-website text blocks (see
+     * SiteContentService / migration 019).
+     */
+    public function siteContent(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+
+        $service = new \App\Services\SiteContentService($this->db);
+        $this->view('settings/site-content', [
+            'pageTitle'    => 'Website Content',
+            'activeSubPage' => 'site-content',
+            'fields'       => \App\Services\SiteContentService::FIELDS,
+            'values'       => $service->getAll(),
+        ]);
+    }
+
+    public function updateSiteContent(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+        verifyCsrfToken();
+
+        $service = new \App\Services\SiteContentService($this->db);
+        $userId = (int) session_get('user_id');
+
+        try {
+            foreach (array_keys(\App\Services\SiteContentService::FIELDS) as $key) {
+                $value = trim((string) ($_POST['fields'][$key] ?? ''));
+                $service->set($key, mb_substr($value, 0, 2000), $userId);
+            }
+            $this->logAudit('update_site_content', 'site_content', 0);
+            $this->flash('success', 'Website content updated.');
+        } catch (\Throwable $e) {
+            error_log('Site content update error: ' . $e->getMessage());
+            $this->flash('error', 'Failed to update website content.');
+        }
+
+        $this->redirect(BASE_URL . '/settings/site-content');
+    }
+
     private function logAudit(string $action, string $entityType, int $entityId, array $details = []): void
     {
         try {

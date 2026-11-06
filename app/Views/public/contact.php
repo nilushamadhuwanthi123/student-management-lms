@@ -13,7 +13,7 @@ require __DIR__ . '/_site.php';
     <div class="ts-wrap">
         <div class="ts-eyebrow"><?= te('Contact') ?></div>
         <h1><?= te('Talk to the branch office') ?></h1>
-        <p><?= te('Call the branch nearest to you, or send a message and the office will reply.') ?></p>
+        <p><?= $e(PublicSite::content('contact_intro_text')) ?></p>
     </div>
 </section>
 

@@ -498,6 +498,8 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/settings/dashboard-items', ['App\Controllers\SettingsController', 'updateDashboardItems']);
     $router->get('/settings/feature-visibility', ['App\Controllers\SettingsController', 'featureVisibility']);
     $router->post('/settings/feature-visibility', ['App\Controllers\SettingsController', 'updateFeatureVisibility']);
+    $router->get('/settings/site-content', ['App\Controllers\SettingsController', 'siteContent']);
+    $router->post('/settings/site-content', ['App\Controllers\SettingsController', 'updateSiteContent']);
 
     // API-style endpoints
     $router->get('/api/classes-by-institute/{id}', ['App\Controllers\ApiController', 'classesByInstitute']);
