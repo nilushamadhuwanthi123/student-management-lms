@@ -225,10 +225,28 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                                 <button type="submit" class="btn btn--ghost btn--sm" style="font-size:.75rem;"><?= te('Parent reset code') ?></button>
                             </form>
                         <?php endif; ?>
+                        <?php if (in_array(session_get('user_role'), ['super_admin', 'admin', 'coordinator'], true)): ?>
+                            <a href="<?= BASE_URL ?>/parents/<?= (int) $parent['id'] ?>/edit" class="btn btn--ghost btn--sm" style="font-size:.75rem; margin-left:.5rem;"><?= te('Edit') ?></a>
+                            <?php if (($parent['status'] ?? 'active') === 'active'): ?>
+                                <form method="POST" action="<?= BASE_URL ?>/parents/<?= (int) $parent['id'] ?>/deactivate" style="display:inline; margin-left:.5rem;"
+                                      onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('Deactivate this guardian\'s login? The student and any other guardian are not affected.')), ENT_QUOTES, 'UTF-8') ?>);">
+                                    <?= csrfField() ?>
+                                    <button type="submit" class="btn btn--ghost btn--sm" style="font-size:.75rem;"><?= te('Deactivate') ?></button>
+                                </form>
+                            <?php else: ?>
+                                <form method="POST" action="<?= BASE_URL ?>/parents/<?= (int) $parent['id'] ?>/reactivate" style="display:inline; margin-left:.5rem;">
+                                    <?= csrfField() ?>
+                                    <button type="submit" class="btn btn--ghost btn--sm" style="font-size:.75rem;"><?= te('Reactivate') ?></button>
+                                </form>
+                            <?php endif; ?>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
                 <p class="text-sm text-muted" style="margin:0;">No parent/guardian linked.</p>
+            <?php endif; ?>
+            <?php if (in_array(session_get('user_role'), ['super_admin', 'admin', 'coordinator'], true)): ?>
+                <a href="<?= BASE_URL ?>/students/<?= (int) ($student['id'] ?? 0) ?>/parents/create" class="btn btn--ghost btn--sm" style="font-size:.75rem; margin-top:.5rem;">+ <?= te('Add another guardian') ?></a>
             <?php endif; ?>
         </div>
     </div>
