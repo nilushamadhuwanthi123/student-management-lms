@@ -25,7 +25,7 @@ $studentId = Q "SELECT id FROM students WHERE student_id_display='$studentDispla
 $ss = Login $studentDisplay 'Demo@12345'
 
 $r = Invoke-WebRequest -Uri "$base/my/classes" -WebSession $ss -UseBasicParsing
-Check "my classes renders" ($r.StatusCode -eq 200 -and (Get-Title $r.Content) -like "My classes*")
+Check "my classes renders" ($r.StatusCode -eq 200 -and ((Get-Title $r.Content) -like "My classes*" -or (Get-Title $r.Content) -like "මගේ පන්ති*"))
 Check "my classes clean of PHP errors" ($r.Content -notmatch 'Fatal error|Warning:|Undefined')
 Check "gate state shown on cards" ($r.Content -match 'Open|Locked')
 
