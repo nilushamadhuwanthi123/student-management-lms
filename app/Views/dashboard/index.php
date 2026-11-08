@@ -15,19 +15,19 @@ $canSee = function(string $key) use ($widgetVisibility): bool {
 
 // Greeting
 $hour = (int) (new DateTime('now', new DateTimeZone('Asia/Colombo')))->format('G');
-$greeting = ($hour < 12) ? 'Good Morning' : (($hour < 17) ? 'Good Afternoon' : 'Good Evening');
+$greeting = ($hour < 12) ? 'Good morning' : (($hour < 17) ? 'Good afternoon' : 'Good evening');
 $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', ENT_QUOTES, 'UTF-8');
 ?>
 
 <div class="mb-3 d-flex justify-between items-center flex-wrap gap-1">
     <div>
-        <h1 style="margin-bottom:0.25rem;"><?= $greeting ?>, <?= $displayName ?></h1>
-        <p class="text-muted" style="margin-bottom:0;">Student Management & LMS Operational Control Center</p>
+        <h1 style="margin-bottom:0.25rem;"><?= te($greeting) ?>, <?= $displayName ?></h1>
+        <p class="text-muted" style="margin-bottom:0;"><?= te('Student Management & LMS Operational Control Center') ?></p>
     </div>
     <?php if ($role === 'super_admin'): ?>
     <div>
         <a href="<?= BASE_URL ?>/settings/dashboard-items" class="btn btn--ghost btn--sm">
-            &#9881; Configure Dashboard Items
+            &#9881; <?= te('Configure Dashboard Items') ?>
         </a>
     </div>
     <?php endif; ?>
@@ -59,25 +59,25 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     <!-- 1. Active Students -->
     <?php if ($canSee('active_students')): ?>
     <div class="kpi-card animate-slide-up delay-1" style="border-left: 4px solid var(--primary);">
-        <span class="kpi-card__label">Active Students</span>
+        <span class="kpi-card__label"><?= te('Active Students') ?></span>
         <span class="kpi-card__value"><?= number_format((int) ($widgets['active_students'] ?? 0)) ?></span>
-        <span class="text-xs text-muted">Currently Enrolled</span>
+        <span class="text-xs text-muted"><?= te('Currently Enrolled') ?></span>
     </div>
     <?php endif; ?>
 
     <!-- 2. Today's Attendance -->
     <?php if ($canSee('today_attendance')): ?>
     <div class="kpi-card animate-slide-up delay-2" style="border-left: 4px solid #2563EB;">
-        <span class="kpi-card__label">Today's Attendance</span>
+        <span class="kpi-card__label"><?= te("Today's Attendance") ?></span>
         <span class="kpi-card__value" style="color:#1D4ED8;"><?= number_format((int) ($widgets['today_attendance'] ?? 0)) ?></span>
-        <span class="text-xs text-muted"><?= date('l, d M Y') ?></span>
+        <span class="text-xs text-muted"><?= lang_date('l, d M Y') ?></span>
     </div>
     <?php endif; ?>
 
     <!-- 3. Active Classes -->
     <?php if ($canSee('active_classes')): ?>
     <div class="kpi-card animate-slide-up delay-3" style="border-left: 4px solid #2563EB;">
-        <span class="kpi-card__label">Active Classes</span>
+        <span class="kpi-card__label"><?= te('Active Classes') ?></span>
         <span class="kpi-card__value"><?= number_format((int) ($widgets['active_classes'] ?? 0)) ?></span>
         <span class="text-xs text-muted"><?= !empty($widgets['is_global']) ? te('Across all branches') : te('In your branch') ?></span>
     </div>
@@ -86,9 +86,9 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     <!-- 8. Active Teachers -->
     <?php if ($canSee('active_teachers')): ?>
     <div class="kpi-card animate-slide-up delay-4" style="border-left: 4px solid #2563eb;">
-        <span class="kpi-card__label">Active Teachers</span>
+        <span class="kpi-card__label"><?= te('Active Teachers') ?></span>
         <span class="kpi-card__value"><?= number_format((int) ($widgets['active_teachers'] ?? 0)) ?></span>
-        <span class="text-xs text-muted">Instructional Staff</span>
+        <span class="text-xs text-muted"><?= te('Instructional Staff') ?></span>
     </div>
     <?php endif; ?>
 </div>
@@ -97,45 +97,45 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     <!-- 4. Today's Revenue -->
     <?php if ($canSee('today_revenue')): ?>
     <div class="kpi-card animate-slide-up" style="border-left: 4px solid #1D4ED8;">
-        <span class="kpi-card__label">Today's Revenue</span>
+        <span class="kpi-card__label"><?= te("Today's Revenue") ?></span>
         <span class="kpi-card__value">Rs. <?= number_format((float) ($widgets['today_revenue'] ?? 0), 2) ?></span>
-        <span class="text-xs text-muted">Collected today</span>
+        <span class="text-xs text-muted"><?= te('Collected today') ?></span>
     </div>
     <?php endif; ?>
 
     <!-- 5. Monthly Revenue -->
     <?php if ($canSee('monthly_revenue')): ?>
     <div class="kpi-card animate-slide-up" style="border-left: 4px solid #1D4ED8;">
-        <span class="kpi-card__label">Monthly Revenue</span>
+        <span class="kpi-card__label"><?= te('Monthly Revenue') ?></span>
         <span class="kpi-card__value">Rs. <?= number_format((float) ($widgets['monthly_revenue'] ?? 0), 2) ?></span>
-        <span class="text-xs text-muted"><?= date('F Y') ?></span>
+        <span class="text-xs text-muted"><?= lang_date('F Y') ?></span>
     </div>
     <?php endif; ?>
 
     <!-- 6. Pending Payments -->
     <?php if ($canSee('pending_payments')): ?>
     <div class="kpi-card animate-slide-up" style="border-left: 4px solid var(--danger);">
-        <span class="kpi-card__label">Pending Payments</span>
+        <span class="kpi-card__label"><?= te('Pending Payments') ?></span>
         <span class="kpi-card__value" style="color:var(--danger);">Rs. <?= number_format((float) ($widgets['pending_payments'] ?? 0), 2) ?></span>
-        <span class="text-xs text-muted">Overdue fees</span>
+        <span class="text-xs text-muted"><?= te('Overdue fees') ?></span>
     </div>
     <?php endif; ?>
 
     <!-- 13 & 14. New Students (Today & This Month) -->
     <?php if ($canSee('today_new_students') || $canSee('this_month_new_students')): ?>
     <div class="kpi-card animate-slide-up" style="border-left: 4px solid #F5B301;">
-        <span class="kpi-card__label">New Admissions</span>
+        <span class="kpi-card__label"><?= te('New Admissions') ?></span>
         <div class="d-flex items-center gap-2">
             <?php if ($canSee('today_new_students')): ?>
                 <div>
                     <span style="font-size:1.25rem; font-weight:800; color:var(--text);"><?= (int) ($widgets['today_new_students'] ?? 0) ?></span>
-                    <span class="text-xs text-muted" style="display:block;">Today</span>
+                    <span class="text-xs text-muted" style="display:block;"><?= te('Today') ?></span>
                 </div>
             <?php endif; ?>
             <?php if ($canSee('this_month_new_students')): ?>
                 <div style="padding-left:1rem; border-left:1px solid var(--border);">
                     <span style="font-size:1.25rem; font-weight:800; color:var(--primary);"><?= (int) ($widgets['this_month_new_students'] ?? 0) ?></span>
-                    <span class="text-xs text-muted" style="display:block;">This Month</span>
+                    <span class="text-xs text-muted" style="display:block;"><?= te('This Month') ?></span>
                 </div>
             <?php endif; ?>
         </div>
@@ -150,8 +150,8 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     <!-- 9. Attendance Trend (7 Days) [Daily present vs total] -->
     <?php if ($canSee('attendance_trend_7d')): ?>
     <div class="card">
-        <h3 style="margin-bottom:0.75rem; font-size:1rem;">Attendance Trend (7 Days)</h3>
-        <p class="text-xs text-muted mb-3">Daily present student count vs enrolled</p>
+        <h3 style="margin-bottom:0.75rem; font-size:1rem;"><?= te('Attendance Trend (7 Days)') ?></h3>
+        <p class="text-xs text-muted mb-3"><?= te('Daily present student count vs enrolled') ?></p>
         <div style="display:flex; justify-content:space-between; align-items:flex-end; height:140px; padding:0 0.5rem; border-bottom:1px solid var(--divider);">
             <?php 
             $trend = $widgets['attendance_trend_7d'] ?? [];
@@ -176,17 +176,17 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
             $attOverview = $widgets['today_attendance_overview'] ?? ['present' => 0, 'total' => 0, 'rate' => 0];
         ?>
         <div class="card">
-            <h3 style="margin-bottom:0.5rem; font-size:1rem;">Today's Attendance Overview</h3>
+            <h3 style="margin-bottom:0.5rem; font-size:1rem;"><?= te("Today's Attendance Overview") ?></h3>
             <div class="d-flex items-center justify-between mb-2">
-                <span class="text-sm text-muted">Attendance Rate:</span>
+                <span class="text-sm text-muted"><?= te('Attendance Rate') ?>:</span>
                 <span class="badge badge--success font-bold" style="font-size:0.9rem;"><?= $attOverview['rate'] ?>%</span>
             </div>
             <div style="width:100%; height:8px; background:var(--surface-sunken); border-radius:4px; overflow:hidden;">
                 <div style="width:<?= min(100, $attOverview['rate']) ?>%; height:100%; background:#2563EB; border-radius:4px;"></div>
             </div>
             <div class="d-flex justify-between text-xs text-muted mt-1">
-                <span>Present: <strong><?= $attOverview['present'] ?></strong></span>
-                <span>Active Total: <strong><?= $attOverview['total'] ?></strong></span>
+                <span><?= te('Present') ?>: <strong><?= $attOverview['present'] ?></strong></span>
+                <span><?= te('Active Total') ?>: <strong><?= $attOverview['total'] ?></strong></span>
             </div>
         </div>
         <?php endif; ?>
@@ -196,18 +196,18 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
             $inc = $widgets['this_month_income'] ?? ['total' => 0, 'teacher_share' => 0, 'institute_share' => 0];
         ?>
         <div class="card">
-            <h3 style="margin-bottom:0.5rem; font-size:1rem;">This Month Income (Institutes & Teachers)</h3>
+            <h3 style="margin-bottom:0.5rem; font-size:1rem;"><?= te('This Month Income (Institutes & Teachers)') ?></h3>
             <div class="d-flex justify-between items-center mb-1">
-                <span class="text-xs text-muted">Total Collections:</span>
+                <span class="text-xs text-muted"><?= te('Total Collections') ?>:</span>
                 <strong style="color:var(--text);">Rs. <?= number_format($inc['total'], 2) ?></strong>
             </div>
             <div class="d-flex gap-2 mt-2">
                 <div style="flex:1; padding:0.5rem; background:#eff6ff; border-radius:var(--radius-sm); border-left:3px solid #2563eb;">
-                    <div class="text-xs text-muted">Teachers Share</div>
+                    <div class="text-xs text-muted"><?= te('Teachers Share') ?></div>
                     <div style="font-weight:700; color:#1d4ed8; font-size:0.875rem;">Rs. <?= number_format($inc['teacher_share'], 2) ?></div>
                 </div>
                 <div style="flex:1; padding:0.5rem; background:#f0fdf4; border-radius:var(--radius-sm); border-left:3px solid #16a34a;">
-                    <div class="text-xs text-muted">Institute Share</div>
+                    <div class="text-xs text-muted"><?= te('Institute Share') ?></div>
                     <div style="font-weight:700; color:#15803d; font-size:0.875rem;">Rs. <?= number_format($inc['institute_share'], 2) ?></div>
                 </div>
             </div>
@@ -223,21 +223,21 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     <!-- 10. Students by Class [Active student distribution] -->
     <?php if ($canSee('students_by_class')): ?>
     <div class="card">
-        <h3 style="margin-bottom:0.75rem; font-size:1rem;">Students by Class (Top Distribution)</h3>
+        <h3 style="margin-bottom:0.75rem; font-size:1rem;"><?= te('Students by Class (Top Distribution)') ?></h3>
         <?php if (!empty($widgets['students_by_class'])): ?>
             <div style="display:flex; flex-direction:column; gap:0.6rem;">
                 <?php foreach ($widgets['students_by_class'] as $sc): ?>
                     <div>
                         <div class="d-flex justify-between text-sm mb-1">
                             <span style="font-weight:600;"><?= htmlspecialchars($sc['class_name'], ENT_QUOTES, 'UTF-8') ?></span>
-                            <span class="badge badge--info font-bold"><?= (int) $sc['student_count'] ?> students</span>
+                            <span class="badge badge--info font-bold"><?= (int) $sc['student_count'] ?> <?= te('students') ?></span>
                         </div>
                         <div class="text-xs text-muted"><?= htmlspecialchars($sc['subject'], ENT_QUOTES, 'UTF-8') ?> &bull; <?= htmlspecialchars($sc['grade'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
                     </div>
                 <?php endforeach; ?>
             </div>
         <?php else: ?>
-            <div class="text-sm text-muted">No student enrollments yet.</div>
+            <div class="text-sm text-muted"><?= te('No student enrollments yet.') ?></div>
         <?php endif; ?>
     </div>
     <?php endif; ?>
@@ -245,7 +245,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     <!-- 12. Today Classes & 15. Upcoming Classes -->
     <?php if ($canSee('today_classes') || $canSee('upcoming_classes')): ?>
     <div class="card">
-        <h3 style="margin-bottom:0.75rem; font-size:1rem;">Classes Scheduled for Today (<?= date('l') ?>)</h3>
+        <h3 style="margin-bottom:0.75rem; font-size:1rem;"><?= te('Classes Scheduled for Today') ?> (<?= lang_date('l') ?>)</h3>
         <?php if (!empty($widgets['today_classes'])): ?>
             <div style="display:flex; flex-direction:column; gap:0.6rem;">
                 <?php foreach (array_slice($widgets['today_classes'], 0, 5) as $tc): ?>
@@ -253,19 +253,19 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
                         <div>
                             <div style="font-weight:600; font-size:0.875rem;"><?= htmlspecialchars($tc['class_name'], ENT_QUOTES, 'UTF-8') ?></div>
                             <div class="text-xs text-muted">
-                                <?= htmlspecialchars($tc['teacher_name'] ?? 'TBA', ENT_QUOTES, 'UTF-8') ?> &bull; <?= htmlspecialchars($tc['institute_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars($tc['teacher_name'] ?? te('TBA'), ENT_QUOTES, 'UTF-8') ?> &bull; <?= htmlspecialchars($tc['institute_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                             </div>
                         </div>
                         <div style="text-align:right;">
                             <span class="badge badge--teal" style="font-size:0.7rem;">
-                                <?= !empty($tc['start_time']) ? date('g:i A', strtotime($tc['start_time'])) : 'TBD' ?>
+                                <?= !empty($tc['start_time']) ? lang_date('g:i A', strtotime($tc['start_time'])) : te('TBD') ?>
                             </span>
                         </div>
                     </div>
                 <?php endforeach; ?>
             </div>
         <?php else: ?>
-            <div class="text-sm text-muted">No classes scheduled for today.</div>
+            <div class="text-sm text-muted"><?= te('No classes scheduled for today.') ?></div>
         <?php endif; ?>
     </div>
     <?php endif; ?>
@@ -279,16 +279,16 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     <?php if ($canSee('all_active_classes')): ?>
     <div class="card">
         <div class="d-flex justify-between items-center mb-2">
-            <h3 style="font-size:1rem; margin:0;">Active Classes Directory</h3>
-            <a href="<?= BASE_URL ?>/classes" class="text-xs text-primary font-bold">View All &rarr;</a>
+            <h3 style="font-size:1rem; margin:0;"><?= te('Active Classes Directory') ?></h3>
+            <a href="<?= BASE_URL ?>/classes" class="text-xs text-primary font-bold"><?= te('View All') ?> &rarr;</a>
         </div>
         <div class="table-wrapper">
             <table class="data-table" style="font-size:0.8125rem;">
                 <thead>
                     <tr>
-                        <th>Class</th>
-                        <th>Teacher</th>
-                        <th>Students</th>
+                        <th><?= te('Class') ?></th>
+                        <th><?= te('Teacher') ?></th>
+                        <th><?= te('Students') ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -304,7 +304,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="3" class="text-muted text-center">No active classes.</td></tr>
+                        <tr><td colspan="3" class="text-muted text-center"><?= te('No active classes.') ?></td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -315,11 +315,11 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
     <!-- 16. Recent Messages & Workflow Approvals -->
     <?php if ($canSee('recent_messages_approvals')): ?>
     <div class="card">
-        <h3 style="margin-bottom:0.75rem; font-size:1rem;">Recent Messages &amp; Workflow Approvals</h3>
+        <h3 style="margin-bottom:0.75rem; font-size:1rem;"><?= te('Recent Messages & Workflow Approvals') ?></h3>
         
         <?php if (!empty($widgets['recent_workflows'])): ?>
             <div class="mb-2">
-                <span class="text-xs font-bold text-muted uppercase">Pending Workflows</span>
+                <span class="text-xs font-bold text-muted uppercase"><?= te('Pending Workflows') ?></span>
                 <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.25rem;">
                     <?php foreach ($widgets['recent_workflows'] as $wf): ?>
                         <div class="d-flex justify-between items-center" style="padding:0.4rem 0.6rem; background:#fff1f2; border-radius:var(--radius-sm); border-left:3px solid var(--danger);">
@@ -327,7 +327,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
                                 <strong><?= ucfirst(str_replace('_', ' ', $wf['type'])) ?>:</strong> 
                                 <?= htmlspecialchars($wf['student_name'] ?? 'Student', ENT_QUOTES, 'UTF-8') ?>
                             </span>
-                            <a href="<?= BASE_URL ?>/workflows" class="badge badge--danger" style="font-size:0.65rem;">Review</a>
+                            <a href="<?= BASE_URL ?>/workflows" class="badge badge--danger" style="font-size:0.65rem;"><?= te('Review') ?></a>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -336,7 +336,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
 
         <?php if (!empty($widgets['recent_messages'])): ?>
             <div>
-                <span class="text-xs font-bold text-muted uppercase">Recent System Messages</span>
+                <span class="text-xs font-bold text-muted uppercase"><?= te('Recent System Messages') ?></span>
                 <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.25rem;">
                     <?php foreach (array_slice($widgets['recent_messages'], 0, 4) as $msg): ?>
                         <div style="padding:0.4rem 0.6rem; background:var(--surface-sunken); border-radius:var(--radius-sm);">
@@ -347,7 +347,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
                 </div>
             </div>
         <?php else: ?>
-            <div class="text-sm text-muted">No recent notifications.</div>
+            <div class="text-sm text-muted"><?= te('No recent notifications.') ?></div>
         <?php endif; ?>
     </div>
     <?php endif; ?>

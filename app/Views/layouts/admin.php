@@ -212,13 +212,13 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
         </div>
 
         <div class="navbar__right">
-            <?php if (in_array(session_get('user_type'), ['student', 'parent'], true)): ?>
-            <!-- English / Sinhala -->
+            <!-- English / Sinhala -- every signed-in role gets the toggle, not just
+                 the student/parent portals: staff, teachers and admins read the UI
+                 in Sinhala by default too, and need the same way out to English. -->
             <div class="lang-switch" role="group" aria-label="Language / භාෂාව">
                 <a href="<?= lang_switch_url('en') ?>" class="<?= lang_current() === 'en' ? 'is-on' : '' ?>" lang="en" hreflang="en" aria-current="<?= lang_current() === 'en' ? 'true' : 'false' ?>">EN</a>
                 <a href="<?= lang_switch_url('si') ?>" class="<?= lang_current() === 'si' ? 'is-on' : '' ?>" lang="si" hreflang="si" aria-current="<?= lang_current() === 'si' ? 'true' : 'false' ?>">සිං</a>
             </div>
-            <?php endif; ?>
 
             <!-- Theme Toggle -->
             <button type="button" class="theme-toggle-btn" data-toggle="theme" aria-label="Toggle theme">
@@ -298,7 +298,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             <?php if (!in_array(session_get('user_type'), ['student', 'parent'], true)): ?>
             <a href="<?= BASE_URL ?>/dashboard" class="sidebar__link <?= $activePage === 'dashboard' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                Dashboard
+                <?= te('Dashboard') ?>
             </a>
             <?php endif; ?>
 
@@ -306,7 +306,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             <!-- All Users (Admins, Coordinators, Staff, Teachers) -->
             <a href="<?= BASE_URL ?>/users" class="sidebar__link <?= $activePage === 'users' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-                All Users
+                <?= te('All Users') ?>
             </a>
             <?php endif; ?>
 
@@ -314,7 +314,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             <!-- Institutes -->
             <a href="<?= BASE_URL ?>/institutes" class="sidebar__link <?= $activePage === 'institutes' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
-                Institutes
+                <?= te('Institutes') ?>
             </a>
             <?php endif; ?>
 
@@ -322,7 +322,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             <!-- Classes -->
             <a href="<?= BASE_URL ?>/classes" class="sidebar__link <?= $activePage === 'classes' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                Classes
+                <?= te('Classes') ?>
             </a>
             <?php endif; ?>
 
@@ -476,7 +476,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             <!-- Teaching: material and quizzes, both per class -->
             <a href="<?= BASE_URL ?>/teaching" class="sidebar__link <?= $activePage === 'teaching' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                Teaching
+                <?= te('Teaching') ?>
             </a>
             <?php if (in_array($userRole, ['super_admin', 'admin', 'teacher'], true)): ?>
             <a href="<?= BASE_URL ?>/topics" class="sidebar__link <?= $isHere('/topics') ? 'active' : '' ?>">
@@ -494,7 +494,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
 <?php if ($featureOn('calendar')): ?>
             <a href="<?= BASE_URL ?>/calendar" class="sidebar__link <?= $activePage === 'calendar' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Calendar
+                <?= te('Calendar') ?>
             </a>
             <?php endif; ?>
 <?php if ($featureOn('notices')): ?>
@@ -518,7 +518,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff'])): ?>
             <a href="<?= BASE_URL ?>/inquiries" class="sidebar__link <?= $activePage === 'inquiries' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                Inquiries
+                <?= te('Inquiries') ?>
             </a>
             <?php endif; ?>
             <?php endif; ?>
@@ -529,13 +529,13 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'whatsapp' ? 'active open' : '' ?>" data-toggle-sub="whatsapp-sub">
                     <span style="display:flex;align-items:center;gap:0.75rem;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
-                        WhatsApp
+                        <?= te('WhatsApp') ?>
                     </span>
                     <span class="chevron">&#9654;</span>
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'whatsapp' ? 'open' : '' ?>" id="whatsapp-sub">
-                    <a href="<?= BASE_URL ?>/whatsapp/reminders" class="sidebar__sub-link">Fee Reminders</a>
-                    <a href="<?= BASE_URL ?>/whatsapp/log" class="sidebar__sub-link">Message Log</a>
+                    <a href="<?= BASE_URL ?>/whatsapp/reminders" class="sidebar__sub-link"><?= te('Fee Reminders') ?></a>
+                    <a href="<?= BASE_URL ?>/whatsapp/log" class="sidebar__sub-link"><?= te('Message Log') ?></a>
                 </div>
             </div>
             <?php endif; ?>
@@ -546,14 +546,14 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'students' ? 'active open' : '' ?>" data-toggle-sub="students-sub">
                     <span style="display:flex;align-items:center;gap:0.75rem;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-                        Students
+                        <?= te('Students') ?>
                     </span>
                     <span class="chevron">&#9654;</span>
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'students' ? 'open' : '' ?>" id="students-sub">
-                    <a href="<?= BASE_URL ?>/students" class="sidebar__sub-link <?= $activeSubPage === 'list' ? 'active' : '' ?>">All Students</a>
+                    <a href="<?= BASE_URL ?>/students" class="sidebar__sub-link <?= $activeSubPage === 'list' ? 'active' : '' ?>"><?= te('All Students') ?></a>
                     <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff'])): ?>
-                    <a href="<?= BASE_URL ?>/students/create" class="sidebar__sub-link <?= $activeSubPage === 'create' ? 'active' : '' ?>">Register New</a>
+                    <a href="<?= BASE_URL ?>/students/create" class="sidebar__sub-link <?= $activeSubPage === 'create' ? 'active' : '' ?>"><?= te('Register New') ?></a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -565,17 +565,17 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'payments' ? 'active open' : '' ?>" data-toggle-sub="payments-sub">
                     <span style="display:flex;align-items:center;gap:0.75rem;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-                        Payments
+                        <?= te('Payments') ?>
                     </span>
                     <span class="chevron">&#9654;</span>
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'payments' ? 'open' : '' ?>" id="payments-sub">
-                    <a href="<?= BASE_URL ?>/payments" class="sidebar__sub-link <?= $activeSubPage === 'overview' ? 'active' : '' ?>">Overview</a>
+                    <a href="<?= BASE_URL ?>/payments" class="sidebar__sub-link <?= $activeSubPage === 'overview' ? 'active' : '' ?>"><?= te('Overview') ?></a>
                     <?php if (in_array($userRole, ['super_admin', 'admin', 'staff'])): ?>
-                    <a href="<?= BASE_URL ?>/payments/slips" class="sidebar__sub-link">Payment slips</a>
+                    <a href="<?= BASE_URL ?>/payments/slips" class="sidebar__sub-link"><?= te('Payment slips') ?></a>
                     <?php endif; ?>
                     <?php if (in_array($userRole, ['super_admin', 'admin'])): ?>
-                    <a href="<?= BASE_URL ?>/payments/generate" class="sidebar__sub-link <?= $activeSubPage === 'generate' ? 'active' : '' ?>">Generate Monthly</a>
+                    <a href="<?= BASE_URL ?>/payments/generate" class="sidebar__sub-link <?= $activeSubPage === 'generate' ? 'active' : '' ?>"><?= te('Generate Monthly') ?></a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -587,13 +587,13 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'attendance' ? 'active open' : '' ?>" data-toggle-sub="attendance-sub">
                     <span style="display:flex;align-items:center;gap:0.75rem;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-                        Attendance &amp; QR
+                        <?= te('Attendance & QR') ?>
                     </span>
                     <span class="chevron">&#9654;</span>
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'attendance' ? 'open' : '' ?>" id="attendance-sub">
-                    <a href="<?= BASE_URL ?>/attendance" class="sidebar__sub-link <?= $activeSubPage === 'log' ? 'active' : '' ?>">Daily Attendance</a>
-                    <a href="<?= BASE_URL ?>/attendance/qr" class="sidebar__sub-link <?= $activeSubPage === 'qr' ? 'active' : '' ?>">QR Scan Terminal</a>
+                    <a href="<?= BASE_URL ?>/attendance" class="sidebar__sub-link <?= $activeSubPage === 'log' ? 'active' : '' ?>"><?= te('Daily Attendance') ?></a>
+                    <a href="<?= BASE_URL ?>/attendance/qr" class="sidebar__sub-link <?= $activeSubPage === 'qr' ? 'active' : '' ?>"><?= te('QR Scan Terminal') ?></a>
                     <a href="<?= BASE_URL ?>/attendance/register" class="sidebar__sub-link <?= $isHere('/attendance/register') ? 'active' : '' ?>"><?= te('Class register') ?></a>
                 </div>
             </div>
@@ -605,13 +605,13 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'workflows' ? 'active open' : '' ?>" data-toggle-sub="workflows-sub">
                     <span style="display:flex;align-items:center;gap:0.75rem;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        Workflows
+                        <?= te('Workflows') ?>
                     </span>
                     <span class="chevron">&#9654;</span>
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'workflows' ? 'open' : '' ?>" id="workflows-sub">
-                    <a href="<?= BASE_URL ?>/workflows" class="sidebar__sub-link <?= $activeSubPage === 'pending' ? 'active' : '' ?>">Pending Approvals</a>
-                    <a href="<?= BASE_URL ?>/workflows/history" class="sidebar__sub-link <?= $activeSubPage === 'history' ? 'active' : '' ?>">History</a>
+                    <a href="<?= BASE_URL ?>/workflows" class="sidebar__sub-link <?= $activeSubPage === 'pending' ? 'active' : '' ?>"><?= te('Pending Approvals') ?></a>
+                    <a href="<?= BASE_URL ?>/workflows/history" class="sidebar__sub-link <?= $activeSubPage === 'history' ? 'active' : '' ?>"><?= te('History') ?></a>
                 </div>
             </div>
             <?php endif; ?>
@@ -631,33 +631,33 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'reports' ? 'active open' : '' ?>" data-toggle-sub="reports-sub">
                     <span style="display:flex;align-items:center;gap:0.75rem;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        Reports Hub
+                        <?= te('Reports Hub') ?>
                     </span>
                     <span class="chevron">&#9654;</span>
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'reports' ? 'open' : '' ?>" id="reports-sub">
-                    <a href="<?= BASE_URL ?>/reports" class="sidebar__sub-link <?= $activeSubPage === 'hub' ? 'active' : '' ?>">All Reports</a>
+                    <a href="<?= BASE_URL ?>/reports" class="sidebar__sub-link <?= $activeSubPage === 'hub' ? 'active' : '' ?>"><?= te('All Reports') ?></a>
                     <?php if (in_array($userRole, ['super_admin', 'admin'])): ?>
-                        <a href="<?= BASE_URL ?>/reports/insights" class="sidebar__sub-link <?= $activeSubPage === 'insights' ? 'active' : '' ?>">Branch Insights</a>
+                        <a href="<?= BASE_URL ?>/reports/insights" class="sidebar__sub-link <?= $activeSubPage === 'insights' ? 'active' : '' ?>"><?= te('Branch Insights') ?></a>
                     <?php endif; ?>
-                    <a href="<?= BASE_URL ?>/reports/attendance" class="sidebar__sub-link <?= $activeSubPage === 'attendance' ? 'active' : '' ?>">Attendance Report</a>
-                    <a href="<?= BASE_URL ?>/reports/classes" class="sidebar__sub-link <?= $activeSubPage === 'classes' ? 'active' : '' ?>">Class &amp; Enrollment</a>
+                    <a href="<?= BASE_URL ?>/reports/attendance" class="sidebar__sub-link <?= $activeSubPage === 'attendance' ? 'active' : '' ?>"><?= te('Attendance Report') ?></a>
+                    <a href="<?= BASE_URL ?>/reports/classes" class="sidebar__sub-link <?= $activeSubPage === 'classes' ? 'active' : '' ?>"><?= te('Class & Enrollment') ?></a>
                     <?php if (in_array($userRole, ['super_admin', 'admin'])): ?>
-                    <a href="<?= BASE_URL ?>/reports/users" class="sidebar__sub-link <?= $activeSubPage === 'users' ? 'active' : '' ?>">Users &amp; Staff</a>
-                    <a href="<?= BASE_URL ?>/reports/payments" class="sidebar__sub-link <?= $activeSubPage === 'payments' ? 'active' : '' ?>">Payment Summary</a>
+                    <a href="<?= BASE_URL ?>/reports/users" class="sidebar__sub-link <?= $activeSubPage === 'users' ? 'active' : '' ?>"><?= te('Users & Staff') ?></a>
+                    <a href="<?= BASE_URL ?>/reports/payments" class="sidebar__sub-link <?= $activeSubPage === 'payments' ? 'active' : '' ?>"><?= te('Payment Summary') ?></a>
                     <?php endif; ?>
-                    <a href="<?= BASE_URL ?>/reports/students" class="sidebar__sub-link <?= $activeSubPage === 'students' ? 'active' : '' ?>">Student Status</a>
+                    <a href="<?= BASE_URL ?>/reports/students" class="sidebar__sub-link <?= $activeSubPage === 'students' ? 'active' : '' ?>"><?= te('Student Status') ?></a>
                 </div>
             </div>
             <?php endif; ?>
 
             <?php if ($userRole === 'super_admin'): ?>
-            <div class="sidebar__section">Administration</div>
+            <div class="sidebar__section"><?= te('Administration') ?></div>
 
             <!-- Audit Log -->
             <a href="<?= BASE_URL ?>/audit" class="sidebar__link <?= $activePage === 'audit' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                Audit Log
+                <?= te('Audit Log') ?>
             </a>
             <?php endif; ?>
 
@@ -667,17 +667,17 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'settings' ? 'active open' : '' ?>" data-toggle-sub="settings-sub">
                     <span style="display:flex;align-items:center;gap:0.75rem;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-                        Settings
+                        <?= te('Settings') ?>
                     </span>
                     <span class="chevron">&#9654;</span>
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'settings' ? 'open' : '' ?>" id="settings-sub">
-                    <a href="<?= BASE_URL ?>/settings" class="sidebar__sub-link <?= $activeSubPage === 'general' ? 'active' : '' ?>">General</a>
-                    <a href="<?= BASE_URL ?>/settings/deactivation" class="sidebar__sub-link <?= $activeSubPage === 'deactivation' ? 'active' : '' ?>">Deactivation</a>
-                    <a href="<?= BASE_URL ?>/settings/deletion" class="sidebar__sub-link <?= $activeSubPage === 'deletion' ? 'active' : '' ?>">Deletion</a>
-                    <a href="<?= BASE_URL ?>/settings/dashboard-items" class="sidebar__sub-link <?= $activeSubPage === 'dashboard-items' ? 'active' : '' ?>">Dashboard Items</a>
-                    <a href="<?= BASE_URL ?>/settings/feature-visibility" class="sidebar__sub-link <?= $activeSubPage === 'feature-visibility' ? 'active' : '' ?>">Feature Visibility</a>
-                    <a href="<?= BASE_URL ?>/settings/site-content" class="sidebar__sub-link <?= $activeSubPage === 'site-content' ? 'active' : '' ?>">Website Content</a>
+                    <a href="<?= BASE_URL ?>/settings" class="sidebar__sub-link <?= $activeSubPage === 'general' ? 'active' : '' ?>"><?= te('General') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/deactivation" class="sidebar__sub-link <?= $activeSubPage === 'deactivation' ? 'active' : '' ?>"><?= te('Deactivation') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/deletion" class="sidebar__sub-link <?= $activeSubPage === 'deletion' ? 'active' : '' ?>"><?= te('Deletion') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/dashboard-items" class="sidebar__sub-link <?= $activeSubPage === 'dashboard-items' ? 'active' : '' ?>"><?= te('Dashboard Items') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/feature-visibility" class="sidebar__sub-link <?= $activeSubPage === 'feature-visibility' ? 'active' : '' ?>"><?= te('Feature Visibility') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/site-content" class="sidebar__sub-link <?= $activeSubPage === 'site-content' ? 'active' : '' ?>"><?= te('Website Content') ?></a>
                 </div>
             </div>
             <?php endif; ?>
