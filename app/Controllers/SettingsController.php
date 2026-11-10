@@ -356,12 +356,28 @@ class SettingsController extends BaseController
         $userId = (int) session_get('user_id');
 
         try {
-            foreach (array_keys(\App\Services\SiteContentService::FIELDS) as $key) {
+            foreach (\App\Services\SiteContentService::FIELDS as $key => $field) {
+                if (($field['type'] ?? 'text') === \App\Services\SiteContentService::TYPE_IMAGE) {
+                    if (!empty($_FILES['images']['name'][$key]) && ($_FILES['images']['error'][$key] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+                        $file = [
+                            'tmp_name' => $_FILES['images']['tmp_name'][$key],
+                            'name'     => $_FILES['images']['name'][$key],
+                            'type'     => $_FILES['images']['type'][$key],
+                            'size'     => $_FILES['images']['size'][$key],
+                        ];
+                        $service->setImage($key, $file, $userId);
+                    } elseif (!empty($_POST['remove_images'][$key])) {
+                        $service->clearImage($key, $userId);
+                    }
+                    continue;
+                }
                 $value = trim((string) ($_POST['fields'][$key] ?? ''));
-                $service->set($key, mb_substr($value, 0, 2000), $userId);
+                $service->set($key, mb_substr($value, 0, 4000), $userId);
             }
             $this->logAudit('update_site_content', 'site_content', 0);
             $this->flash('success', 'Website content updated.');
+        } catch (\InvalidArgumentException $e) {
+            $this->flash('error', $e->getMessage());
         } catch (\Throwable $e) {
             error_log('Site content update error: ' . $e->getMessage());
             $this->flash('error', 'Failed to update website content.');
