@@ -83,7 +83,7 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
                     <?= te('Science classes for') ?> <span class="ts-name"><?= te('Grades 6 to 11') ?></span>
                 <?php endif; ?>
             </h1>
-            <p><?= $e(\App\Services\PublicSite::content('home_hero_text', ['r' => \App\Services\PublicSite::gradeRange()])) ?></p>
+            <div class="ts-rich"><?= \App\Services\PublicSite::content('home_hero_text', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
             <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
                 <a href="#inquiry" class="ts-btn ts-btn--yellow"><?= te('Join a class') ?></a>
                 <a href="<?= BASE_URL ?>/timetable" class="ts-btn ts-btn--ghost"><?= te('See the timetable') ?></a>
@@ -95,8 +95,9 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
         </div>
         <?php if ($teacher): ?>
         <div class="ts-photo">
+            <?php $teacherPhoto = \App\Services\PublicSite::content('teacher_photo_image'); ?>
             <div class="ts-photo__frame">
-                <img src="<?= BASE_URL ?>/assets/img/teacher-smartboard.jpg" width="1600" height="2000" alt="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>" fetchpriority="high">
+                <img src="<?= $teacherPhoto !== '' ? BASE_URL . $e($teacherPhoto) : BASE_URL . '/assets/img/teacher-smartboard.jpg' ?>" width="1600" height="2000" alt="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>" fetchpriority="high">
             </div>
             <div class="ts-photo__badge"><?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
             <div class="ts-photo__tag">

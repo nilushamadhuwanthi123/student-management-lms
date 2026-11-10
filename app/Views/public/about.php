@@ -22,7 +22,8 @@ require __DIR__ . '/_site.php';
 <?php if ($teacher): ?>
 <section class="ts-section">
     <div class="ts-wrap ts-teacher ts-reveal">
-        <div class="ts-teacher__img" style="aspect-ratio:4/5;"><img src="<?= BASE_URL ?>/assets/img/teacher-smartboard.jpg" width="1600" height="2000" loading="lazy" style="object-position:50% 18%;" alt="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>"></div>
+        <?php $teacherPhoto = PublicSite::content('teacher_photo_image'); ?>
+        <div class="ts-teacher__img" style="aspect-ratio:4/5;"><img src="<?= $teacherPhoto !== '' ? BASE_URL . $e($teacherPhoto) : BASE_URL . '/assets/img/teacher-smartboard.jpg' ?>" width="1600" height="2000" loading="lazy" style="object-position:50% 18%;" alt="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>"></div>
         <div>
             <div class="ts-kicker"><?= te('Your teacher') ?></div>
             <h2><?= $e($teacher) ?></h2>
@@ -42,10 +43,11 @@ require __DIR__ . '/_site.php';
         <div>
             <div class="ts-kicker"><?= te('In class') ?></div>
             <h2><?= te('Learning together, every week') ?></h2>
-            <p class="ts-lead"><?= $e(PublicSite::content('about_in_class_text')) ?></p>
+            <div class="ts-lead ts-rich"><?= PublicSite::content('about_in_class_text') ?></div>
             <a href="<?= BASE_URL ?>/timetable" class="ts-btn ts-btn--blue"><?= te('See the timetable') ?></a>
         </div>
-        <div class="ts-teacher__img"><img src="<?= BASE_URL ?>/assets/img/teacher-classroom.jpg" width="2048" height="1365" loading="lazy" alt="<?= $e(t('{name} with her students in class', ['name' => $teacher])) ?>"></div>
+        <?php $classImage = PublicSite::content('about_class_image'); ?>
+        <div class="ts-teacher__img"><img src="<?= $classImage !== '' ? BASE_URL . $e($classImage) : BASE_URL . '/assets/img/teacher-classroom.jpg' ?>" width="2048" height="1365" loading="lazy" alt="<?= $e(t('{name} with her students in class', ['name' => $teacher])) ?>"></div>
     </div>
 </section>
 <?php endif; ?>
@@ -53,7 +55,7 @@ require __DIR__ . '/_site.php';
 <?php $extraText = PublicSite::content('about_extra_text'); if (trim($extraText) !== ''): ?>
 <section class="ts-section">
     <div class="ts-wrap ts-reveal" style="max-width:70ch;">
-        <p class="ts-lead"><?= $e($extraText) ?></p>
+        <div class="ts-lead ts-rich"><?= $extraText ?></div>
     </div>
 </section>
 <?php endif; ?>

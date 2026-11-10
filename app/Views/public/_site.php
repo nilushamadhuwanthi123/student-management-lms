@@ -34,6 +34,9 @@ if (!function_exists('site_days')) {
 .ts-section--alt { background: var(--surface-sunken, #F3F6FC); }
 .ts-section h2 { font-size: clamp(1.4rem, 3vw, 2rem); margin: 0 0 .4rem; color: var(--text, #0B1B3F); }
 .ts-lead { color: var(--text-secondary, #475569); margin: 0 0 1.6rem; max-width: 65ch; }
+.ts-rich ul, .ts-rich ol { margin: 0 0 1.6rem; padding-left: 1.3rem; }
+.ts-rich a { text-decoration: underline; }
+.ts-lead.ts-rich ul, .ts-lead.ts-rich ol { color: inherit; max-width: 65ch; }
 .ts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 1rem; }
 .ts-card { background: var(--surface, #fff); border: 1px solid var(--border, #E2E8F0); border-radius: 16px; padding: 1.15rem 1.2rem; min-width: 0; }
 .ts-card h3 { margin: 0 0 .35rem; font-size: 1.05rem; color: var(--text, #0B1B3F); }
