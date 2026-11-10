@@ -128,43 +128,189 @@ class SeminarService
         return $ann->notifyAll($recipients, 'Seminar: ' . $s['title'], $when . ' - ' . mb_substr((string) $s['description'], 0, 200), 'seminar', $seminarId);
     }
 
-    // ─── Registration (RSVP) ─────────────────────────────────────────
+    // ─── Registration (RSVP), capacity and waitlist ──────────────────
 
-    public function register(int $seminarId, string $userType, int $userId): bool
+    /**
+     * Register a person for a seminar. When the seminar has a
+     * max_capacity and it is already full, the registration is recorded
+     * as 'waitlisted' instead of refused outright -- it is promoted
+     * automatically if a spot frees up (see unregister()).
+     *
+     * @return string 'registered'|'waitlisted'|'already' (already held
+     *                that or a better status; nothing changed)
+     */
+    public function register(int $seminarId, string $userType, int $userId): string
     {
+        $existing = $this->db->prepare(
+            "SELECT status FROM seminar_registrations WHERE seminar_id = :sid AND user_type = :ut AND user_id = :uid"
+        );
+        $existing->execute([':sid' => $seminarId, ':ut' => $userType, ':uid' => $userId]);
+        $existingStatus = $existing->fetchColumn();
+        if ($existingStatus !== false) {
+            return 'already';
+        }
+
+        $status = $this->hasFreeCapacity($seminarId) ? 'registered' : 'waitlisted';
         $this->db->prepare(
-            "INSERT INTO seminar_registrations (seminar_id, user_type, user_id, registered_at)
-             VALUES (:sid, :ut, :uid, NOW())
-             ON DUPLICATE KEY UPDATE registered_at = registered_at"
-        )->execute([':sid' => $seminarId, ':ut' => $userType, ':uid' => $userId]);
+            "INSERT INTO seminar_registrations (seminar_id, user_type, user_id, status, registered_at)
+             VALUES (:sid, :ut, :uid, :status, NOW())
+             ON DUPLICATE KEY UPDATE status = status"
+        )->execute([':sid' => $seminarId, ':ut' => $userType, ':uid' => $userId, ':status' => $status]);
+
+        return $status;
+    }
+
+    /** Unregister, then promote the longest-waiting waitlisted person into the freed spot, if any. */
+    public function unregister(int $seminarId, string $userType, int $userId): bool
+    {
+        $del = $this->db->prepare(
+            "DELETE FROM seminar_registrations WHERE seminar_id = :sid AND user_type = :ut AND user_id = :uid AND status = 'registered'"
+        );
+        $del->execute([':sid' => $seminarId, ':ut' => $userType, ':uid' => $userId]);
+        $freedASpot = $del->rowCount() > 0;
+
+        if (!$freedASpot) {
+            // Also allow a waitlisted person to cancel outright.
+            $this->db->prepare(
+                "DELETE FROM seminar_registrations WHERE seminar_id = :sid AND user_type = :ut AND user_id = :uid AND status = 'waitlisted'"
+            )->execute([':sid' => $seminarId, ':ut' => $userType, ':uid' => $userId]);
+            return true;
+        }
+
+        if ($this->hasFreeCapacity($seminarId)) {
+            $this->db->prepare(
+                "UPDATE seminar_registrations SET status = 'registered'
+                  WHERE id = (
+                      SELECT id FROM (
+                          SELECT id FROM seminar_registrations
+                           WHERE seminar_id = :sid AND status = 'waitlisted'
+                        ORDER BY registered_at ASC LIMIT 1
+                      ) AS next_up
+                  )"
+            )->execute([':sid' => $seminarId]);
+        }
 
         return true;
     }
 
-    public function unregister(int $seminarId, string $userType, int $userId): bool
+    /** Whether registering one more person would still fit under max_capacity (always true when unlimited). */
+    private function hasFreeCapacity(int $seminarId): bool
     {
-        $this->db->prepare(
-            "DELETE FROM seminar_registrations WHERE seminar_id = :sid AND user_type = :ut AND user_id = :uid"
-        )->execute([':sid' => $seminarId, ':ut' => $userType, ':uid' => $userId]);
+        $stmt = $this->db->prepare("SELECT max_capacity FROM seminars WHERE id = :id");
+        $stmt->execute([':id' => $seminarId]);
+        $capacity = $stmt->fetchColumn();
+        if ($capacity === false || $capacity === null) {
+            return true;
+        }
 
-        return true;
+        return $this->registrationCount($seminarId) < (int) $capacity;
+    }
+
+    /** @return string|null 'registered'|'waitlisted', or null if not registered at all */
+    public function registrationStatus(int $seminarId, string $userType, int $userId): ?string
+    {
+        $stmt = $this->db->prepare(
+            "SELECT status FROM seminar_registrations WHERE seminar_id = :sid AND user_type = :ut AND user_id = :uid LIMIT 1"
+        );
+        $stmt->execute([':sid' => $seminarId, ':ut' => $userType, ':uid' => $userId]);
+        $status = $stmt->fetchColumn();
+
+        return $status === false ? null : (string) $status;
     }
 
     public function isRegistered(int $seminarId, string $userType, int $userId): bool
     {
-        $stmt = $this->db->prepare(
-            "SELECT 1 FROM seminar_registrations WHERE seminar_id = :sid AND user_type = :ut AND user_id = :uid LIMIT 1"
-        );
-        $stmt->execute([':sid' => $seminarId, ':ut' => $userType, ':uid' => $userId]);
-
-        return $stmt->fetchColumn() !== false;
+        return $this->registrationStatus($seminarId, $userType, $userId) !== null;
     }
 
+    /** Only counts confirmed registrations, not the waitlist. */
     public function registrationCount(int $seminarId): int
     {
-        $stmt = $this->db->prepare("SELECT COUNT(*) FROM seminar_registrations WHERE seminar_id = :sid");
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM seminar_registrations WHERE seminar_id = :sid AND status = 'registered'");
         $stmt->execute([':sid' => $seminarId]);
 
         return (int) $stmt->fetchColumn();
+    }
+
+    public function waitlistCount(int $seminarId): int
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM seminar_registrations WHERE seminar_id = :sid AND status = 'waitlisted'");
+        $stmt->execute([':sid' => $seminarId]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function attendedCount(int $seminarId): int
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM seminar_registrations WHERE seminar_id = :sid AND attended = 1");
+        $stmt->execute([':sid' => $seminarId]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * Everyone registered or waitlisted for a seminar, with a
+     * best-effort display name resolved per user_type, for the
+     * organizer's registrants/attendance page.
+     *
+     * @return array<int, array{id:int,user_type:string,user_id:int,status:string,registered_at:string,attended:bool,attended_at:?string,name:string,detail:string}>
+     */
+    public function registrants(int $seminarId): array
+    {
+        $rows = $this->db->prepare(
+            "SELECT id, user_type, user_id, status, registered_at, attended, attended_at
+               FROM seminar_registrations WHERE seminar_id = :sid
+           ORDER BY status = 'waitlisted', registered_at ASC"
+        );
+        $rows->execute([':sid' => $seminarId]);
+        $regs = $rows->fetchAll(PDO::FETCH_ASSOC);
+
+        $byType = ['student' => [], 'parent' => [], 'user' => []];
+        foreach ($regs as $r) {
+            $byType[$r['user_type']][] = (int) $r['user_id'];
+        }
+
+        $students = $byType['student'] === [] ? [] : $this->fetchNames(
+            "SELECT id, full_name AS name, student_id_display AS detail FROM students WHERE id IN (" . implode(',', $byType['student']) . ")"
+        );
+        $parents = $byType['parent'] === [] ? [] : $this->fetchNames(
+            "SELECT p.id, s.full_name AS name, p.phone1 AS detail FROM parents p LEFT JOIN students s ON s.id = p.student_id WHERE p.id IN (" . implode(',', $byType['parent']) . ")"
+        );
+        $users = $byType['user'] === [] ? [] : $this->fetchNames(
+            "SELECT id, full_name AS name, role AS detail FROM users WHERE id IN (" . implode(',', $byType['user']) . ")"
+        );
+        $names = ['student' => $students, 'parent' => $parents, 'user' => $users];
+
+        foreach ($regs as &$r) {
+            $found = $names[$r['user_type']][(int) $r['user_id']] ?? null;
+            $r['name'] = $found['name'] ?? ('#' . $r['user_id']);
+            $r['detail'] = $found['detail'] ?? '';
+            $r['attended'] = (bool) $r['attended'];
+        }
+
+        return $regs;
+    }
+
+    /** @return array<int, array{name:string, detail:string}> keyed by id */
+    private function fetchNames(string $sql): array
+    {
+        $out = [];
+        foreach ($this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $out[(int) $row['id']] = ['name' => (string) $row['name'], 'detail' => (string) ($row['detail'] ?? '')];
+        }
+        return $out;
+    }
+
+    public function setAttendance(int $registrationId, int $seminarId, bool $attended): void
+    {
+        $this->db->prepare(
+            "UPDATE seminar_registrations SET attended = :a, attended_at = :at
+              WHERE id = :id AND seminar_id = :sid"
+        )->execute([
+            ':a' => $attended ? 1 : 0,
+            ':at' => $attended ? date('Y-m-d H:i:s') : null,
+            ':id' => $registrationId,
+            ':sid' => $seminarId,
+        ]);
     }
 }

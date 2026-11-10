@@ -30,7 +30,7 @@ class SeminarController extends BaseController
         $scope = BranchScope::current();
 
         $sql = "SELECT s.*, c.class_name, i.name AS institute_name, u.full_name AS author,
-                       (SELECT COUNT(*) FROM seminar_registrations r WHERE r.seminar_id = s.id) AS registered_count
+                       (SELECT COUNT(*) FROM seminar_registrations r WHERE r.seminar_id = s.id AND r.status = 'registered') AS registered_count
                   FROM seminars s
                   LEFT JOIN classes c ON c.id = s.class_id
                   LEFT JOIN institutes i ON i.id = s.institute_id
@@ -44,7 +44,12 @@ class SeminarController extends BaseController
         }
         $rows = $this->db->query($sql . " ORDER BY s.event_date DESC, s.id DESC LIMIT 200")->fetchAll(PDO::FETCH_ASSOC);
 
+        $seminarService = new SeminarService($this->db);
         foreach ($rows as &$r) {
+            if ((int) $r['registration_required'] === 1) {
+                $r['waitlisted_count'] = $seminarService->waitlistCount((int) $r['id']);
+                $r['attended_count'] = $seminarService->attendedCount((int) $r['id']);
+            }
             $r['can_manage'] = $this->mayPost(
                 $r['target_scope'],
                 $r['institute_id'] !== null ? (int) $r['institute_id'] : null,
@@ -103,6 +108,8 @@ class SeminarController extends BaseController
         $classId = $scope === 'class' ? (int) ($_POST['class_id'] ?? 0) : null;
 
         $registrationRequired = isset($_POST['registration_required']) ? 1 : 0;
+        $maxCapacityRaw = trim((string) ($_POST['max_capacity'] ?? ''));
+        $maxCapacity = $maxCapacityRaw !== '' && ctype_digit($maxCapacityRaw) && (int) $maxCapacityRaw > 0 ? (int) $maxCapacityRaw : null;
         $publish = ($_POST['action'] ?? '') === 'publish';
 
         $students = isset($_POST['for_students']) ? 1 : 0;
@@ -125,8 +132,8 @@ class SeminarController extends BaseController
         $this->db->prepare(
             "INSERT INTO seminars (title, description, cover_image_url, event_date, start_time, end_time, venue, online_url,
                                     target_scope, institute_id, grade, class_id, for_students, for_parents, for_staff,
-                                    registration_required, status, created_by)
-             VALUES (:t, :d, :img, :ed, :st, :et, :v, :ou, :ts, :i, :g, :c, :fs, :fp, :ff, :rr, :status, :by)"
+                                    registration_required, max_capacity, status, created_by)
+             VALUES (:t, :d, :img, :ed, :st, :et, :v, :ou, :ts, :i, :g, :c, :fs, :fp, :ff, :rr, :cap, :status, :by)"
         )->execute([
             ':t' => mb_substr($title, 0, 255), ':d' => $description !== '' ? $description : null,
             ':img' => $coverImageUrl !== '' ? $coverImageUrl : null,
@@ -134,7 +141,7 @@ class SeminarController extends BaseController
             ':v' => $venue !== '' ? $venue : null, ':ou' => $onlineUrl !== '' ? $onlineUrl : null,
             ':ts' => $scope, ':i' => $instituteId, ':g' => $grade, ':c' => $classId,
             ':fs' => $students, ':fp' => $parents, ':ff' => $staff,
-            ':rr' => $registrationRequired,
+            ':rr' => $registrationRequired, ':cap' => $maxCapacity,
             ':status' => $publish ? 'published' : 'draft',
             ':by' => (int) session_get('user_id'),
         ]);
@@ -155,11 +162,14 @@ class SeminarController extends BaseController
             $this->redirect('/seminars');
         }
 
+        $seminarService = new SeminarService($this->db);
         $this->view('seminars/show', [
             'pageTitle'  => $seminar['title'],
             'activePage' => 'seminars',
             'seminar'    => $seminar,
-            'registeredCount' => (new SeminarService($this->db))->registrationCount((int) $seminar['id']),
+            'registeredCount' => $seminarService->registrationCount((int) $seminar['id']),
+            'waitlistedCount' => $seminarService->waitlistCount((int) $seminar['id']),
+            'attendedCount'   => $seminarService->attendedCount((int) $seminar['id']),
             'canManage'  => $this->mayPost(
                 $seminar['target_scope'],
                 $seminar['institute_id'] !== null ? (int) $seminar['institute_id'] : null,
@@ -167,6 +177,127 @@ class SeminarController extends BaseController
                 $seminar['class_id'] !== null ? (int) $seminar['class_id'] : null
             ),
         ]);
+    }
+
+    /**
+     * Edit an existing seminar. Who it targets (scope/branch/grade/class
+     * and who sees it) can only change while it is still a draft -- once
+     * published and people have been notified, changing the audience
+     * silently would be misleading, so only the practical details
+     * (time, venue, link, capacity, description, cover image) can be
+     * corrected afterwards.
+     */
+    public function edit(string $id): void
+    {
+        $seminar = $this->managedSeminar((int) $id);
+        $scope = BranchScope::current();
+
+        $this->view('seminars/create', [
+            'pageTitle'  => 'Edit seminar',
+            'activePage' => 'seminars',
+            'seminar'    => $seminar,
+            'isEdit'     => true,
+            'canEditAudience' => $seminar['status'] === 'draft',
+            'institutes' => $scope->isTeacher() ? [] : $this->db->query(
+                "SELECT id, name FROM institutes WHERE status = 'active'" . $scope->instituteSql('id') . " ORDER BY name"
+            )->fetchAll(PDO::FETCH_ASSOC),
+            'classes'    => $this->db->query(
+                "SELECT id, class_name FROM classes WHERE status = 'active'" . $scope->classSql('id') . " ORDER BY grade, class_name"
+            )->fetchAll(PDO::FETCH_ASSOC),
+            'grades'     => $this->db->query("SELECT DISTINCT grade FROM classes WHERE grade IS NOT NULL ORDER BY grade")->fetchAll(PDO::FETCH_COLUMN),
+            'isGlobal'   => $scope->isGlobal(),
+            'canTargetGrade' => !$scope->isTeacher(),
+        ]);
+    }
+
+    public function update(string $id): void
+    {
+        $seminar = $this->managedSeminar((int) $id);
+        verifyCsrfToken();
+
+        $title = trim((string) ($_POST['title'] ?? ''));
+        $description = trim((string) ($_POST['description'] ?? ''));
+        $eventDate = trim((string) ($_POST['event_date'] ?? ''));
+        $eventTs = $eventDate !== '' ? strtotime($eventDate) : false;
+        $startTime = trim((string) ($_POST['start_time'] ?? ''));
+        $endTime = trim((string) ($_POST['end_time'] ?? ''));
+        $venue = trim((string) ($_POST['venue'] ?? ''));
+        $onlineUrl = trim((string) ($_POST['online_url'] ?? ''));
+        $coverImageUrl = trim((string) ($_POST['cover_image_url'] ?? ''));
+        $registrationRequired = isset($_POST['registration_required']) ? 1 : 0;
+        $maxCapacityRaw = trim((string) ($_POST['max_capacity'] ?? ''));
+        $maxCapacity = $maxCapacityRaw !== '' && ctype_digit($maxCapacityRaw) && (int) $maxCapacityRaw > 0 ? (int) $maxCapacityRaw : null;
+
+        if ($title === '' || $eventTs === false
+            || ($onlineUrl !== '' && filter_var($onlineUrl, FILTER_VALIDATE_URL) === false)
+            || ($coverImageUrl !== '' && filter_var($coverImageUrl, FILTER_VALIDATE_URL) === false)) {
+            $this->flash('error', t('Write a title, pick a date, and check any links.'));
+            $this->redirect('/seminars/' . (int) $seminar['id'] . '/edit');
+        }
+
+        $sets = [
+            'title = :t', 'description = :d', 'cover_image_url = :img', 'event_date = :ed',
+            'start_time = :st', 'end_time = :et', 'venue = :v', 'online_url = :ou',
+            'registration_required = :rr', 'max_capacity = :cap',
+        ];
+        $params = [
+            ':t' => mb_substr($title, 0, 255), ':d' => $description !== '' ? $description : null,
+            ':img' => $coverImageUrl !== '' ? $coverImageUrl : null,
+            ':ed' => date('Y-m-d', $eventTs), ':st' => $startTime !== '' ? $startTime : null, ':et' => $endTime !== '' ? $endTime : null,
+            ':v' => $venue !== '' ? $venue : null, ':ou' => $onlineUrl !== '' ? $onlineUrl : null,
+            ':rr' => $registrationRequired, ':cap' => $maxCapacity,
+            ':id' => (int) $seminar['id'],
+        ];
+
+        if ($seminar['status'] === 'draft') {
+            $scope = in_array($_POST['target_scope'] ?? '', ['all', 'branch', 'grade', 'class'], true) ? $_POST['target_scope'] : 'class';
+            $instituteId = in_array($scope, ['branch', 'grade'], true) && (int) ($_POST['institute_id'] ?? 0) > 0
+                ? (int) $_POST['institute_id'] : null;
+            $grade = $scope === 'grade' ? trim((string) ($_POST['grade'] ?? '')) : null;
+            $classId = $scope === 'class' ? (int) ($_POST['class_id'] ?? 0) : null;
+            $students = isset($_POST['for_students']) ? 1 : 0;
+            $parents = isset($_POST['for_parents']) ? 1 : 0;
+            $staff = isset($_POST['for_staff']) ? 1 : 0;
+
+            if (($students + $parents + $staff) === 0 || ($scope === 'grade' && $grade === '') || !$this->mayPost($scope, $instituteId, $grade, $classId)) {
+                $this->flash('error', t('Choose who should see it, within your own branch, grade or classes.'));
+                $this->redirect('/seminars/' . (int) $seminar['id'] . '/edit');
+            }
+
+            $sets = array_merge($sets, ['target_scope = :ts', 'institute_id = :i', 'grade = :g', 'class_id = :c', 'for_students = :fs', 'for_parents = :fp', 'for_staff = :ff']);
+            $params += [':ts' => $scope, ':i' => $instituteId, ':g' => $grade, ':c' => $classId, ':fs' => $students, ':fp' => $parents, ':ff' => $staff];
+        }
+
+        $this->db->prepare('UPDATE seminars SET ' . implode(', ', $sets) . ' WHERE id = :id')->execute($params);
+        $this->audit('update_seminar', (int) $seminar['id']);
+        $this->flash('success', t('Seminar updated.'));
+        $this->redirect('/seminars/' . (int) $seminar['id']);
+    }
+
+    /** Organizer view: who registered/waitlisted, and attendance check-in. */
+    public function registrants(string $id): void
+    {
+        $seminar = $this->managedSeminar((int) $id);
+        $service = new SeminarService($this->db);
+
+        $this->view('seminars/registrants', [
+            'pageTitle'  => 'Registrants: ' . $seminar['title'],
+            'activePage' => 'seminars',
+            'seminar'    => $seminar,
+            'registrants' => $service->registrants((int) $seminar['id']),
+        ]);
+    }
+
+    public function markAttendance(string $id): void
+    {
+        $seminar = $this->managedSeminar((int) $id);
+        verifyCsrfToken();
+        $registrationId = (int) ($_POST['registration_id'] ?? 0);
+        $attended = !empty($_POST['attended']);
+
+        (new SeminarService($this->db))->setAttendance($registrationId, (int) $seminar['id'], $attended);
+        $this->audit('seminar_attendance', (int) $seminar['id'], ['registration_id' => $registrationId, 'attended' => $attended]);
+        $this->redirect('/seminars/' . (int) $seminar['id'] . '/registrants');
     }
 
     public function publish(string $id): void
@@ -224,7 +355,10 @@ class SeminarController extends BaseController
         $service = new SeminarService($this->db);
         $rows = $service->forStudent($studentId, $type === 'parent');
         foreach ($rows as &$r) {
-            $r['is_registered'] = $service->isRegistered((int) $r['id'], $type, (int) session_get('user_id'));
+            $status = $service->registrationStatus((int) $r['id'], $type, (int) session_get('user_id'));
+            $r['is_registered'] = $status !== null;
+            $r['is_waitlisted'] = $status === 'waitlisted';
+            $r['spots_left'] = $r['max_capacity'] !== null ? max(0, (int) $r['max_capacity'] - $service->registrationCount((int) $r['id'])) : null;
         }
 
         $this->view('seminars/mine', [
@@ -253,8 +387,10 @@ class SeminarController extends BaseController
             $this->redirect($back);
         }
 
-        (new SeminarService($this->db))->register((int) $id, $type, $userId);
-        $this->flash('success', t('You are registered.'));
+        $result = (new SeminarService($this->db))->register((int) $id, $type, $userId);
+        $this->flash('success', $result === 'waitlisted'
+            ? t('This seminar is full -- you have been added to the waiting list and will be registered automatically if a spot opens up.')
+            : t('You are registered.'));
         $this->redirect($back);
     }
 
