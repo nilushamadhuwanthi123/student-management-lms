@@ -11,7 +11,13 @@ $where = match ($seminar['target_scope']) {
 ?>
 <div class="page-header">
     <div><h1 class="page-header__title"><?= $e($seminar['title']) ?></h1></div>
-    <div class="page-header__actions"><a href="<?= BASE_URL ?>/seminars" class="btn btn--ghost">&larr; <?= te('Seminars & Events') ?></a></div>
+    <div class="page-header__actions" style="display:flex; gap:.5rem;">
+        <?php if (!empty($canManage)): ?>
+            <?php if ((int) $seminar['registration_required'] === 1): ?><a href="<?= BASE_URL ?>/seminars/<?= (int) $seminar['id'] ?>/registrants" class="btn btn--ghost"><?= te('Registrants') ?></a><?php endif; ?>
+            <a href="<?= BASE_URL ?>/seminars/<?= (int) $seminar['id'] ?>/edit" class="btn btn--ghost"><?= te('Edit') ?></a>
+        <?php endif; ?>
+        <a href="<?= BASE_URL ?>/seminars" class="btn btn--ghost">&larr; <?= te('Seminars & Events') ?></a>
+    </div>
 </div>
 <div class="card" style="max-width:760px; padding:1.25rem;">
     <?php if (!empty($seminar['cover_image_url'])): ?>
@@ -26,7 +32,13 @@ $where = match ($seminar['target_scope']) {
     <?php if (!empty($seminar['online_url'])): ?><div style="margin-bottom:.5rem;"><strong><?= te('Online link') ?>:</strong> <a href="<?= $e($seminar['online_url']) ?>" target="_blank" rel="noopener"><?= $e($seminar['online_url']) ?></a></div><?php endif; ?>
     <?php if (!empty($seminar['description'])): ?><div style="margin-top:.75rem; white-space:pre-wrap;"><?= $e($seminar['description']) ?></div><?php endif; ?>
     <?php if ((int) $seminar['registration_required'] === 1): ?>
-    <div class="text-sm text-muted" style="margin-top:1rem;"><?= te('{n} registered', ['n' => (int) $registeredCount]) ?></div>
+    <div class="text-sm text-muted" style="margin-top:1rem;">
+        <?= te('{n} registered', ['n' => (int) $registeredCount]) ?><?php if (($seminar['max_capacity'] ?? null) !== null): ?>/<?= (int) $seminar['max_capacity'] ?><?php endif; ?>
+        <?php if (!empty($canManage)): ?>
+            <?php if (!empty($waitlistedCount)): ?> &middot; <?= te('{n} waitlisted', ['n' => (int) $waitlistedCount]) ?><?php endif; ?>
+            &middot; <?= te('{n} attended', ['n' => (int) $attendedCount]) ?>
+        <?php endif; ?>
+    </div>
     <?php endif; ?>
     <div style="margin-top:1rem;">
         <span class="badge" style="background:var(--surface-sunken);"><?= te(ucfirst((string) $seminar['status'])) ?></span>

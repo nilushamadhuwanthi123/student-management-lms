@@ -28,14 +28,16 @@ $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'
         <?php if (!empty($s['description'])): ?><div style="white-space:pre-wrap; overflow-wrap:anywhere;"><?= $e($s['description']) ?></div><?php endif; ?>
         <?php if (!empty($s['online_url'])): ?><div style="margin-top:.5rem;"><a href="<?= $e($s['online_url']) ?>" target="_blank" rel="noopener"><?= te('Join online') ?></a></div><?php endif; ?>
         <?php if (!$cancelled && (int) $s['registration_required'] === 1): ?>
-        <div style="margin-top:.75rem;">
+        <div style="margin-top:.75rem; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;">
             <?php if (!empty($s['is_registered'])): ?>
+                <?php if (!empty($s['is_waitlisted'])): ?><span class="badge" style="background:var(--surface-sunken);"><?= te('Waitlisted') ?></span><?php else: ?><span class="badge" style="background:var(--surface-sunken); color:var(--success);"><?= te('Registered') ?></span><?php endif; ?>
                 <form method="POST" action="<?= BASE_URL ?><?= $base ?>/<?= (int) $s['id'] ?>/unregister" style="margin:0;"><?= csrfField() ?>
                     <button class="btn btn--ghost btn--sm" type="submit"><?= te('Cancel my registration') ?></button></form>
             <?php else: ?>
                 <form method="POST" action="<?= BASE_URL ?><?= $base ?>/<?= (int) $s['id'] ?>/register" style="margin:0;"><?= csrfField() ?>
-                    <button class="btn btn--primary btn--sm" type="submit"><?= te('Register') ?></button></form>
+                    <button class="btn btn--primary btn--sm" type="submit"><?= $s['spots_left'] === 0 ? te('Join waiting list') : te('Register') ?></button></form>
             <?php endif; ?>
+            <?php if ($s['spots_left'] !== null && !$s['is_registered']): ?><span class="text-xs text-muted"><?= $s['spots_left'] > 0 ? te('{n} spots left', ['n' => $s['spots_left']]) : te('Full') ?></span><?php endif; ?>
         </div>
         <?php endif; ?>
     </article>

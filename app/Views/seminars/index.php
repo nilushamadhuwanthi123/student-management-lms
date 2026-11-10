@@ -37,12 +37,16 @@ $statusColor = static fn (string $status): string => match ($status) {
                 <div class="text-xs text-muted">
                     <?= $e(lang_date('j M Y', (string) $s['event_date'])) ?><?= $s['start_time'] ? ', ' . $e(substr((string) $s['start_time'], 0, 5)) : '' ?>
                     &middot; <?= $e($reach($s)) ?> &middot; <?= $e($s['author'] ?? '') ?>
-                    <?php if ((int) $s['registration_required'] === 1): ?> &middot; <?= te('{n} registered', ['n' => (int) $s['registered_count']]) ?><?php endif; ?>
+                    <?php if ((int) $s['registration_required'] === 1): ?> &middot; <?= te('{n} registered', ['n' => (int) $s['registered_count']]) ?><?php if (($s['max_capacity'] ?? null) !== null): ?>/<?= (int) $s['max_capacity'] ?><?php endif; ?><?php if (!empty($s['waitlisted_count'])): ?> &middot; <?= te('{n} waitlisted', ['n' => (int) $s['waitlisted_count']]) ?><?php endif; ?><?php endif; ?>
                 </div>
             </div>
             <div style="display:flex; gap:.4rem; align-items:center; flex-wrap:wrap;">
                 <span class="badge" style="background:var(--surface-sunken); color:<?= $statusColor($s['status']) ?>;"><?= te(ucfirst((string) $s['status'])) ?></span>
                 <?php if (!empty($s['can_manage'])): ?>
+                    <?php if ((int) $s['registration_required'] === 1): ?>
+                    <a href="<?= BASE_URL ?>/seminars/<?= (int) $s['id'] ?>/registrants" class="btn btn--ghost btn--sm"><?= te('Registrants') ?></a>
+                    <?php endif; ?>
+                    <a href="<?= BASE_URL ?>/seminars/<?= (int) $s['id'] ?>/edit" class="btn btn--ghost btn--sm"><?= te('Edit') ?></a>
                     <?php if ($s['status'] === 'draft'): ?>
                     <form method="POST" action="<?= BASE_URL ?>/seminars/<?= (int) $s['id'] ?>/publish" style="margin:0;"><?= csrfField() ?><button class="btn btn--primary btn--sm" type="submit"><?= te('Publish') ?></button></form>
                     <form method="POST" action="<?= BASE_URL ?>/seminars/<?= (int) $s['id'] ?>/delete" style="margin:0;" onsubmit="return confirm('<?= te('Delete this draft?') ?>');"><?= csrfField() ?><button class="btn btn--ghost btn--sm" type="submit"><?= te('Delete') ?></button></form>

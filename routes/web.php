@@ -406,6 +406,10 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/seminars/create', ['App\Controllers\SeminarController', 'create']);
     $router->post('/seminars/create', ['App\Controllers\SeminarController', 'store']);
     $router->get('/seminars/{id}', ['App\Controllers\SeminarController', 'show']);
+    $router->get('/seminars/{id}/edit', ['App\Controllers\SeminarController', 'edit']);
+    $router->post('/seminars/{id}/edit', ['App\Controllers\SeminarController', 'update']);
+    $router->get('/seminars/{id}/registrants', ['App\Controllers\SeminarController', 'registrants']);
+    $router->post('/seminars/{id}/attendance', ['App\Controllers\SeminarController', 'markAttendance']);
     $router->post('/seminars/{id}/publish', ['App\Controllers\SeminarController', 'publish']);
     $router->post('/seminars/{id}/cancel', ['App\Controllers\SeminarController', 'cancel']);
     $router->post('/seminars/{id}/delete', ['App\Controllers\SeminarController', 'delete']);
