@@ -16,7 +16,7 @@ $month    = $month ?? date('Y-m-01');
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">Teaching</h1>
+        <h1 class="page-header__title"><?= te('Teaching') ?></h1>
         <p class="text-sm text-muted">
             <?= (int) ($totals['classes'] ?? 0) ?> classes
             &middot; <?= (int) ($totals['students'] ?? 0) ?> students
@@ -32,7 +32,7 @@ $month    = $month ?? date('Y-m-01');
                     </option>
                 <?php endforeach; ?>
             </select>
-            <noscript><button type="submit" class="btn btn--ghost btn--sm">Go</button></noscript>
+            <noscript><button type="submit" class="btn btn--ghost btn--sm"><?= te('Go') ?></button></noscript>
         </form>
     </div>
 </div>
@@ -40,26 +40,26 @@ $month    = $month ?? date('Y-m-01');
 <!-- The two things that need attention come first -->
 <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:1rem; margin-bottom:1.75rem;">
     <div class="card" style="padding:1.1rem; <?= (int) ($totals['marking'] ?? 0) > 0 ? 'border-color:var(--warning);' : '' ?>">
-        <div class="text-sm text-muted">Papers to mark</div>
+        <div class="text-sm text-muted"><?= te('Papers to mark') ?></div>
         <div style="font-size:1.7rem; font-weight:700; margin-top:.2rem; color:<?= (int) ($totals['marking'] ?? 0) > 0 ? 'var(--warning)' : 'var(--text)' ?>;">
             <?= (int) ($totals['marking'] ?? 0) ?>
         </div>
     </div>
     <div class="card" style="padding:1.1rem; <?= (int) ($totals['unpaid'] ?? 0) > 0 ? 'border-color:var(--warning);' : '' ?>">
-        <div class="text-sm text-muted">Unpaid this month</div>
+        <div class="text-sm text-muted"><?= te('Unpaid this month') ?></div>
         <div style="font-size:1.7rem; font-weight:700; margin-top:.2rem; color:<?= (int) ($totals['unpaid'] ?? 0) > 0 ? 'var(--warning)' : 'var(--success)' ?>;">
             <?= (int) ($totals['unpaid'] ?? 0) ?>
         </div>
-        <div class="text-sm text-muted" style="margin-top:.15rem;">locked out of content</div>
+        <div class="text-sm text-muted" style="margin-top:.15rem;"><?= te('locked out of content') ?></div>
     </div>
     <div class="card" style="padding:1.1rem;">
-        <div class="text-sm text-muted">Material posted</div>
+        <div class="text-sm text-muted"><?= te('Material posted') ?></div>
         <div style="font-size:1.7rem; font-weight:700; margin-top:.2rem; color:var(--primary);">
             <?= (int) ($totals['materials'] ?? 0) ?>
         </div>
     </div>
     <div class="card" style="padding:1.1rem;">
-        <div class="text-sm text-muted">Quizzes live</div>
+        <div class="text-sm text-muted"><?= te('Quizzes live') ?></div>
         <div style="font-size:1.7rem; font-weight:700; margin-top:.2rem; color:var(--primary);">
             <?= (int) ($totals['quizzes'] ?? 0) ?>
         </div>
@@ -69,8 +69,8 @@ $month    = $month ?? date('Y-m-01');
 <?php if ($byBranch === []): ?>
     <div class="card" style="padding:3rem 1.5rem; text-align:center;">
         <div style="font-size:2.5rem;">&#127979;</div>
-        <h4 style="margin:.75rem 0 .35rem;">No classes assigned yet</h4>
-        <p class="text-sm text-muted" style="margin:0;">Classes you teach will appear here.</p>
+        <h4 style="margin:.75rem 0 .35rem;"><?= te('No classes assigned yet') ?></h4>
+        <p class="text-sm text-muted" style="margin:0;"><?= te('Classes you teach will appear here.') ?></p>
     </div>
 <?php else: ?>
     <?php foreach ($byBranch as $branch => $classes): ?>
@@ -109,20 +109,20 @@ $month    = $month ?? date('Y-m-01');
                                 <div style="font-size:1.2rem; font-weight:700; color:var(--primary);">
                                     <?= (int) $c['materials_this_month'] ?>
                                 </div>
-                                <div class="text-sm text-muted">material</div>
+                                <div class="text-sm text-muted"><?= te('material') ?></div>
                             </div>
                             <div>
                                 <div style="font-size:1.2rem; font-weight:700; color:var(--primary);">
                                     <?= (int) $c['quizzes_this_month'] ?>
                                 </div>
-                                <div class="text-sm text-muted">quizzes</div>
+                                <div class="text-sm text-muted"><?= te('quizzes') ?></div>
                             </div>
                             <?php if ((int) $c['unpaid_this_month'] > 0): ?>
                                 <div>
                                     <div style="font-size:1.2rem; font-weight:700; color:var(--warning);">
                                         <?= (int) $c['unpaid_this_month'] ?>
                                     </div>
-                                    <div class="text-sm text-muted">unpaid</div>
+                                    <div class="text-sm text-muted"><?= te('unpaid') ?></div>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -130,9 +130,9 @@ $month    = $month ?? date('Y-m-01');
 
                     <div class="card__footer" style="display:flex; gap:.5rem; flex-wrap:wrap;">
                         <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/materials?month=<?= urlencode($month) ?>"
-                           class="btn btn--ghost btn--sm" style="flex:1;">Material</a>
+                           class="btn btn--ghost btn--sm" style="flex:1;"><?= te('Material') ?></a>
                         <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/quizzes"
-                           class="btn btn--primary btn--sm" style="flex:1;">Quizzes</a>
+                           class="btn btn--primary btn--sm" style="flex:1;"><?= te('Quizzes') ?></a>
                         <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/assignments"
                            class="btn btn--ghost btn--sm" style="flex:1;"><?= te('Assignments') ?></a>
                         <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/recordings"

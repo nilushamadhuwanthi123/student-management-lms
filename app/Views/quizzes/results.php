@@ -18,7 +18,7 @@ $passMark = $quiz['pass_mark'] !== null ? (float) $quiz['pass_mark'] : null;
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">Results</h1>
+        <h1 class="page-header__title"><?= te('Results') ?></h1>
         <p class="text-sm text-muted">
             <?= htmlspecialchars($quiz['title'], ENT_QUOTES, 'UTF-8') ?>
             &middot; <?= htmlspecialchars($class['class_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
@@ -26,7 +26,7 @@ $passMark = $quiz['pass_mark'] !== null ? (float) $quiz['pass_mark'] : null;
     </div>
     <div class="page-header__actions">
         <a href="<?= BASE_URL ?>/classes/<?= $classId ?>/quizzes/<?= (int) $quiz['id'] ?>" class="btn btn--ghost">
-            &larr; Questions
+            &larr; <?= te('Questions') ?>
         </a>
     </div>
 </div>
@@ -34,14 +34,14 @@ $passMark = $quiz['pass_mark'] !== null ? (float) $quiz['pass_mark'] : null;
 <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-bottom:1.5rem;">
     <?php
     $cards = [
-        ['Sat it', $stats['sat'] . ' / ' . $stats['enrolled'], 'var(--primary)'],
-        ['Average', $stats['average'] !== null ? $stats['average'] . '%' : '&mdash;', 'var(--text)'],
-        ['Highest', $stats['highest'] !== null ? $stats['highest'] . '%' : '&mdash;', 'var(--success)'],
-        ['Lowest', $stats['lowest'] !== null ? $stats['lowest'] . '%' : '&mdash;', 'var(--danger)'],
+        [te('Sat it'), $stats['sat'] . ' / ' . $stats['enrolled'], 'var(--primary)'],
+        [te('Average'), $stats['average'] !== null ? $stats['average'] . '%' : '&mdash;', 'var(--text)'],
+        [te('Highest'), $stats['highest'] !== null ? $stats['highest'] . '%' : '&mdash;', 'var(--success)'],
+        [te('Lowest'), $stats['lowest'] !== null ? $stats['lowest'] . '%' : '&mdash;', 'var(--danger)'],
     ];
 
     if ($stats['passed'] !== null) {
-        $cards[] = ['Passed', $stats['passed'] . ' / ' . $stats['sat'], 'var(--success)'];
+        $cards[] = [te('Passed'), $stats['passed'] . ' / ' . $stats['sat'], 'var(--success)'];
     }
 
     foreach ($cards as [$label, $value, $colour]): ?>
@@ -55,18 +55,18 @@ $passMark = $quiz['pass_mark'] !== null ? (float) $quiz['pass_mark'] : null;
 </div>
 
 <div class="card">
-    <div class="card__header"><h3 style="margin:0;">Every student in the class</h3></div>
+    <div class="card__header"><h3 style="margin:0;"><?= te('Every student in the class') ?></h3></div>
 
     <div class="table-wrap">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Student</th>
-                    <th>Reg. no.</th>
-                    <th class="text-right">Score</th>
-                    <th class="text-right">Percentage</th>
-                    <th>Submitted</th>
-                    <th>Status</th>
+                    <th><?= te('Student') ?></th>
+                    <th><?= te('Reg. no.') ?></th>
+                    <th class="text-right"><?= te('Score') ?></th>
+                    <th class="text-right"><?= te('Percentage') ?></th>
+                    <th><?= te('Submitted') ?></th>
+                    <th><?= te('Status') ?></th>
                 </tr>
             </thead>
             <tbody>
