@@ -85,8 +85,10 @@ if (!function_exists('site_days')) {
 .ts-icon svg { width: 22px; height: 22px; }
 .ts-teacher { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 2.5rem; align-items: center; }
 @media (max-width: 880px) { .ts-teacher { grid-template-columns: 1fr; } }
-.ts-teacher__img { border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px -28px rgba(15,23,42,.5); aspect-ratio: 3 / 2; }
+.ts-teacher__img { border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px -28px rgba(15,23,42,.5); aspect-ratio: 3 / 2; position: relative; }
 .ts-teacher__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ts-teacher__badge { position: absolute; left: 18px; bottom: 18px; background: #fff; color: #0B1B3F !important; border-radius: 14px; padding: .55rem .9rem; box-shadow: 0 16px 34px -16px rgba(2,6,23,.5); display: flex; align-items: center; gap: .55rem; font-weight: 800; font-size: .85rem; }
+.ts-teacher__badge svg { color: #1D4ED8; flex: 0 0 auto; }
 .ts-kicker { font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #1D4ED8; margin-bottom: .4rem; }
 .ts-ticks { list-style: none; padding: 0; margin: 1rem 0 1.4rem; display: grid; gap: .55rem; }
 .ts-ticks li { display: flex; gap: .6rem; align-items: flex-start; color: var(--text-secondary, #334155); }
