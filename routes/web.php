@@ -507,6 +507,11 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/settings/feature-visibility', ['App\Controllers\SettingsController', 'updateFeatureVisibility']);
     $router->get('/settings/site-content', ['App\Controllers\SettingsController', 'siteContent']);
     $router->post('/settings/site-content', ['App\Controllers\SettingsController', 'updateSiteContent']);
+    $router->get('/settings/ads', ['App\Controllers\SettingsController', 'ads']);
+    $router->post('/settings/ads', ['App\Controllers\SettingsController', 'storeAd']);
+    $router->post('/settings/ads/{id}/update', ['App\Controllers\SettingsController', 'updateAd']);
+    $router->post('/settings/ads/{id}/toggle', ['App\Controllers\SettingsController', 'toggleAd']);
+    $router->post('/settings/ads/{id}/delete', ['App\Controllers\SettingsController', 'deleteAd']);
 
     // API-style endpoints
     $router->get('/api/classes-by-institute/{id}', ['App\Controllers\ApiController', 'classesByInstitute']);

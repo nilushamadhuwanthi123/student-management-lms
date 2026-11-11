@@ -684,6 +684,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                     <a href="<?= BASE_URL ?>/settings/dashboard-items" class="sidebar__sub-link <?= $activeSubPage === 'dashboard-items' ? 'active' : '' ?>"><?= te('Dashboard Items') ?></a>
                     <a href="<?= BASE_URL ?>/settings/feature-visibility" class="sidebar__sub-link <?= $activeSubPage === 'feature-visibility' ? 'active' : '' ?>"><?= te('Feature Visibility') ?></a>
                     <a href="<?= BASE_URL ?>/settings/site-content" class="sidebar__sub-link <?= $activeSubPage === 'site-content' ? 'active' : '' ?>"><?= te('Website Content') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/ads" class="sidebar__sub-link <?= $activeSubPage === 'ads' ? 'active' : '' ?>"><?= te('Website Ads') ?></a>
                 </div>
             </div>
             <?php endif; ?>

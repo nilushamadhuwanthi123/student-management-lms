@@ -69,20 +69,20 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
     <svg class="ts-wave" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40c240 30 480 30 720 10s480-30 720 0v20H0z"/></svg>
     <div class="ts-wrap ts-hero-grid">
         <div>
-            <?php $adEvents = \App\Services\PublicSite::upcomingSeminars(6); ?>
+            <?php $adEvents = \App\Services\PublicSite::homeAds(6); ?>
             <?php if ($adEvents !== []): ?>
-            <a href="#events" class="ts-ad" aria-label="<?= te('Upcoming seminars & events') ?>">
+            <div class="ts-ad" id="ts-ad" aria-label="<?= te('Announcements') ?>">
                 <span class="ts-ad__label"><?= te('Upcoming') ?></span>
                 <span class="ts-ad__rot" id="ts-ad-rot">
-                    <?php foreach ($adEvents as $i => $ad): $thumb = \App\Services\SeminarService::coverSrc($ad['cover_image_url'] ?? null); ?>
-                        <span class="ts-ad__item<?= $i === 0 ? ' is-on' : '' ?>"<?= $i === 0 ? '' : ' aria-hidden="true"' ?>>
-                            <?php if ($thumb !== ''): ?><img class="ts-ad__thumb" src="<?= $e($thumb) ?>" alt="" loading="lazy" onerror="this.remove();"><?php endif; ?>
-                            <span class="ts-ad__text"><?= $e($ad['title']) ?><small><?= $e(lang_date('j M', (string) $ad['event_date'])) ?></small></span>
-                        </span>
+                    <?php foreach ($adEvents as $i => $ad): ?>
+                        <a class="ts-ad__item<?= $i === 0 ? ' is-on' : '' ?>" href="<?= $e($ad['href']) ?>"<?= $i === 0 ? '' : ' aria-hidden="true" tabindex="-1"' ?>>
+                            <?php if ($ad['thumb'] !== ''): ?><img class="ts-ad__thumb" src="<?= $e($ad['thumb']) ?>" alt="" loading="lazy" onerror="this.remove();"><?php endif; ?>
+                            <span class="ts-ad__text"><?= $e($ad['title']) ?><?php if ($ad['subtitle'] !== ''): ?><small><?= $e($ad['subtitle']) ?></small><?php endif; ?></span>
+                        </a>
                     <?php endforeach; ?>
                 </span>
                 <span class="ts-ad__go" aria-hidden="true">&rarr;</span>
-            </a>
+            </div>
             <?php if (count($adEvents) > 1): ?>
             <script>
             (function () {
@@ -90,9 +90,9 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
                 if (!box || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { return; }
                 var items = box.querySelectorAll('.ts-ad__item'), cur = 0, timer = null;
                 function next() {
-                    items[cur].classList.remove('is-on'); items[cur].setAttribute('aria-hidden', 'true');
+                    items[cur].classList.remove('is-on'); items[cur].setAttribute('aria-hidden', 'true'); items[cur].setAttribute('tabindex', '-1');
                     cur = (cur + 1) % items.length;
-                    items[cur].classList.add('is-on'); items[cur].removeAttribute('aria-hidden');
+                    items[cur].classList.add('is-on'); items[cur].removeAttribute('aria-hidden'); items[cur].removeAttribute('tabindex');
                 }
                 function play() { if (!timer) { timer = setInterval(next, 4000); } }
                 function stop() { clearInterval(timer); timer = null; }

@@ -420,6 +420,131 @@ class SettingsController extends BaseController
         $this->redirect(BASE_URL . '/settings/site-content');
     }
 
+
+    /**
+     * Standalone promotional banners for the public home page (see
+     * SiteAdService / migration 023) -- separate from the "show on the
+     * website" flag on a seminar, which advertises a specific dated
+     * event. This is for a plain announcement with no event behind it.
+     */
+    public function ads(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+
+        $service = new \App\Services\SiteAdService();
+        $this->view('settings/ads', [
+            'pageTitle'     => 'Website Ads',
+            'activeSubPage' => 'ads',
+            'ads'           => $service->all(),
+        ]);
+    }
+
+    public function storeAd(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+        verifyCsrfToken();
+
+        $service = new \App\Services\SiteAdService();
+        $userId = (int) session_get('user_id');
+
+        try {
+            $id = $service->create([
+                'title'      => $_POST['title'] ?? '',
+                'link_url'   => $_POST['link_url'] ?? '',
+                'starts_on'  => $_POST['starts_on'] ?? '',
+                'ends_on'    => $_POST['ends_on'] ?? '',
+                'is_active'  => $_POST['is_active'] ?? '',
+                'sort_order' => $_POST['sort_order'] ?? 0,
+            ], $userId);
+
+            if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $service->setImage($id, $_FILES['image']);
+            }
+
+            $this->logAudit('create_site_ad', 'site_ad', $id);
+            $this->flash('success', 'Ad created.');
+        } catch (\InvalidArgumentException $e) {
+            $this->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            error_log('Site ad create error: ' . $e->getMessage());
+            $this->flash('error', 'Failed to create the ad.');
+        }
+
+        $this->redirect(BASE_URL . '/settings/ads');
+    }
+
+    public function updateAd(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+        verifyCsrfToken();
+
+        $service = new \App\Services\SiteAdService();
+        $userId = (int) session_get('user_id');
+
+        try {
+            $service->update((int) $id, [
+                'title'      => $_POST['title'] ?? '',
+                'link_url'   => $_POST['link_url'] ?? '',
+                'starts_on'  => $_POST['starts_on'] ?? '',
+                'ends_on'    => $_POST['ends_on'] ?? '',
+                'is_active'  => $_POST['is_active'] ?? '',
+                'sort_order' => $_POST['sort_order'] ?? 0,
+            ], $userId);
+
+            if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $service->setImage((int) $id, $_FILES['image']);
+            }
+
+            $this->logAudit('update_site_ad', 'site_ad', (int) $id);
+            $this->flash('success', 'Ad updated.');
+        } catch (\InvalidArgumentException $e) {
+            $this->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            error_log('Site ad update error: ' . $e->getMessage());
+            $this->flash('error', 'Failed to update the ad.');
+        }
+
+        $this->redirect(BASE_URL . '/settings/ads');
+    }
+
+    public function toggleAd(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        verifyCsrfToken();
+
+        (new \App\Services\SiteAdService())->toggle((int) $id);
+        $this->logAudit('toggle_site_ad', 'site_ad', (int) $id);
+        $this->redirect(BASE_URL . '/settings/ads');
+    }
+
+    public function deleteAd(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        verifyCsrfToken();
+
+        (new \App\Services\SiteAdService())->delete((int) $id);
+        $this->logAudit('delete_site_ad', 'site_ad', (int) $id);
+        $this->flash('success', 'Ad deleted.');
+        $this->redirect(BASE_URL . '/settings/ads');
+    }
+
     private function logAudit(string $action, string $entityType, int $entityId, array $details = []): void
     {
         try {
