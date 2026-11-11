@@ -275,4 +275,60 @@ final class AccountService
 
         return $found;
     }
+
+    /**
+     * Find the one account a self-service reset request may go to.
+     *
+     * Returns null when the ID matches nothing, matches more than one
+     * account, the account is switched off, or there is no mobile number
+     * on file. The caller shows the same message whatever the answer, so
+     * none of those reasons tells a stranger whether an ID exists.
+     *
+     * @return array{type: string, id: int, name: string, phone: string}|null
+     */
+    public function recoveryTarget(string $loginId): ?array
+    {
+        $found = $this->accountsFor($loginId);
+        if (count($found) !== 1) {
+            return null;
+        }
+
+        [$type, $id] = $found[0];
+
+        $sql = match ($type) {
+            'user' => "SELECT full_name AS name, status,
+                              COALESCE(NULLIF(whatsapp, ''), NULLIF(phone1, '')) AS phone
+                         FROM users WHERE id = :id",
+            'student' => "SELECT full_name AS name, status,
+                                 COALESCE(NULLIF(whatsapp, ''), NULLIF(phone1, '')) AS phone
+                            FROM students WHERE id = :id",
+            'parent' => "SELECT parent_name AS name, status,
+                                COALESCE(NULLIF(whatsapp, ''), NULLIF(phone1, '')) AS phone
+                           FROM parents WHERE id = :id",
+            default => null,
+        };
+        if ($sql === null) {
+            return null;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row || in_array((string) $row['status'], ['inactive', 'deactivated'], true)) {
+            return null;
+        }
+
+        $phone = WhatsAppService::normalisePhone($row['phone'] ?? null);
+        if ($phone === null) {
+            return null;
+        }
+
+        return [
+            'type'  => $type,
+            'id'    => $id,
+            'name'  => (string) $row['name'],
+            'phone' => $phone,
+        ];
+    }
 }

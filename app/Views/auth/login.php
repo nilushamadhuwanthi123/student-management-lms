@@ -50,7 +50,7 @@
     </div>
 
     <div style="text-align:right; margin:-0.5rem 0 0.75rem; font-size:0.875rem;">
-        <a href="<?= BASE_URL ?>/reset-password"><?= te('Forgot password?') ?></a>
+        <a href="<?= BASE_URL ?>/forgot-password"><?= te('Forgot password?') ?></a>
     </div>
 
 
