@@ -8,6 +8,7 @@ use App\Middleware\AuthMiddleware;
 use App\Middleware\RateLimiter;
 use App\Services\AccountService;
 use App\Services\BranchScope;
+use App\Services\WhatsAppService;
 
 /**
  * Office-issued reset codes, the one-time credential slip, and the public
@@ -106,6 +107,95 @@ class AccountController extends BaseController
             'items'     => is_array($items) ? $items : [],
             'backUrl'   => $back,
         ]);
+    }
+
+    /** GET /forgot-password */
+    public function showForgot(): void
+    {
+        $this->view('auth/forgot-password', ['pageTitle' => t('Forgotten password')], 'layouts/auth');
+    }
+
+    /**
+     * POST /forgot-password
+     *
+     * Asks for a reset code without going through the office. The code is
+     * never shown to whoever asked -- it goes to the mobile number already
+     * on the account, so asking only helps somebody who holds that phone.
+     *
+     * Every path out of here ends in the same message and the same
+     * counters, so a stranger cannot learn which IDs exist by watching
+     * what changes.
+     */
+    public function requestCode(): void
+    {
+        verifyCsrfToken();
+
+        $loginId = trim((string) ($_POST['login_id'] ?? ''));
+        $limiter = new RateLimiter();
+        $ipKey   = 'forgot_ip_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+        $idKey   = 'forgot_' . mb_substr($loginId, 0, 60);
+
+        $ipCheck = $limiter->checkRateLimit($ipKey, 5, 15);
+        $idCheck = $limiter->checkRateLimit($idKey, 3, 15);
+        if (!$ipCheck['allowed'] || !$idCheck['allowed']) {
+            $this->flash('error', t('Too many requests. Please wait 15 minutes and try again.'));
+            $this->redirect('/forgot-password');
+        }
+
+        // Counted before the lookup, so a hit and a miss cost the same.
+        $limiter->incrementAttempts($ipKey);
+        $limiter->incrementAttempts($idKey);
+
+        if ($loginId !== '') {
+            $target = (new AccountService($this->db))->recoveryTarget($loginId);
+            if ($target !== null) {
+                $this->sendCode($target);
+            } else {
+                $this->audit(null, 'system', 'self_reset_code_missed', null, 0, [
+                    'login_id' => mb_substr($loginId, 0, 40),
+                ]);
+            }
+        }
+
+        $this->flash('success', t('If that ID is on our records, a reset code is on its way to the phone number registered for it. It works once, for 30 minutes.'));
+        $this->redirect('/reset-password');
+    }
+
+    /**
+     * Issue a code for a confirmed account and queue it for delivery.
+     *
+     * There is no SMS gateway in this system -- WhatsApp messages go out
+     * through click-to-chat, which a person taps. So the code is queued
+     * like any other message and the office sends it from the queue. A
+     * failure here is swallowed on purpose: the caller must answer the
+     * same way whether or not anything was sent.
+     */
+    private function sendCode(array $target): void
+    {
+        try {
+            $result = (new AccountService($this->db))->issueCode($target['type'], $target['id'], null);
+
+            $body = t(
+                'Hello {name}. Your reset code for the class portal is {code}. It works once, within 30 minutes. If you did not ask for this, please tell the office.',
+                ['name' => $target['name'], 'code' => $result['code']]
+            );
+
+            (new WhatsAppService())->queue([
+                'recipient_name'  => $target['name'],
+                'recipient_phone' => $target['phone'],
+                'recipient_type'  => $target['type'] === 'parent' ? 'parent' : 'student',
+                'template_key'    => 'password_reset_code',
+                'body'            => $body,
+                'student_id'      => $target['type'] === 'student' ? $target['id'] : null,
+            ]);
+
+            // The code itself never reaches the audit log.
+            $this->audit(null, 'system', 'self_reset_code_requested', $target['type'], $target['id'], [
+                'expires_at' => $result['expires_at'],
+            ]);
+        } catch (\Throwable $e) {
+            error_log('Self-service reset code failed: ' . $e->getMessage());
+        }
     }
 
     /** GET /reset-password */

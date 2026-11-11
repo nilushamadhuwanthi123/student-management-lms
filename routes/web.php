@@ -183,6 +183,8 @@ $router->get('/first-login-password', ['App\Controllers\AuthController', 'showFi
 $router->post('/first-login-password', ['App\Controllers\AuthController', 'updateFirstLoginPassword']);
 
 // Forgotten password: redeem a one-time code issued by the branch office.
+$router->get('/forgot-password', ['App\Controllers\AccountController', 'showForgot']);
+$router->post('/forgot-password', ['App\Controllers\AccountController', 'requestCode']);
 $router->get('/reset-password', ['App\Controllers\AccountController', 'showReset']);
 $router->post('/reset-password', ['App\Controllers\AccountController', 'reset']);
 

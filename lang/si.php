@@ -1941,4 +1941,13 @@ return [
     '4. Attached Classes' => '4. අමුණා ඇති පන්ති',
     'No classes available.' => 'පන්ති නොමැත.',
     'Print ID Card' => 'හැඳුනුම්පත මුද්‍රණය කරන්න',
+
+    // Self-service forgotten password
+    'Type your login ID and we will send a reset code to the mobile number registered on your account. The code works once, for 30 minutes.' => 'ඔබගේ පිවිසුම් අංකය ටයිප් කරන්න, එවිට ඔබගේ ගිණුමට ලියාපදිංචි කර ඇති ජංගම දුරකථන අංකයට යළි සැකසීමේ කේතයක් එවනු ලැබේ. එම කේතය මිනිත්තු 30ක් ඇතුළත එක් වරක් පමණක් වැඩ කරයි.',
+    'Send me a reset code' => 'යළි සැකසීමේ කේතයක් එවන්න',
+    'No mobile number on your account, or the number has changed? Call the branch office and they will give you a code after confirming who you are.' => 'ඔබගේ ගිණුමේ ජංගම දුරකථන අංකයක් නැද්ද, නැතහොත් අංකය වෙනස් වී තිබේද? ශාඛා කාර්යාලයට අමතන්න, ඔබ කවුදැයි තහවුරු කිරීමෙන් පසු ඔවුන් ඔබට කේතයක් ලබා දෙනු ඇත.',
+    'I already have a code' => 'මා සතුව දැනටමත් කේතයක් තිබේ',
+    'Too many requests. Please wait 15 minutes and try again.' => 'ඉල්ලීම් ගණන වැඩියි. මිනිත්තු 15ක් රැඳී සිට නැවත උත්සාහ කරන්න.',
+    'If that ID is on our records, a reset code is on its way to the phone number registered for it. It works once, for 30 minutes.' => 'එම අංකය අපගේ වාර්තාවල ඇත්නම්, ඒ සඳහා ලියාපදිංචි කර ඇති දුරකථන අංකයට යළි සැකසීමේ කේතයක් එවනු ලැබේ. එය මිනිත්තු 30ක් ඇතුළත එක් වරක් පමණක් වැඩ කරයි.',
+    'Hello {name}. Your reset code for the class portal is {code}. It works once, within 30 minutes. If you did not ask for this, please tell the office.' => 'ආයුබෝවන් {name}. පන්ති ද්වාරය සඳහා ඔබගේ යළි සැකසීමේ කේතය {code} වේ. එය මිනිත්තු 30ක් ඇතුළත එක් වරක් පමණක් වැඩ කරයි. ඔබ මෙය ඉල්ලා නොසිටියේ නම්, කරුණාකර කාර්යාලයට දන්වන්න.',
 ];
