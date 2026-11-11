@@ -144,7 +144,7 @@ $typeIcon = [
                             <form method="POST"
                                   action="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials/<?= (int) $m['id'] ?>/archive"
                                   style="display:inline;"
-                                  onsubmit="return confirm('Take this down? Students will stop seeing it.');">
+                                  data-confirm="<?= te('Take this down? Students will stop seeing it.') ?>">
                                 <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                 <button type="submit" class="btn btn--ghost btn--sm" style="color:var(--danger);">
                                     Take down

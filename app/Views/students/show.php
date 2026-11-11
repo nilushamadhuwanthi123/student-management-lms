@@ -187,7 +187,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                 <?php endif; ?>
                 <?php if (in_array(session_get('user_role'), ['super_admin', 'admin', 'coordinator'], true)): ?>
                     <form method="POST" action="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/reset-code" style="display:inline;"
-                          onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('Have you confirmed who is asking? A new code replaces any earlier one.')), ENT_QUOTES, 'UTF-8') ?>);">
+                          data-confirm="<?= te('Have you confirmed who is asking? A new code replaces any earlier one.') ?>">
                         <?= csrfField() ?>
                         <button type="submit" class="btn btn--ghost btn--sm"><?= te('Password reset code') ?></button>
                     </form>
@@ -220,7 +220,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                         </span>
                         <?php if (in_array(session_get('user_role'), ['super_admin', 'admin', 'coordinator'], true) && !empty($parent['phone1'])): ?>
                             <form method="POST" action="<?= BASE_URL ?>/parents/<?= (int) $parent['id'] ?>/reset-code" style="display:inline; margin-left:.5rem;"
-                                  onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('Have you confirmed who is asking? A new code replaces any earlier one.')), ENT_QUOTES, 'UTF-8') ?>);">
+                                  data-confirm="<?= te('Have you confirmed who is asking? A new code replaces any earlier one.') ?>">
                                 <?= csrfField() ?>
                                 <button type="submit" class="btn btn--ghost btn--sm" style="font-size:.75rem;"><?= te('Parent reset code') ?></button>
                             </form>
@@ -229,7 +229,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                             <a href="<?= BASE_URL ?>/parents/<?= (int) $parent['id'] ?>/edit" class="btn btn--ghost btn--sm" style="font-size:.75rem; margin-left:.5rem;"><?= te('Edit') ?></a>
                             <?php if (($parent['status'] ?? 'active') === 'active'): ?>
                                 <form method="POST" action="<?= BASE_URL ?>/parents/<?= (int) $parent['id'] ?>/deactivate" style="display:inline; margin-left:.5rem;"
-                                      onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('Deactivate this guardian\'s login? The student and any other guardian are not affected.')), ENT_QUOTES, 'UTF-8') ?>);">
+                                      data-confirm="<?= te('Deactivate this guardian\'s login? The student and any other guardian are not affected.') ?>">
                                     <?= csrfField() ?>
                                     <button type="submit" class="btn btn--ghost btn--sm" style="font-size:.75rem;"><?= te('Deactivate') ?></button>
                                 </form>

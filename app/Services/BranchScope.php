@@ -226,6 +226,44 @@ class BranchScope
     }
 
     /**
+     * Whether the signed-in user may CHANGE another staff account: edit
+     * it, switch it on or off, or reset its password. Stricter than
+     * allowsUser() (which is about seeing it): a branch admin manages only
+     * people who belong to their branch alone. Someone who also works in
+     * another branch -- the teacher who teaches in every city, say -- is
+     * shared, so only the super admin may change them; otherwise one
+     * city's admin could reset the shared teacher's password, sign in as
+     * her and read every other city's students. Nobody manages their own
+     * account from here (that is what the profile page is for), so an
+     * admin cannot switch themselves off by mistake either.
+     */
+    public function allowsManageUser(int $targetUserId): bool
+    {
+        if ($targetUserId === $this->userId) {
+            return false;
+        }
+        if ($this->isGlobal()) {
+            return true;
+        }
+        $inst = $this->instituteIds() ?? [];
+        if ($inst === [] || $this->isTeacher() || $this->role !== 'admin') {
+            return false;
+        }
+        $in = implode(',', array_map('intval', $inst));
+        $stmt = $this->db->prepare(
+            "SELECT 1 FROM users u
+              WHERE u.id = :t AND u.role NOT IN ('super_admin', 'admin')
+                AND (EXISTS (SELECT 1 FROM user_institutes ui WHERE ui.user_id = u.id AND ui.institute_id IN ($in))
+                  OR EXISTS (SELECT 1 FROM classes c WHERE c.teacher_id = u.id AND c.institute_id IN ($in)))
+                AND NOT EXISTS (SELECT 1 FROM user_institutes ui WHERE ui.user_id = u.id AND ui.institute_id NOT IN ($in))
+                AND NOT EXISTS (SELECT 1 FROM classes c WHERE c.teacher_id = u.id AND c.institute_id NOT IN ($in))"
+        );
+        $stmt->execute([':t' => $targetUserId]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    /**
      * " AND <column> IN (1,2,3)" for a query, or "" when unrestricted, or
      * " AND 1 = 0" when the scope is empty. Ids are integers from the
      * database, so they are inlined safely.

@@ -816,6 +816,62 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
         });
     })();
     </script>
+    <!-- In-page confirm box for risky actions. A form or its submit button
+         carries data-confirm="message"; nothing else is needed. Replaces
+         window.confirm(), which some browsers and embedded viewers block
+         silently -- the button then looked dead. -->
+    <div class="confirm-box" id="confirmBox" hidden>
+        <div class="confirm-box__panel" role="alertdialog" aria-modal="true" aria-labelledby="confirmBoxText">
+            <p id="confirmBoxText" class="confirm-box__text"></p>
+            <div class="confirm-box__actions">
+                <button type="button" class="btn btn--ghost btn--sm" id="confirmBoxNo"><?= te('Cancel') ?></button>
+                <button type="button" class="btn btn--primary btn--sm" id="confirmBoxYes"><?= te('Yes, continue') ?></button>
+            </div>
+        </div>
+    </div>
+    <style>
+        .confirm-box { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 1rem; background: rgba(2, 6, 23, .55); backdrop-filter: blur(2px); }
+        .confirm-box[hidden] { display: none; }
+        .confirm-box__panel { width: min(100%, 420px); background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem 1.25rem 1rem; box-shadow: var(--shadow-xl); }
+        .confirm-box__text { margin: 0 0 1.1rem; line-height: 1.5; }
+        .confirm-box__actions { display: flex; justify-content: flex-end; gap: .5rem; }
+    </style>
+    <script>
+    (function () {
+        var box = document.getElementById('confirmBox');
+        if (!box) { return; }
+        var text = document.getElementById('confirmBoxText'), yes = document.getElementById('confirmBoxYes'), no = document.getElementById('confirmBoxNo');
+        var pending = null, lastFocus = null;
+        function close() { box.hidden = true; pending = null; if (lastFocus) { lastFocus.focus(); } }
+        no.addEventListener('click', close);
+        box.addEventListener('click', function (e) { if (e.target === box) { close(); } });
+        document.addEventListener('keydown', function (e) { if (!box.hidden && e.key === 'Escape') { close(); } });
+        yes.addEventListener('click', function () {
+            var p = pending; box.hidden = true; pending = null;
+            if (!p) { return; }
+            // Keep the clicked button's name/value, which form.submit() would drop.
+            if (p.btn && p.btn.name) {
+                var h = document.createElement('input');
+                h.type = 'hidden'; h.name = p.btn.name; h.value = p.btn.value;
+                p.form.appendChild(h);
+            }
+            HTMLFormElement.prototype.submit.call(p.form);
+        });
+        document.addEventListener('submit', function (ev) {
+            var form = ev.target, btn = ev.submitter || null;
+            var msg = (btn && btn.getAttribute('data-confirm')) || form.getAttribute('data-confirm');
+            if (!msg) { return; }
+            ev.preventDefault();
+            pending = { form: form, btn: btn };
+            lastFocus = btn || document.activeElement;
+            text.textContent = msg;
+            var danger = !!(btn && btn.classList.contains('btn--danger'));
+            yes.className = 'btn btn--sm ' + (danger ? 'btn--danger' : 'btn--primary');
+            box.hidden = false;
+            yes.focus();
+        }, true);
+    })();
+    </script>
 
     <?php if (in_array(session_get('user_type'), ['student', 'parent'], true)): ?>
         <?php if ($featureOn('ai_assistant')): ?>

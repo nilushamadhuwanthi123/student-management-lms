@@ -44,7 +44,7 @@ $currentMonth = $currentMonth ?? date('Y-m');
         </div>
 
         <div class="d-flex gap-1">
-            <button type="submit" class="btn btn--primary" onclick="return confirm('Generate monthly invoices for all active enrollments for this period?')">
+            <button type="submit" class="btn btn--primary" data-confirm="<?= te('Generate monthly invoices for all active enrollments for this period?') ?>">
                 &#9881; Generate Invoices
             </button>
             <a href="<?= BASE_URL ?>/payments" class="btn btn--ghost">Cancel</a>

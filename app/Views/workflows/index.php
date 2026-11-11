@@ -45,7 +45,7 @@ $baseUrl      = defined('BASE_URL') ? BASE_URL : '';
                 <div class="approval-card__actions">
                     <form method="POST" action="<?= $baseUrl ?>/workflows/<?= (int) $wf['id'] ?>/approve" style="display:inline;">
                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
-                        <button type="submit" class="btn btn--primary btn--sm" onclick="return confirm('Approve this workflow?')">
+                        <button type="submit" class="btn btn--primary btn--sm" data-confirm="<?= te('Approve this workflow?') ?>">
                             Approve
                         </button>
                     </form>

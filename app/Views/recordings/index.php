@@ -85,7 +85,7 @@ $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'
                             <?php endif; ?>
 
                             <form method="POST" action="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/recordings/<?= (int) $r['id'] ?>/archive"
-                                  style="display:inline;" onsubmit="return confirm('<?= te('Take this down? Students will stop seeing it.') ?>');">
+                                  style="display:inline;" data-confirm="<?= te('Take this down? Students will stop seeing it.') ?>">
                                 <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                 <button type="submit" class="btn btn--ghost btn--sm" style="color:var(--danger);"><?= te('Take down') ?></button>
                             </form>

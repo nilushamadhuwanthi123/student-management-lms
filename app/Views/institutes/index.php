@@ -113,7 +113,7 @@ $search       = $search ?? '';
                                         </button>
                                     </form>
 
-                                    <form method="POST" action="<?= BASE_URL ?>/institutes/<?= (int) $inst['id'] ?>/delete" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete institute <?= htmlspecialchars($inst['name'], ENT_QUOTES, 'UTF-8') ?>?');">
+                                    <form method="POST" action="<?= BASE_URL ?>/institutes/<?= (int) $inst['id'] ?>/delete" style="margin:0;" data-confirm="<?= htmlspecialchars(t('Delete the branch {name}? This cannot be undone.', ['name' => $inst['name']]), ENT_QUOTES, 'UTF-8') ?>">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                         <button type="submit" class="btn btn--danger btn--xs" title="Delete Institute">
                                             Delete

@@ -53,17 +53,37 @@ class UserController extends BaseController
         $scope = BranchScope::current();
         if (!$scope->isGlobal()) {
             $users = array_values(array_filter($users, static fn (array $u): bool => $scope->allowsUser((int) $u['id'])));
+            // Every figure on the page is this branch's own: the totals are
+            // worked out from the branch's people, never the whole system.
+            $mine = array_values(array_filter($this->userModel->getFilteredUsers([]), static fn (array $u): bool => $scope->allowsUser((int) $u['id'])));
+            $count = static function (array $roles, bool $activeOnly) use ($mine): int {
+                return count(array_filter($mine, static fn (array $u): bool => in_array($u['role'], $roles, true) && (!$activeOnly || $u['status'] === 'active')));
+            };
             $kpi = [
-                'total'        => count($users),
-                'active_users' => count(array_filter($users, static fn (array $u): bool => $u['status'] === 'active')),
-            ] + $kpi;
+                'total'        => count($mine),
+                'active_users' => count(array_filter($mine, static fn (array $u): bool => $u['status'] === 'active')),
+                'admins'       => ['active' => $count(['admin', 'super_admin'], true), 'total' => $count(['admin', 'super_admin'], false)],
+                'coordinators' => ['active' => $count(['coordinator'], true), 'total' => $count(['coordinator'], false)],
+                'staff'        => ['active' => $count(['staff'], true), 'total' => $count(['staff'], false)],
+                'teachers'     => ['active' => $count(['teacher'], true), 'total' => $count(['teacher'], false)],
+            ];
         }
+        // What the signed-in user may do to each card.
+        foreach ($users as &$u) {
+            $u['can_manage'] = $scope->allowsManageUser((int) $u['id']);
+            $u['manage_note'] = $u['can_manage'] ? '' : $this->manageBlockReason((int) $u['id']);
+        }
+        unset($u);
 
-        // Dropdowns for filters
-        $institutes = array_values(array_filter($this->instituteModel->getActiveInstitutes(), static fn (array $i): bool => BranchScope::current()->allowsInstitute((int) $i['id'])));
-        $classes = !empty($instFilter) 
+        // Dropdowns for filters: only this branch's branches and classes.
+        if ($instFilter !== '' && !$scope->allowsInstitute((int) $instFilter)) {
+            $instFilter = '';
+        }
+        $institutes = array_values(array_filter($this->instituteModel->getActiveInstitutes(), static fn (array $i): bool => $scope->allowsInstitute((int) $i['id'])));
+        $classes = !empty($instFilter)
             ? $this->classModel->getActiveClasses((int) $instFilter)
             : $this->classModel->getActiveClasses();
+        $classes = array_values(array_filter($classes, static fn (array $c): bool => $scope->allowsClass((int) $c['id'])));
 
         $this->view('users/index', [
             'pageTitle'  => 'User Management',
@@ -282,7 +302,7 @@ class UserController extends BaseController
             $this->flash('error', 'User not found.');
             $this->redirect('/users');
         }
-        $this->requireUserInScope((int) $user['id']);
+        $this->requireUserManageable((int) $user['id']);
 
         $scope = BranchScope::current();
         $institutes = $this->instituteModel->getActiveInstitutes();
@@ -327,7 +347,7 @@ class UserController extends BaseController
             $this->flash('error', 'User not found.');
             $this->redirect('/users');
         }
-        $this->requireUserInScope((int) $user['id']);
+        $this->requireUserManageable((int) $user['id']);
 
         $fullName    = trim($_POST['full_name'] ?? '');
         $dob         = trim($_POST['date_of_birth'] ?? '') ?: null;
@@ -426,13 +446,13 @@ class UserController extends BaseController
             AuthMiddleware::ROLE_ADMIN,
         ]);
         verifyCsrfToken();
-        $this->requireUserInScope((int) $id);
+        $this->requireUserManageable((int) $id);
 
         $newStatus = $this->userModel->toggleStatus((int) $id);
         $this->logAudit('toggle_user_status', 'user', (int) $id, ['new_status' => $newStatus]);
 
         $this->flash('success', "User status updated to " . ucfirst($newStatus) . ".");
-        $this->back();
+        $this->redirect('/users');
     }
 
     /**
@@ -449,7 +469,7 @@ class UserController extends BaseController
 
         // A branch admin could previously reset ANY account's password by
         // id, including the super admin's. Now only people in their branch.
-        $this->requireUserInScope((int) $id);
+        $this->requireUserManageable((int) $id);
         if ((int) $id !== (int) session_get('user_id')) {
             $target = $this->userModel->find((int) $id);
             if ($target && $target['role'] === 'super_admin' && !BranchScope::current()->isGlobal()) {
@@ -508,6 +528,30 @@ class UserController extends BaseController
         }
     }
 
+    /** For anything that changes the account; see BranchScope::allowsManageUser(). */
+    private function requireUserManageable(int $userId): void
+    {
+        $this->requireUserInScope($userId);
+        if (!BranchScope::current()->allowsManageUser($userId)) {
+            http_response_code(403);
+            $this->flash('error', $this->manageBlockReason($userId));
+            $this->redirect('/users');
+        }
+    }
+
+    /** Why the signed-in user may not change this account (shown on the card and as the error). */
+    private function manageBlockReason(int $userId): string
+    {
+        if ((int) session_get('user_id') === $userId) {
+            return 'This is your own account. Change your details from My Profile.';
+        }
+        $role = (string) ($this->userModel->find($userId)['role'] ?? '');
+        if (in_array($role, ['admin', 'super_admin'], true)) {
+            return 'Only the super admin can change an admin account.';
+        }
+        return 'Works in more than one branch, so only the super admin can change this account.';
+    }
+
     /**
      * Delete User
      */
@@ -524,7 +568,7 @@ class UserController extends BaseController
             $this->flash('error', 'User not found.');
             $this->redirect('/users');
         }
-        $this->requireUserInScope((int) $user['id']);
+        $this->requireUserManageable((int) $user['id']);
 
         if ($user['role'] === 'super_admin') {
             $this->flash('error', 'Super Admin account cannot be deleted.');

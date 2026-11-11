@@ -104,7 +104,7 @@ $currentMonth = $currentMonth ?? date('Y-m');
                             <?php if ($pmtStatus !== 'paid'): ?>
                                 <form method="POST" action="<?= BASE_URL ?>/payments/<?= (int) $pmt['id'] ?>/mark-paid" style="display:inline;">
                                     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
-                                    <button type="submit" class="btn btn--primary btn--sm" onclick="return confirm('Mark this payment as paid?')">
+                                    <button type="submit" class="btn btn--primary btn--sm" data-confirm="<?= te('Mark this payment as paid?') ?>">
                                         Mark Paid
                                     </button>
                                 </form>

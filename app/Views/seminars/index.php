@@ -49,9 +49,9 @@ $statusColor = static fn (string $status): string => match ($status) {
                     <a href="<?= BASE_URL ?>/seminars/<?= (int) $s['id'] ?>/edit" class="btn btn--ghost btn--sm"><?= te('Edit') ?></a>
                     <?php if ($s['status'] === 'draft'): ?>
                     <form method="POST" action="<?= BASE_URL ?>/seminars/<?= (int) $s['id'] ?>/publish" style="margin:0;"><?= csrfField() ?><button class="btn btn--primary btn--sm" type="submit"><?= te('Publish') ?></button></form>
-                    <form method="POST" action="<?= BASE_URL ?>/seminars/<?= (int) $s['id'] ?>/delete" style="margin:0;" onsubmit="return confirm('<?= te('Delete this draft?') ?>');"><?= csrfField() ?><button class="btn btn--ghost btn--sm" type="submit"><?= te('Delete') ?></button></form>
+                    <form method="POST" action="<?= BASE_URL ?>/seminars/<?= (int) $s['id'] ?>/delete" style="margin:0;" data-confirm="<?= te('Delete this draft?') ?>"><?= csrfField() ?><button class="btn btn--ghost btn--sm" type="submit"><?= te('Delete') ?></button></form>
                     <?php elseif ($s['status'] === 'published'): ?>
-                    <form method="POST" action="<?= BASE_URL ?>/seminars/<?= (int) $s['id'] ?>/cancel" style="margin:0;" onsubmit="return confirm('<?= te('Cancel this seminar? Everyone who can see it will see it as cancelled.') ?>');"><?= csrfField() ?><button class="btn btn--ghost btn--sm" type="submit"><?= te('Cancel') ?></button></form>
+                    <form method="POST" action="<?= BASE_URL ?>/seminars/<?= (int) $s['id'] ?>/cancel" style="margin:0;" data-confirm="<?= te('Cancel this seminar? Everyone who can see it will see it as cancelled.') ?>"><?= csrfField() ?><button class="btn btn--ghost btn--sm" type="submit"><?= te('Cancel') ?></button></form>
                     <?php endif; ?>
                 <?php endif; ?>
             </div>
