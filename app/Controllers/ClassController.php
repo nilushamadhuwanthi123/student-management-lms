@@ -12,6 +12,7 @@ class ClassController extends BaseController
     private \ClassModel $classModel;
     private \Institute $instituteModel;
     private \User $userModel;
+    private \Notification $notificationModel;
 
     public function __construct()
     {
@@ -19,6 +20,7 @@ class ClassController extends BaseController
         $this->classModel = new \ClassModel();
         $this->instituteModel = new \Institute();
         $this->userModel = new \User();
+        $this->notificationModel = new \Notification();
     }
 
     /**
@@ -62,6 +64,106 @@ class ClassController extends BaseController
             'classes'    => $classes,
             'institutes' => $institutes,
             'filters'    => $filters,
+        ], 'layouts/admin');
+    }
+
+
+    /**
+     * Hall/Room arrangement board: every active class in one branch,
+     * grouped by the physical room it uses, so an admin can see at a
+     * glance which halls are free and which are already taken -- and so
+     * any real double-booking (same room, same branch, overlapping day
+     * and time) is surfaced immediately instead of only being caught the
+     * next time someone happens to edit one of the two classes.
+     */
+    public function rooms(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+            AuthMiddleware::ROLE_COORDINATOR,
+        ]);
+
+        $scope = BranchScope::current();
+        $institutes = $this->instituteModel->getActiveInstitutes();
+        $institutes = array_values(array_filter($institutes, static fn (array $i): bool => $scope->allowsInstitute((int) $i['id'])));
+
+        $instituteId = !empty($_GET['institute_id']) ? (int) $_GET['institute_id'] : null;
+        if (($instituteId === null || !$scope->allowsInstitute($instituteId)) && $institutes !== []) {
+            $instituteId = (int) $institutes[0]['id'];
+        }
+
+        $rooms = [];
+        $conflicts = [];
+        $unassigned = [];
+
+        if ($instituteId !== null && $scope->allowsInstitute($instituteId)) {
+            $stmt = $this->classModel->query(
+                "SELECT id, class_name, subject, grade, room, teacher_id, schedule_days, start_time, end_time
+                   FROM classes
+                  WHERE institute_id = :inst AND status = 'active'
+                  ORDER BY room ASC, start_time ASC",
+                [':inst' => $instituteId]
+            );
+            $classRows = $stmt->fetchAll();
+
+            $teacherNames = [];
+            foreach ($this->userModel->getByRole('teacher') as $t) {
+                $teacherNames[(int) $t['id']] = $t['name'] ?? '';
+            }
+
+            foreach ($classRows as $row) {
+                $room = trim((string) ($row['room'] ?? ''));
+                $days = json_decode((string) ($row['schedule_days'] ?? '[]'), true) ?: [];
+                $booking = [
+                    'id'      => (int) $row['id'],
+                    'name'    => $row['class_name'],
+                    'subject' => $row['subject'],
+                    'grade'   => $row['grade'],
+                    'days'    => is_array($days) ? $days : [],
+                    'start'   => $row['start_time'],
+                    'end'     => $row['end_time'],
+                    'teacher' => $teacherNames[(int) ($row['teacher_id'] ?? 0)] ?? '',
+                ];
+                if ($room === '') {
+                    $unassigned[] = $booking;
+                    continue;
+                }
+                $rooms[$room][] = $booking;
+            }
+            ksort($rooms, SORT_NATURAL | SORT_FLAG_CASE);
+
+            foreach ($rooms as $roomName => $bookings) {
+                $n = count($bookings);
+                for ($a = 0; $a < $n; $a++) {
+                    for ($b = $a + 1; $b < $n; $b++) {
+                        if ($bookings[$a]['start'] === null || $bookings[$a]['end'] === null
+                            || $bookings[$b]['start'] === null || $bookings[$b]['end'] === null) {
+                            continue;
+                        }
+                        if (array_intersect($bookings[$a]['days'], $bookings[$b]['days']) === []) {
+                            continue;
+                        }
+                        if ($bookings[$a]['start'] < $bookings[$b]['end'] && $bookings[$b]['start'] < $bookings[$a]['end']) {
+                            $conflicts[] = [
+                                'room' => $roomName,
+                                'a'    => $bookings[$a]['name'],
+                                'b'    => $bookings[$b]['name'],
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->view('classes/rooms', [
+            'pageTitle'   => 'Hall Arrangement',
+            'institutes'  => $institutes,
+            'instituteId' => $instituteId,
+            'rooms'       => $rooms,
+            'conflicts'   => $conflicts,
+            'unassigned'  => $unassigned,
         ], 'layouts/admin');
     }
 
@@ -332,6 +434,14 @@ class ClassController extends BaseController
             ]);
 
             $this->logAudit('update_class', 'class', (int) $id, ['name' => $className]);
+            $this->notifyTeacherOfClassChanges($class, [
+                'class_name' => $className,
+                'room'       => $room,
+                'teacher_id' => $teacherId,
+                'schedule_days' => (array) $scheduleDays,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+            ]);
             $this->flash('success', "Class '{$className}' updated successfully.");
             $this->redirect('/classes');
         } catch (\Throwable $e) {
@@ -339,6 +449,75 @@ class ClassController extends BaseController
             $this->flash('error', 'Failed to update class.');
             $this->redirect(BASE_URL . "/classes/{$id}/edit");
         }
+    }
+
+    /**
+     * After an admin/coordinator edits a class, tell the teacher(s) affected
+     * so nobody shows up expecting the old hall or the old timetable.
+     * - If the hall/room changed, the (new) teacher is told the new room.
+     * - If the teacher assigned to the class changed, the old teacher is
+     *   told they were unassigned and the new teacher is told they were
+     *   assigned, each with the current room/schedule.
+     */
+    private function notifyTeacherOfClassChanges(array $before, array $after): void
+    {
+        $oldRoom      = trim((string) ($before['room'] ?? ''));
+        $newRoom      = trim((string) ($after['room'] ?? ''));
+        $oldTeacherId = !empty($before['teacher_id']) ? (int) $before['teacher_id'] : null;
+        $newTeacherId = !empty($after['teacher_id']) ? (int) $after['teacher_id'] : null;
+        $className    = (string) ($after['class_name'] ?? $before['class_name'] ?? '');
+        $scheduleText = $this->formatScheduleText((array) ($after['schedule_days'] ?? []), $after['start_time'] ?? null, $after['end_time'] ?? null);
+
+        $roomChanged    = $oldRoom !== $newRoom;
+        $teacherChanged = $oldTeacherId !== $newTeacherId;
+
+        if ($roomChanged && $newTeacherId !== null) {
+            $body = $newRoom !== ''
+                ? "The hall/room for '{$className}' has been changed to '{$newRoom}'." . ($scheduleText !== '' ? " Schedule: {$scheduleText}." : '')
+                : "The hall/room for '{$className}' has been removed. Please check with the office.";
+            $this->notificationModel->send(
+                $newTeacherId,
+                'user',
+                'Class hall changed',
+                $body,
+                'class_update',
+                ['type' => 'class', 'id' => (int) $before['id']]
+            );
+        }
+
+        if ($teacherChanged) {
+            if ($oldTeacherId !== null) {
+                $this->notificationModel->send(
+                    $oldTeacherId,
+                    'user',
+                    'Class reassigned',
+                    "You have been unassigned from '{$className}'.",
+                    'class_update',
+                    ['type' => 'class', 'id' => (int) $before['id']]
+                );
+            }
+            if ($newTeacherId !== null) {
+                $roomText = $newRoom !== '' ? " in {$newRoom}" : '';
+                $this->notificationModel->send(
+                    $newTeacherId,
+                    'user',
+                    'Class assigned to you',
+                    "You have been assigned to '{$className}'{$roomText}." . ($scheduleText !== '' ? " Schedule: {$scheduleText}." : ''),
+                    'class_update',
+                    ['type' => 'class', 'id' => (int) $before['id']]
+                );
+            }
+        }
+    }
+
+    private function formatScheduleText(array $days, ?string $start, ?string $end): string
+    {
+        $dayText = implode(', ', array_map('trim', $days));
+        if ($start && $end) {
+            $timeText = date('g:i A', strtotime($start)) . ' - ' . date('g:i A', strtotime($end));
+            return trim($dayText . ' ' . $timeText);
+        }
+        return $dayText;
     }
 
     /**
