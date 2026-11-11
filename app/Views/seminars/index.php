@@ -34,6 +34,7 @@ $statusColor = static fn (string $status): string => match ($status) {
         <div style="display:flex; justify-content:space-between; gap:.75rem; flex-wrap:wrap;">
             <div style="min-width:0;">
                 <a href="<?= BASE_URL ?>/seminars/<?= (int) $s['id'] ?>" style="font-weight:700; font-size:1.02rem; text-decoration:none; color:inherit;"><?= $e($s['title']) ?></a>
+                <?php if (!empty($s['show_on_website'])): ?><span class="badge badge--warning" style="margin-left:.35rem; vertical-align:2px;">&#128227; <?= te('On the website') ?></span><?php endif; ?>
                 <div class="text-xs text-muted">
                     <?= $e(lang_date('j M Y', (string) $s['event_date'])) ?><?= $s['start_time'] ? ', ' . $e(substr((string) $s['start_time'], 0, 5)) : '' ?>
                     &middot; <?= $e($reach($s)) ?> &middot; <?= $e($s['author'] ?? '') ?>

@@ -17,7 +17,7 @@ $action = $isEdit ? (BASE_URL . '/seminars/' . (int) $seminar['id'] . '/edit') :
     <div><h1 class="page-header__title"><?= $isEdit ? te('Edit seminar') : te('New seminar') ?></h1></div>
     <div class="page-header__actions"><a href="<?= BASE_URL ?>/seminars" class="btn btn--ghost">&larr; <?= te('Seminars & Events') ?></a></div>
 </div>
-<form method="POST" action="<?= $action ?>" class="card" style="max-width:760px;">
+<form method="POST" action="<?= $action ?>" class="card" style="max-width:760px;" enctype="multipart/form-data">
     <?= csrfField() ?>
     <div class="card__body" style="display:grid; gap:1rem;">
         <div class="form-group"><label class="form-label" for="title"><?= te('Title') ?> *</label>
@@ -41,8 +41,16 @@ $action = $isEdit ? (BASE_URL . '/seminars/' . (int) $seminar['id'] . '/edit') :
             <div class="form-group"><label class="form-label" for="online_url"><?= te('Online link (optional)') ?></label>
                 <input type="url" id="online_url" name="online_url" class="form-control" placeholder="https://" value="<?= $v('online_url') ?>"></div>
         </div>
-        <div class="form-group"><label class="form-label" for="cover_image_url"><?= te('Cover image link (optional)') ?></label>
-            <input type="url" id="cover_image_url" name="cover_image_url" class="form-control" placeholder="https://" value="<?= $v('cover_image_url') ?>"></div>
+        <?php $coverSrc = \App\Services\SeminarService::coverSrc($seminar['cover_image_url'] ?? null); ?>
+        <div class="form-group">
+            <label class="form-label" for="cover_image_file"><?= te('Poster (optional)') ?></label>
+            <?php if ($coverSrc !== ''): ?>
+                <img src="<?= $e($coverSrc) ?>" alt="" style="display:block; max-width:260px; max-height:160px; object-fit:cover; border-radius:10px; margin-bottom:.5rem; border:1px solid var(--border);" onerror="this.style.display='none';">
+            <?php endif; ?>
+            <input type="file" id="cover_image_file" name="cover_image_file" class="form-control" accept="image/jpeg,image/png,image/webp">
+            <div class="form-hint"><?= te('Upload a JPG, PNG or WEBP up to 3MB, or paste an image link below. A wide picture (about 16:9) looks best on the home page.') ?></div>
+            <input type="text" inputmode="url" id="cover_image_url" name="cover_image_url" class="form-control" style="margin-top:.5rem;" placeholder="https://" aria-label="<?= te('Image link') ?>" value="<?= $v('cover_image_url') ?>">
+        </div>
         <div class="form-group"><label class="form-label" for="max_capacity"><?= te('Capacity (optional -- leave blank for unlimited)') ?></label>
             <input type="number" id="max_capacity" name="max_capacity" class="form-control" min="1" step="1" placeholder="<?= te('e.g. 60') ?>" value="<?= $e($seminar['max_capacity'] ?? '') ?>">
             <div class="form-hint"><?= te('Once full, new registrations join a waiting list and are added automatically if a spot opens up.') ?></div></div>
@@ -83,6 +91,10 @@ $action = $isEdit ? (BASE_URL . '/seminars/' . (int) $seminar['id'] . '/edit') :
 
         <div>
             <label><input type="checkbox" name="registration_required" value="1"<?= $checked('registration_required') ?>> <?= te('Requires registration (people can RSVP from their own seminars list)') ?></label>
+        </div>
+        <div style="border:1px dashed var(--border-strong, #B4C5E0); border-radius:12px; padding:.8rem 1rem;">
+            <label style="font-weight:600;"><input type="checkbox" name="show_on_website" value="1"<?= ($isEdit ? !empty($seminar['show_on_website']) : session_get('user_role') === 'super_admin') ? ' checked' : '' ?>> &#128227; <?= te('Show on the website home page') ?></label>
+            <div class="form-hint" style="margin-top:.35rem;"><?= te('Once published, anyone visiting the website sees the title, date, time, venue, branch, poster and description until the day of the event. The online link is never shown there.') ?></div>
         </div>
         <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
             <?php if ($isEdit): ?>

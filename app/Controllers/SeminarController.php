@@ -116,10 +116,12 @@ class SeminarController extends BaseController
         $parents = isset($_POST['for_parents']) ? 1 : 0;
         $staff = isset($_POST['for_staff']) ? 1 : 0;
 
+        $showOnWebsite = isset($_POST['show_on_website']) ? 1 : 0;
+
         if ($title === '' || $eventTs === false || ($students + $parents + $staff) === 0
             || ($scope === 'grade' && $grade === '')
             || ($onlineUrl !== '' && filter_var($onlineUrl, FILTER_VALIDATE_URL) === false)
-            || ($coverImageUrl !== '' && filter_var($coverImageUrl, FILTER_VALIDATE_URL) === false)) {
+            || !$this->validCover($coverImageUrl, null)) {
             $this->flash('error', t('Write a title, pick a date, choose who should see it, and check any links.'));
             $this->redirect('/seminars/create');
         }
@@ -128,12 +130,19 @@ class SeminarController extends BaseController
             $this->flash('error', t('You can only post seminars for your own branch, grade or classes.'));
             $this->redirect('/seminars/create');
         }
+        $uploaded = $this->coverUpload();
+        if ($uploaded === false) {
+            $this->redirect('/seminars/create');
+        }
+        if ($uploaded !== null) {
+            $coverImageUrl = $uploaded;
+        }
 
         $this->db->prepare(
             "INSERT INTO seminars (title, description, cover_image_url, event_date, start_time, end_time, venue, online_url,
                                     target_scope, institute_id, grade, class_id, for_students, for_parents, for_staff,
-                                    registration_required, max_capacity, status, created_by)
-             VALUES (:t, :d, :img, :ed, :st, :et, :v, :ou, :ts, :i, :g, :c, :fs, :fp, :ff, :rr, :cap, :status, :by)"
+                                    registration_required, show_on_website, max_capacity, status, created_by)
+             VALUES (:t, :d, :img, :ed, :st, :et, :v, :ou, :ts, :i, :g, :c, :fs, :fp, :ff, :rr, :web, :cap, :status, :by)"
         )->execute([
             ':t' => mb_substr($title, 0, 255), ':d' => $description !== '' ? $description : null,
             ':img' => $coverImageUrl !== '' ? $coverImageUrl : null,
@@ -141,7 +150,7 @@ class SeminarController extends BaseController
             ':v' => $venue !== '' ? $venue : null, ':ou' => $onlineUrl !== '' ? $onlineUrl : null,
             ':ts' => $scope, ':i' => $instituteId, ':g' => $grade, ':c' => $classId,
             ':fs' => $students, ':fp' => $parents, ':ff' => $staff,
-            ':rr' => $registrationRequired, ':cap' => $maxCapacity,
+            ':rr' => $registrationRequired, ':web' => $showOnWebsite, ':cap' => $maxCapacity,
             ':status' => $publish ? 'published' : 'draft',
             ':by' => (int) session_get('user_id'),
         ]);
@@ -230,24 +239,33 @@ class SeminarController extends BaseController
         $maxCapacityRaw = trim((string) ($_POST['max_capacity'] ?? ''));
         $maxCapacity = $maxCapacityRaw !== '' && ctype_digit($maxCapacityRaw) && (int) $maxCapacityRaw > 0 ? (int) $maxCapacityRaw : null;
 
+        $showOnWebsite = isset($_POST['show_on_website']) ? 1 : 0;
+
         if ($title === '' || $eventTs === false
             || ($onlineUrl !== '' && filter_var($onlineUrl, FILTER_VALIDATE_URL) === false)
-            || ($coverImageUrl !== '' && filter_var($coverImageUrl, FILTER_VALIDATE_URL) === false)) {
+            || !$this->validCover($coverImageUrl, $seminar['cover_image_url'] ?? null)) {
             $this->flash('error', t('Write a title, pick a date, and check any links.'));
             $this->redirect('/seminars/' . (int) $seminar['id'] . '/edit');
+        }
+        $uploaded = $this->coverUpload();
+        if ($uploaded === false) {
+            $this->redirect('/seminars/' . (int) $seminar['id'] . '/edit');
+        }
+        if ($uploaded !== null) {
+            $coverImageUrl = $uploaded;
         }
 
         $sets = [
             'title = :t', 'description = :d', 'cover_image_url = :img', 'event_date = :ed',
             'start_time = :st', 'end_time = :et', 'venue = :v', 'online_url = :ou',
-            'registration_required = :rr', 'max_capacity = :cap',
+            'registration_required = :rr', 'show_on_website = :web', 'max_capacity = :cap',
         ];
         $params = [
             ':t' => mb_substr($title, 0, 255), ':d' => $description !== '' ? $description : null,
             ':img' => $coverImageUrl !== '' ? $coverImageUrl : null,
             ':ed' => date('Y-m-d', $eventTs), ':st' => $startTime !== '' ? $startTime : null, ':et' => $endTime !== '' ? $endTime : null,
             ':v' => $venue !== '' ? $venue : null, ':ou' => $onlineUrl !== '' ? $onlineUrl : null,
-            ':rr' => $registrationRequired, ':cap' => $maxCapacity,
+            ':rr' => $registrationRequired, ':web' => $showOnWebsite, ':cap' => $maxCapacity,
             ':id' => (int) $seminar['id'],
         ];
 
@@ -458,6 +476,65 @@ class SeminarController extends BaseController
             'class'  => $classId !== null && $branchScope->allowsClass($classId),
             default  => false,
         };
+    }
+
+    /**
+     * A poster/cover image is either an http(s) web address, or the path of
+     * a poster already uploaded for this seminar (kept as it was). Nothing
+     * else -- in particular no javascript: or data: address -- because the
+     * image is shown on the public home page.
+     */
+    private function validCover(string $value, ?string $existing): bool
+    {
+        if ($value === '') {
+            return true;
+        }
+        if ($existing !== null && $value === $existing && str_starts_with($existing, '/uploads/seminars/')) {
+            return true;
+        }
+        return filter_var($value, FILTER_VALIDATE_URL) !== false && (bool) preg_match('#^https?://#i', $value);
+    }
+
+    /**
+     * Save an uploaded poster, if one was chosen. Returns its public path,
+     * null when no file was chosen, or false (with an error flashed) when
+     * the file is not an acceptable image.
+     */
+    private function coverUpload(): string|false|null
+    {
+        $f = $_FILES['cover_image_file'] ?? null;
+        if (!is_array($f) || ($f['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            return null;
+        }
+        if (($f['error'] ?? 1) !== UPLOAD_ERR_OK || !is_uploaded_file((string) $f['tmp_name'])) {
+            $this->flash('error', t('The poster could not be uploaded. Please try again.'));
+            return false;
+        }
+        $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+        $mime = '';
+        if (function_exists('finfo_open')) {
+            $fi = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = (string) finfo_file($fi, (string) $f['tmp_name']);
+            finfo_close($fi);
+        }
+        if (!isset($allowed[$mime]) || @getimagesize((string) $f['tmp_name']) === false) {
+            $this->flash('error', t('The poster must be a JPG, PNG or WEBP image.'));
+            return false;
+        }
+        if ((int) $f['size'] > 3 * 1024 * 1024) {
+            $this->flash('error', t('The poster must be 3MB or smaller.'));
+            return false;
+        }
+        $dir = BASE_PATH . '/public/uploads/seminars';
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $name = 'seminar_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $allowed[$mime];
+        if (!move_uploaded_file((string) $f['tmp_name'], $dir . '/' . $name)) {
+            $this->flash('error', t('The poster could not be uploaded. Please try again.'));
+            return false;
+        }
+        return '/uploads/seminars/' . $name;
     }
 
     /**

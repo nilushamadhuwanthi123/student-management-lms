@@ -24,6 +24,23 @@ class SeminarService
     }
 
     /**
+     * The address to put in <img src> for a seminar's poster: an uploaded
+     * poster (served from this site) or an http(s) link. Anything else --
+     * an old value that is neither -- gives '' so no poster is shown.
+     */
+    public static function coverSrc(?string $value): string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return '';
+        }
+        if (preg_match('#^/uploads/seminars/[A-Za-z0-9_]+\.(jpg|png|webp)$#', $value)) {
+            return BASE_URL . $value;
+        }
+        return preg_match('#^https?://#i', $value) ? $value : '';
+    }
+
+    /**
      * Seminars a student (or a parent, about that student) should see,
      * most recently announced first.
      *

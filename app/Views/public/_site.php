@@ -180,6 +180,54 @@ if (!function_exists('site_days')) {
 .ts-mbar a { white-space: nowrap; font-size: .9rem; }
 @media (prefers-reduced-motion: reduce) { .ts-float svg, .ts-photo__frame, .ts-hero h1, .ts-hero p, .ts-eyebrow { animation: none; } .ts-btn:hover { transform: none; } }
 
+/* ---- seminars & events advertised on the home page ----------------- */
+.ts-events { background: radial-gradient(900px 380px at 100% 0%, rgba(250,204,21,.12), transparent 60%), radial-gradient(800px 380px at 0% 100%, rgba(29,78,216,.10), transparent 60%); }
+.ts-events__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 1.25rem; margin-top: 1.4rem; }
+.ts-event { background: var(--surface, #fff); border: 1px solid var(--border, #E2E8F0); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; box-shadow: 0 22px 44px -32px rgba(15,23,42,.45); transition: transform .2s ease, box-shadow .2s ease; }
+.ts-event:hover { transform: translateY(-4px); box-shadow: 0 28px 54px -30px rgba(15,23,42,.5); }
+.ts-event__media { position: relative; aspect-ratio: 16 / 9; background: #0A2A6B; overflow: hidden; }
+.ts-event__media img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
+.ts-event:hover .ts-event__media img { transform: scale(1.04); }
+.ts-event__media--plain { background: radial-gradient(500px 220px at 85% 10%, rgba(250,204,21,.35), transparent 60%), linear-gradient(135deg, #0A2A6B, #1D4ED8 60%, #7C3AED); }
+.ts-event__icon { position: absolute; right: 8%; bottom: 10%; width: 32%; height: auto; color: rgba(255,255,255,.22); z-index: 0; }
+.ts-event__media:not(.ts-event__media--plain) .ts-event__icon { display: none; }
+.ts-event__date { position: absolute; z-index: 2; left: 14px; top: 14px; background: #fff; color: #0B1B3F !important; border-radius: 14px; min-width: 58px; padding: .35rem .6rem .4rem; text-align: center; box-shadow: 0 12px 26px -12px rgba(2,6,23,.6); line-height: 1.05; }
+.ts-event__day { display: block; font-size: 1.55rem; font-weight: 800; color: #1D4ED8; }
+.ts-event__mon { display: block; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #475569; }
+.ts-event__tag { position: absolute; z-index: 2; right: 14px; top: 14px; background: #FACC15; color: #0B1B3F; font-size: .78rem; font-weight: 800; padding: .3rem .7rem; border-radius: 999px; box-shadow: 0 10px 22px -12px rgba(2,6,23,.6); }
+.ts-event__body { padding: 1.1rem 1.2rem 1.25rem; display: flex; flex-direction: column; gap: .55rem; flex: 1; }
+.ts-event__body h3 { margin: 0; font-size: 1.15rem; line-height: 1.3; color: var(--text, #0B1B3F); }
+.ts-event__meta { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; font-size: .9rem; color: var(--text-secondary, #475569); }
+.ts-event__desc { margin: 0; color: var(--text-muted, #64748B); font-size: .92rem; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ts-event__actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: auto; padding-top: .4rem; }
+.ts-event__actions .ts-btn { padding: .55rem 1.05rem; font-size: .88rem; }
+/* one event: a wide "featured" banner, picture beside the text */
+@media (min-width: 760px) {
+  .ts-events__grid--one { grid-template-columns: 1fr; }
+  .ts-events__grid--one .ts-event { flex-direction: row; }
+  .ts-events__grid--one .ts-event__media { flex: 0 0 52%; aspect-ratio: auto; min-height: 300px; }
+  .ts-events__grid--one .ts-event__body { padding: 1.6rem 1.8rem; justify-content: center; }
+  .ts-events__grid--one .ts-event__body h3 { font-size: 1.55rem; }
+  .ts-events__grid--one .ts-event__desc { -webkit-line-clamp: 5; }
+  .ts-events__grid--one .ts-event__actions { margin-top: .6rem; }
+}
+/* the rotating "Upcoming" announcement at the top of the hero */
+.ts-ad { position: relative; display: inline-flex; align-items: center; gap: .6rem; max-width: 100%; margin: 0 0 1.1rem; padding: .4rem .5rem .4rem .45rem; border-radius: 999px; background: rgba(255,255,255,.12); border: 1px solid rgba(250,204,21,.55); color: #fff !important; text-decoration: none; backdrop-filter: blur(6px); box-shadow: 0 10px 30px -14px rgba(250,204,21,.6); animation: tsRise .8s ease both; }
+.ts-ad:hover { background: rgba(255,255,255,.18); }
+.ts-ad__label { flex: 0 0 auto; display: inline-flex; align-items: center; gap: .35rem; background: #FACC15; color: #0B1B3F; font-weight: 800; font-size: .76rem; padding: .28rem .65rem; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
+.ts-ad__label::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #DC2626; box-shadow: 0 0 0 0 rgba(220,38,38,.7); animation: tsPulse 1.6s infinite; }
+@keyframes tsPulse { 0% { box-shadow: 0 0 0 0 rgba(220,38,38,.7); } 70% { box-shadow: 0 0 0 7px rgba(220,38,38,0); } 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); } }
+.ts-ad__thumb { flex: 0 0 34px; width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.7); }
+.ts-ad__rot { position: relative; min-width: 0; display: grid; }
+.ts-ad__item { grid-area: 1 / 1; display: flex; align-items: center; gap: .55rem; min-width: 0; opacity: 0; transform: translateY(6px); transition: opacity .5s ease, transform .5s ease; pointer-events: none; }
+.ts-ad__item.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.ts-ad__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; font-weight: 600; }
+.ts-ad__text small { font-weight: 500; opacity: .85; margin-left: .35rem; }
+.ts-ad__go { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.18); font-weight: 800; }
+@media (max-width: 480px) { .ts-ad__text small { display: none; } }
+@media (prefers-reduced-motion: reduce) { .ts-ad, .ts-ad__label::before { animation: none; } .ts-ad__item { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .ts-event, .ts-event__media img { transition: none; } .ts-event:hover, .ts-event:hover .ts-event__media img { transform: none; } }
+
 /* ---- hero slideshow ------------------------------------------------ */
 .ts-photo__frame { position: relative; }
 .ts-slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); transition: opacity 1.1s ease, transform 6s ease-out; }
