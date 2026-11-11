@@ -14,14 +14,14 @@ $month = $month ?? date('Y-m-01');
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">Post material</h1>
+        <h1 class="page-header__title"><?= te('Post material') ?></h1>
         <p class="text-sm text-muted">
-            To <?= htmlspecialchars($class['class_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+            <?= te('To') ?> <?= htmlspecialchars($class['class_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
         </p>
     </div>
     <div class="page-header__actions">
         <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials?month=<?= urlencode($month) ?>"
-           class="btn btn--ghost">&larr; Back</a>
+           class="btn btn--ghost">&larr; <?= te('Back') ?></a>
     </div>
 </div>
 
@@ -35,7 +35,7 @@ $month = $month ?? date('Y-m-01');
 
             <div class="form-group">
                 <label class="form-label" for="title">
-                    Title <span style="color:var(--danger);">*</span>
+                    <?= te('Title') ?> <span style="color:var(--danger);">*</span>
                 </label>
                 <input type="text" id="title" name="title" class="form-control" required
                        maxlength="255"
@@ -47,7 +47,7 @@ $month = $month ?? date('Y-m-01');
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem;">
                 <div class="form-group">
                     <label class="form-label" for="material_type">
-                        Type <span style="color:var(--danger);">*</span>
+                        <?= te('Type') ?> <span style="color:var(--danger);">*</span>
                     </label>
                     <select id="material_type" name="material_type" class="form-control" required>
                         <?php foreach ($types as $key => $label): ?>
@@ -59,72 +59,71 @@ $month = $month ?? date('Y-m-01');
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="month_year">Month this belongs to</label>
+                    <label class="form-label" for="month_year"><?= te('Month this belongs to') ?></label>
                     <input type="month" id="month_year" name="month_year" class="form-control"
                            value="<?= date('Y-m', strtotime($month)) ?>">
                     <small class="text-muted">
-                        Students who settled this month's fee can open it.
+                        <?= te("Students who settled this month's fee can open it.") ?>
                     </small>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="lesson_date">Lesson date</label>
+                    <label class="form-label" for="lesson_date"><?= te('Lesson date') ?></label>
                     <input type="date" id="lesson_date" name="lesson_date" class="form-control">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="duration_minutes">Length (minutes)</label>
+                    <label class="form-label" for="duration_minutes"><?= te('Length (minutes)') ?></label>
                     <input type="number" id="duration_minutes" name="duration_minutes"
                            class="form-control" min="1" max="600" placeholder="e.g. 95">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="description">Description</label>
+                <label class="form-label" for="description"><?= te('Description') ?></label>
                 <textarea id="description" name="description" class="form-control" rows="3"
                           placeholder="What is in it, and what the class should do with it."></textarea>
             </div>
 
             <hr style="border:none; border-top:1px solid var(--border); margin:1.5rem 0;">
 
-            <h3 style="margin:0 0 .35rem;">Where is it?</h3>
+            <h3 style="margin:0 0 .35rem;"><?= te('Where is it?') ?></h3>
             <p class="text-sm text-muted" style="margin:0 0 1rem;">
-                A link or a file &mdash; one or the other. Zoom recordings and YouTube videos
-                belong on a link; notes and past papers are better uploaded.
+                <?= te('A link or a file — one or the other. Zoom recordings and YouTube videos belong on a link; notes and past papers are better uploaded.') ?>
             </p>
 
             <div class="form-group">
-                <label class="form-label" for="external_url">Link</label>
+                <label class="form-label" for="external_url"><?= te('Link') ?></label>
                 <input type="url" id="external_url" name="external_url" class="form-control"
                        placeholder="https://zoom.us/rec/share/...">
             </div>
 
             <div style="text-align:center; margin:.75rem 0; color:var(--text-muted); font-size:.875rem;">
-                &mdash; or &mdash;
+                &mdash; <?= te('or') ?> &mdash;
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="material_file">Upload a file</label>
+                <label class="form-label" for="material_file"><?= te('Upload a file') ?></label>
                 <input type="file" id="material_file" name="material_file" class="form-control"
                        accept=".pdf,.png,.jpg,.jpeg">
                 <small class="text-muted">
-                    PDF, PNG or JPG, up to 20 MB. Put larger videos on a link instead.
+                    <?= te('PDF, PNG or JPG, up to 20 MB. Put larger videos on a link instead.') ?>
                 </small>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="status">Visibility</label>
+                <label class="form-label" for="status"><?= te('Visibility') ?></label>
                 <select id="status" name="status" class="form-control">
-                    <option value="published">Published &mdash; the class can see it</option>
-                    <option value="draft">Draft &mdash; only you can see it</option>
+                    <option value="published"><?= te('Published — the class can see it') ?></option>
+                    <option value="draft"><?= te('Draft — only you can see it') ?></option>
                 </select>
             </div>
         </div>
 
         <div class="card__footer" style="display:flex; gap:.75rem; justify-content:flex-end;">
             <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials?month=<?= urlencode($month) ?>"
-               class="btn btn--ghost">Cancel</a>
-            <button type="submit" class="btn btn--primary">Post it</button>
+               class="btn btn--ghost"><?= te('Cancel') ?></a>
+            <button type="submit" class="btn btn--primary"><?= te('Post it') ?></button>
         </div>
     </form>
 </div>

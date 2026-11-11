@@ -25,7 +25,7 @@ $typeIcon = [
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">Class material</h1>
+        <h1 class="page-header__title"><?= te('Class material') ?></h1>
         <p class="text-sm text-muted">
             <?= htmlspecialchars($class['class_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
             <?php if (!empty($class['institute_name'])): ?>
@@ -34,9 +34,9 @@ $typeIcon = [
         </p>
     </div>
     <div class="page-header__actions">
-        <a href="<?= BASE_URL ?>/classes" class="btn btn--ghost">&larr; Classes</a>
+        <a href="<?= BASE_URL ?>/classes" class="btn btn--ghost">&larr; <?= te('Classes') ?></a>
         <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials/create?month=<?= urlencode($month) ?>"
-           class="btn btn--primary">+ Post material</a>
+           class="btn btn--primary">+ <?= te('Post material') ?></a>
     </div>
 </div>
 
@@ -58,13 +58,13 @@ $typeIcon = [
         <div>
             <h3 style="margin:0;"><?= date('F Y', strtotime($month)) ?></h3>
             <p class="text-sm text-muted" style="margin:.25rem 0 0;">
-                Students who have settled this month's fee can open everything below.
+                <?= te("Students who have settled this month's fee can open everything below.") ?>
             </p>
         </div>
 
         <form method="GET" action="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials"
               style="display:flex; gap:.5rem; align-items:center;">
-            <label class="form-label" for="month" style="margin:0;">Month</label>
+            <label class="form-label" for="month" style="margin:0;"><?= te('Month') ?></label>
             <select id="month" name="month" class="form-control" style="width:auto;"
                     onchange="this.form.submit()">
                 <?php foreach ($months as $value => $label): ?>
@@ -74,31 +74,31 @@ $typeIcon = [
                     </option>
                 <?php endforeach; ?>
             </select>
-            <noscript><button type="submit" class="btn btn--ghost btn--sm">Go</button></noscript>
+            <noscript><button type="submit" class="btn btn--ghost btn--sm"><?= te('Go') ?></button></noscript>
         </form>
     </div>
 
     <?php if ($materials === []): ?>
         <div style="padding:3rem 1.5rem; text-align:center;">
             <div style="font-size:2.5rem;">&#128230;</div>
-            <h4 style="margin:.75rem 0 .35rem;">Nothing posted for <?= date('F', strtotime($month)) ?> yet</h4>
+            <h4 style="margin:.75rem 0 .35rem;"><?= htmlspecialchars(t('Nothing posted for {month} yet', ['month' => date('F', strtotime($month))]), ENT_QUOTES, 'UTF-8') ?></h4>
             <p class="text-sm text-muted" style="margin:0 0 1.25rem;">
-                Post the lesson recording, the notes and any video you want the class to have.
+                <?= te('Post the lesson recording, the notes and any video you want the class to have.') ?>
             </p>
             <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials/create?month=<?= urlencode($month) ?>"
-               class="btn btn--primary">Post the first item</a>
+               class="btn btn--primary"><?= te('Post the first item') ?></a>
         </div>
     <?php else: ?>
         <div class="table-wrap">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Item</th>
-                        <th>Type</th>
-                        <th>Lesson date</th>
-                        <th class="text-right">Opened by</th>
-                        <th>Status</th>
-                        <th class="text-right">Actions</th>
+                        <th><?= te('Item') ?></th>
+                        <th><?= te('Type') ?></th>
+                        <th><?= te('Lesson date') ?></th>
+                        <th class="text-right"><?= te('Opened by') ?></th>
+                        <th><?= te('Status') ?></th>
+                        <th class="text-right"><?= te('Actions') ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -128,17 +128,17 @@ $typeIcon = [
                         </td>
                         <td>
                             <span class="badge" style="background:<?= $m['status'] === 'published' ? 'var(--success-light); color:var(--success)' : 'var(--warning-light); color:var(--warning)' ?>;">
-                                <?= ucfirst($m['status']) ?>
+                                <?= te(ucfirst($m['status'])) ?>
                             </span>
                         </td>
                         <td class="text-right">
                             <?php if (!empty($m['external_url'])): ?>
                                 <a href="<?= htmlspecialchars($m['external_url'], ENT_QUOTES, 'UTF-8') ?>"
                                    target="_blank" rel="noopener noreferrer"
-                                   class="btn btn--ghost btn--sm">Open</a>
+                                   class="btn btn--ghost btn--sm"><?= te('Open') ?></a>
                             <?php elseif (!empty($m['file_path'])): ?>
                                 <a href="<?= BASE_URL ?>/materials/<?= (int) $m['id'] ?>/download"
-                                   class="btn btn--ghost btn--sm">Download</a>
+                                   class="btn btn--ghost btn--sm"><?= te('Download') ?></a>
                             <?php endif; ?>
 
                             <form method="POST"
@@ -147,7 +147,7 @@ $typeIcon = [
                                   data-confirm="<?= te('Take this down? Students will stop seeing it.') ?>">
                                 <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                 <button type="submit" class="btn btn--ghost btn--sm" style="color:var(--danger);">
-                                    Take down
+                                    <?= te('Take down') ?>
                                 </button>
                             </form>
                         </td>
