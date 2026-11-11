@@ -13,13 +13,13 @@ $totInstituteSplit = $totInstituteSplit ?? 0.0;
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">Payment Summary Reports</h1>
-        <p class="text-sm text-muted">Monthly revenue collection, pending dues, and teacher vs institute revenue splits</p>
+        <h1 class="page-header__title"><?= te('Payment Summary Reports') ?></h1>
+        <p class="text-sm text-muted"><?= te('Monthly revenue collection, pending dues, and teacher vs institute revenue splits') ?></p>
     </div>
     <div class="page-header__actions d-flex gap-1">
-        <a href="<?= BASE_URL ?>/reports" class="btn btn--ghost btn--sm">&larr; Reports Hub</a>
-        <button type="button" class="btn btn--secondary btn--sm" onclick="window.print()">&#128424; Print Report</button>
-        <a href="<?= BASE_URL ?>/reports/payments?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" class="btn btn--primary btn--sm">&#128190; Export to CSV</a>
+        <a href="<?= BASE_URL ?>/reports" class="btn btn--ghost btn--sm">&larr; <?= te('Reports Hub') ?></a>
+        <button type="button" class="btn btn--secondary btn--sm" onclick="window.print()">&#128424; <?= te('Print Report') ?></button>
+        <a href="<?= BASE_URL ?>/reports/payments?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" class="btn btn--primary btn--sm">&#128190; <?= te('Export to CSV') ?></a>
     </div>
 </div>
 
@@ -27,30 +27,30 @@ $totInstituteSplit = $totInstituteSplit ?? 0.0;
 <div class="card mb-3 no-print">
     <form method="GET" action="<?= BASE_URL ?>/reports/payments" style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:flex-end;">
         <div style="min-width:180px;">
-            <label class="form-label text-xs">Billing Month</label>
+            <label class="form-label text-xs"><?= te('Billing Month') ?></label>
             <input type="month" name="month" class="form-control form-control--sm" value="<?= htmlspecialchars($month, ENT_QUOTES, 'UTF-8') ?>" onchange="this.form.submit()">
         </div>
-        <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-        <a href="<?= BASE_URL ?>/reports/payments" class="btn btn--ghost btn--sm">Current Month</a>
+        <button type="submit" class="btn btn--primary btn--sm"><?= te('Filter') ?></button>
+        <a href="<?= BASE_URL ?>/reports/payments" class="btn btn--ghost btn--sm"><?= te('Current Month') ?></a>
     </form>
 </div>
 
 <!-- KPI Cards -->
 <div class="kpi-grid mb-3" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:1rem;">
     <div class="kpi-card" style="border-left: 4px solid #2563EB;">
-        <span class="kpi-card__label">Total Collected (<?= htmlspecialchars($month, ENT_QUOTES, 'UTF-8') ?>)</span>
+        <span class="kpi-card__label"><?= te('Total Collected') ?> (<?= htmlspecialchars($month, ENT_QUOTES, 'UTF-8') ?>)</span>
         <span class="kpi-card__value" style="color:#1D4ED8;">Rs. <?= number_format($totCollected, 2) ?></span>
     </div>
     <div class="kpi-card" style="border-left: 4px solid #ef4444;">
-        <span class="kpi-card__label">Total Pending / Overdue</span>
+        <span class="kpi-card__label"><?= te('Total Pending / Overdue') ?></span>
         <span class="kpi-card__value" style="color:#dc2626;">Rs. <?= number_format($totPending, 2) ?></span>
     </div>
     <div class="kpi-card" style="border-left: 4px solid #3b82f6;">
-        <span class="kpi-card__label">Teacher Net Share</span>
+        <span class="kpi-card__label"><?= te('Teacher Net Share') ?></span>
         <span class="kpi-card__value" style="color:#2563eb;">Rs. <?= number_format($totTeacherSplit, 2) ?></span>
     </div>
     <div class="kpi-card" style="border-left: 4px solid #2563EB;">
-        <span class="kpi-card__label">Institute Gross Share</span>
+        <span class="kpi-card__label"><?= te('Institute Gross Share') ?></span>
         <span class="kpi-card__value" style="color:#1D4ED8;">Rs. <?= number_format($totInstituteSplit, 2) ?></span>
     </div>
 </div>
@@ -61,15 +61,15 @@ $totInstituteSplit = $totInstituteSplit ?? 0.0;
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Class Name</th>
-                    <th>Teacher</th>
-                    <th>Institute</th>
-                    <th style="text-align:center;">Enrolled</th>
-                    <th style="text-align:right;">Collected</th>
-                    <th style="text-align:right;">Pending</th>
-                    <th style="text-align:center;">Split % (T/I)</th>
-                    <th style="text-align:right;">Teacher Share</th>
-                    <th style="text-align:right;">Institute Share</th>
+                    <th><?= te('Class Name') ?></th>
+                    <th><?= te('Teacher') ?></th>
+                    <th><?= te('Institute') ?></th>
+                    <th style="text-align:center;"><?= te('Enrolled') ?></th>
+                    <th style="text-align:right;"><?= te('Collected') ?></th>
+                    <th style="text-align:right;"><?= te('Pending') ?></th>
+                    <th style="text-align:center;"><?= te('Split % (T/I)') ?></th>
+                    <th style="text-align:right;"><?= te('Teacher Share') ?></th>
+                    <th style="text-align:right;"><?= te('Institute Share') ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -96,7 +96,7 @@ $totInstituteSplit = $totInstituteSplit ?? 0.0;
                         </tr>
                     <?php endforeach; ?>
                     <tr style="background:#f8fafc; font-weight:bold; border-top:2px solid var(--border);">
-                        <td colspan="4" style="text-align:right;">Totals:</td>
+                        <td colspan="4" style="text-align:right;"><?= te('Totals:') ?></td>
                         <td style="text-align:right; color:#1D4ED8;">Rs. <?= number_format($totCollected, 2) ?></td>
                         <td style="text-align:right; color:#dc2626;">Rs. <?= number_format($totPending, 2) ?></td>
                         <td></td>
@@ -104,7 +104,7 @@ $totInstituteSplit = $totInstituteSplit ?? 0.0;
                         <td style="text-align:right; color:#1D4ED8;">Rs. <?= number_format($totInstituteSplit, 2) ?></td>
                     </tr>
                 <?php else: ?>
-                    <tr><td colspan="9" class="text-center text-muted">No payment records found for <?= htmlspecialchars($month, ENT_QUOTES, 'UTF-8') ?>.</td></tr>
+                    <tr><td colspan="9" class="text-center text-muted"><?= htmlspecialchars(t('No payment records found for {month}.', ['month' => $month]), ENT_QUOTES, 'UTF-8') ?></td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

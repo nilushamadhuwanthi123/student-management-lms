@@ -21,18 +21,18 @@ $rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">Attendance Analytics Report</h1>
-        <p class="text-sm text-muted">Period: <strong><?= date('d M Y', strtotime($startDate)) ?></strong> to <strong><?= date('d M Y', strtotime($endDate)) ?></strong></p>
+        <h1 class="page-header__title"><?= te('Attendance Analytics Report') ?></h1>
+        <p class="text-sm text-muted"><?= te('Period:') ?> <strong><?= date('d M Y', strtotime($startDate)) ?></strong> to <strong><?= date('d M Y', strtotime($endDate)) ?></strong></p>
     </div>
     <div class="page-header__actions d-flex gap-1">
         <a href="<?= BASE_URL ?>/reports" class="btn btn--ghost btn--sm">
-            &larr; Reports Hub
+            &larr; <?= te('Reports Hub') ?>
         </a>
         <button type="button" class="btn btn--secondary btn--sm" onclick="window.print()">
-            &#128424; Print Report
+            &#128424; <?= te('Print Report') ?>
         </button>
         <a href="<?= BASE_URL ?>/reports/attendance?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" class="btn btn--primary btn--sm">
-            &#128190; Export to CSV
+            &#128190; <?= te('Export to CSV') ?>
         </a>
     </div>
 </div>
@@ -41,19 +41,19 @@ $rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
 <div class="card mb-3 no-print">
     <form method="GET" action="<?= BASE_URL ?>/reports/attendance" style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:flex-end;">
         <div>
-            <label class="form-label text-xs">Start Date</label>
+            <label class="form-label text-xs"><?= te('Start Date') ?></label>
             <input type="date" name="start_date" class="form-control form-control--sm" value="<?= htmlspecialchars($startDate, ENT_QUOTES, 'UTF-8') ?>">
         </div>
 
         <div>
-            <label class="form-label text-xs">End Date</label>
+            <label class="form-label text-xs"><?= te('End Date') ?></label>
             <input type="date" name="end_date" class="form-control form-control--sm" value="<?= htmlspecialchars($endDate, ENT_QUOTES, 'UTF-8') ?>">
         </div>
 
         <div style="min-width:180px;">
-            <label class="form-label text-xs">Class Filter</label>
+            <label class="form-label text-xs"><?= te('Class Filter') ?></label>
             <select name="class_id" class="form-control form-control--sm">
-                <option value="">All Classes</option>
+                <option value=""><?= te('All Classes') ?></option>
                 <?php foreach ($classes as $c): ?>
                     <option value="<?= (int) $c['id'] ?>" <?= ($filters['class_id'] ?? '') == $c['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($c['class_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
@@ -63,9 +63,9 @@ $rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
         </div>
 
         <div style="min-width:180px;">
-            <label class="form-label text-xs">Institute Filter</label>
+            <label class="form-label text-xs"><?= te('Institute Filter') ?></label>
             <select name="institute_id" class="form-control form-control--sm">
-                <option value="">All Institutes</option>
+                <option value=""><?= te('All Institutes') ?></option>
                 <?php foreach ($institutes as $i): ?>
                     <option value="<?= (int) $i['id'] ?>" <?= ($filters['institute_id'] ?? '') == $i['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($i['name'], ENT_QUOTES, 'UTF-8') ?>
@@ -75,8 +75,8 @@ $rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
         </div>
 
         <div class="d-flex gap-1">
-            <button type="submit" class="btn btn--primary btn--sm">Apply Filters</button>
-            <a href="<?= BASE_URL ?>/reports/attendance" class="btn btn--ghost btn--sm">Reset</a>
+            <button type="submit" class="btn btn--primary btn--sm"><?= te('Apply Filters') ?></button>
+            <a href="<?= BASE_URL ?>/reports/attendance" class="btn btn--ghost btn--sm"><?= te('Reset') ?></a>
         </div>
     </form>
 </div>
@@ -84,25 +84,25 @@ $rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
 <!-- Summary Metric Cards -->
 <div class="kpi-grid mb-3">
     <div class="kpi-card" style="border-left: 4px solid var(--primary);">
-        <span class="kpi-card__label">Total Check-Ins</span>
+        <span class="kpi-card__label"><?= te('Total Check-Ins') ?></span>
         <span class="kpi-card__value"><?= number_format($totLogged) ?></span>
     </div>
 
     <div class="kpi-card" style="border-left: 4px solid #2563EB;">
-        <span class="kpi-card__label">Present Total</span>
+        <span class="kpi-card__label"><?= te('Present Total') ?></span>
         <span class="kpi-card__value" style="color:#1D4ED8;"><?= number_format($totPresent) ?></span>
-        <span class="text-xs text-muted"><?= $rate ?>% Average Rate</span>
+        <span class="text-xs text-muted"><?= $rate ?>% <?= te('Average Rate') ?></span>
     </div>
 
     <div class="kpi-card" style="border-left: 4px solid #F5B301;">
-        <span class="kpi-card__label">Late Arrivals</span>
+        <span class="kpi-card__label"><?= te('Late Arrivals') ?></span>
         <span class="kpi-card__value" style="color:#D99A00;"><?= number_format($totLate) ?></span>
     </div>
 
     <div class="kpi-card" style="border-left: 4px solid var(--danger);">
-        <span class="kpi-card__label">Red Flags</span>
+        <span class="kpi-card__label"><?= te('Red Flags') ?></span>
         <span class="kpi-card__value" style="color:var(--danger);"><?= number_format($totRedFlag) ?></span>
-        <span class="text-xs text-muted">Deactivated Scans</span>
+        <span class="text-xs text-muted"><?= te('Deactivated Scans') ?></span>
     </div>
 </div>
 
@@ -112,14 +112,14 @@ $rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Class Name</th>
-                    <th>Subject</th>
-                    <th>Institute</th>
-                    <th style="text-align:center;">Present</th>
-                    <th style="text-align:center;">Late</th>
-                    <th style="text-align:center;">Red Flags</th>
-                    <th style="text-align:center;">Total Logged</th>
+                    <th><?= te('Date') ?></th>
+                    <th><?= te('Class Name') ?></th>
+                    <th><?= te('Subject') ?></th>
+                    <th><?= te('Institute') ?></th>
+                    <th style="text-align:center;"><?= te('Present') ?></th>
+                    <th style="text-align:center;"><?= te('Late') ?></th>
+                    <th style="text-align:center;"><?= te('Red Flags') ?></th>
+                    <th style="text-align:center;"><?= te('Total Logged') ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -147,8 +147,8 @@ $rate       = ($totLogged > 0) ? round(($totPresent / $totLogged) * 100, 1) : 0;
                         <td colspan="8">
                             <div class="empty-state">
                                 <div class="empty-state__icon">&#128197;</div>
-                                <div class="empty-state__title">No attendance records for selected period</div>
-                                <div class="empty-state__text">Change the date range or filters above.</div>
+                                <div class="empty-state__title"><?= te('No attendance records for selected period') ?></div>
+                                <div class="empty-state__text"><?= te('Change the date range or filters above.') ?></div>
                             </div>
                         </td>
                     </tr>

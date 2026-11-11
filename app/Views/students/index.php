@@ -16,11 +16,11 @@ $totalStudents = $totalStudents ?? 0;
 ?>
 
 <div class="page-header">
-    <h1 class="page-header__title">Student Management</h1>
+    <h1 class="page-header__title"><?= te('Student Management') ?></h1>
     <div class="page-header__actions">
         <a href="<?= BASE_URL ?>/students/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Register New Student
+            <?= te('Register New Student') ?>
         </a>
     </div>
 </div>
@@ -33,11 +33,11 @@ $totalStudents = $totalStudents ?? 0;
                 type="text"
                 name="search"
                 class="table-search"
-                placeholder="Search by name, ID, or email..."
+                placeholder="<?= te('Search by name, ID, or email...') ?>"
                 value="<?= htmlspecialchars($filters['search'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
             >
             <select name="institute" class="form-control" style="width:auto;min-width:150px;">
-                <option value="">All Institutes</option>
+                <option value=""><?= te('All Institutes') ?></option>
                 <?php foreach ($institutes as $inst): ?>
                     <option value="<?= (int) $inst['id'] ?>" <?= ($filters['institute'] ?? '') == $inst['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($inst['name'], ENT_QUOTES, 'UTF-8') ?>
@@ -45,7 +45,7 @@ $totalStudents = $totalStudents ?? 0;
                 <?php endforeach; ?>
             </select>
             <select name="class_id" class="form-control" style="width:auto;min-width:150px;">
-                <option value="">All Classes</option>
+                <option value=""><?= te('All Classes') ?></option>
                 <?php foreach ($classes as $cls): ?>
                     <option value="<?= (int) $cls['id'] ?>" <?= ($filters['class_id'] ?? '') == $cls['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($cls['class_name'], ENT_QUOTES, 'UTF-8') ?>
@@ -53,13 +53,13 @@ $totalStudents = $totalStudents ?? 0;
                 <?php endforeach; ?>
             </select>
             <select name="status" class="form-control" style="width:auto;min-width:130px;">
-                <option value="">All Statuses</option>
-                <option value="active" <?= ($filters['status'] ?? '') === 'active' ? 'selected' : '' ?>>Active</option>
-                <option value="inactive" <?= ($filters['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
-                <option value="deactivated" <?= ($filters['status'] ?? '') === 'deactivated' ? 'selected' : '' ?>>Deactivated</option>
+                <option value=""><?= te('All Statuses') ?></option>
+                <option value="active" <?= ($filters['status'] ?? '') === 'active' ? 'selected' : '' ?>><?= te('Active') ?></option>
+                <option value="inactive" <?= ($filters['status'] ?? '') === 'inactive' ? 'selected' : '' ?>><?= te('Inactive') ?></option>
+                <option value="deactivated" <?= ($filters['status'] ?? '') === 'deactivated' ? 'selected' : '' ?>><?= te('Deactivated') ?></option>
             </select>
-            <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-            <a href="<?= BASE_URL ?>/students" class="btn btn--ghost btn--sm">Clear</a>
+            <button type="submit" class="btn btn--primary btn--sm"><?= te('Filter') ?></button>
+            <a href="<?= BASE_URL ?>/students" class="btn btn--ghost btn--sm"><?= te('Clear') ?></a>
         </form>
     </div>
 
@@ -67,13 +67,13 @@ $totalStudents = $totalStudents ?? 0;
     <table class="data-table">
         <thead>
             <tr>
-                <th data-sort>Student ID</th>
-                <th data-sort>Name</th>
-                <th data-sort>Institute</th>
-                <th>Class(es)</th>
-                <th data-sort>Status</th>
-                <th>Scholarship</th>
-                <th>Actions</th>
+                <th data-sort><?= te('Student ID') ?></th>
+                <th data-sort><?= te('Name') ?></th>
+                <th data-sort><?= te('Institute') ?></th>
+                <th><?= te('Class(es)') ?></th>
+                <th data-sort><?= te('Status') ?></th>
+                <th><?= te('Scholarship') ?></th>
+                <th><?= te('Actions') ?></th>
             </tr>
         </thead>
         <tbody>
@@ -114,29 +114,29 @@ $totalStudents = $totalStudents ?? 0;
                                 default       => 'badge--neutral',
                             };
                             ?>
-                            <span class="badge <?= $badgeClass ?>"><?= ucfirst(htmlspecialchars($status, ENT_QUOTES, 'UTF-8')) ?></span>
+                            <span class="badge <?= $badgeClass ?>"><?= te(ucfirst($status)) ?></span>
                         </td>
                         <td>
                             <?php
                             $scholarship = $student['scholarship_type'] ?? null;
                             if ($scholarship === 'half_payment') {
-                                echo '<span class="badge badge--info">50% Off</span>';
+                                echo '<span class="badge badge--info">' . te('50% Off') . '</span>';
                             } elseif ($scholarship === 'free_card') {
-                                echo '<span class="badge badge--success">Free Card</span>';
+                                echo '<span class="badge badge--success">' . te('Free Card') . '</span>';
                             } else {
-                                echo '<span class="text-sm text-muted">Full Payment</span>';
+                                echo '<span class="text-sm text-muted">' . te('Full Payment') . '</span>';
                             }
                             ?>
                         </td>
                         <td>
                             <div class="d-flex gap-1">
-                                <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>" class="btn btn--ghost btn--sm" data-tooltip="View">
+                                <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>" class="btn btn--ghost btn--sm" data-tooltip="<?= te('View') ?>">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </a>
-                                <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/edit" class="btn btn--ghost btn--sm" data-tooltip="Edit">
+                                <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/edit" class="btn btn--ghost btn--sm" data-tooltip="<?= te('Edit') ?>">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </a>
-                                <button type="button" class="btn btn--ghost btn--sm" data-tooltip="Delete" onclick="confirmAction('Are you sure you want to initiate deletion for this student?', function(){ window.location.href='<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/delete'; })">
+                                <button type="button" class="btn btn--ghost btn--sm" data-tooltip="<?= te('Delete') ?>" onclick="confirmAction('<?= te("Are you sure you want to initiate deletion for this student?") ?>', function(){ window.location.href='<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/delete'; })">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                                 </button>
                             </div>
@@ -148,9 +148,9 @@ $totalStudents = $totalStudents ?? 0;
                     <td colspan="7">
                         <div class="empty-state">
                             <div class="empty-state__icon">&#128100;</div>
-                            <div class="empty-state__title">No students found</div>
-                            <div class="empty-state__text">Try adjusting your filters or register a new student.</div>
-                            <a href="<?= BASE_URL ?>/students/create" class="btn btn--primary btn--sm">Register New Student</a>
+                            <div class="empty-state__title"><?= te('No students found') ?></div>
+                            <div class="empty-state__text"><?= te('Try adjusting your filters or register a new student.') ?></div>
+                            <a href="<?= BASE_URL ?>/students/create" class="btn btn--primary btn--sm"><?= te('Register New Student') ?></a>
                         </div>
                     </td>
                 </tr>
