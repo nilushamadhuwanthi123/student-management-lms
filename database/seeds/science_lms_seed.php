@@ -112,7 +112,7 @@ $teacherId = ensure(
      VALUES ('TCH20260100', 'teacher', :name, :email, :phone, :phone2,
              :hash, NOW(), 'active')",
     [
-        ':name'   => 'Harshani Dilrukshi',
+        ':name'   => 'Harshani Madhuwanthi',
         ':email'  => 'harshani@sciencelms.lk',
         ':phone'  => '0771234500',
         ':phone2' => '0771234500',
@@ -120,7 +120,7 @@ $teacherId = ensure(
     ]
 );
 
-$note("Teacher ready: Harshani Dilrukshi (TCH20260100)");
+$note("Teacher ready: Harshani Madhuwanthi (TCH20260100)");
 
 // One coordinator per branch, as the teacher described.
 $coordinators = [
@@ -841,7 +841,7 @@ $note("Material views ready: {$viewRows}.");
 
 echo "\n";
 echo "Demo logins (password for all: " . DEMO_PASSWORD . ")\n";
-echo "  Teacher      TCH20260100   Harshani Dilrukshi\n";
+echo "  Teacher      TCH20260100   Harshani Madhuwanthi\n";
 echo "  Admin        ADM20260101   Kasun Wijeratne\n";
 echo "  Coordinator  CRD20260101   Anura Senanayake\n";
 echo "  Student      STU20260200   (and STU20260201 upwards)\n";

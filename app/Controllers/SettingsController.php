@@ -8,6 +8,9 @@ use App\Middleware\AuthMiddleware;
 
 class SettingsController extends BaseController
 {
+    /** The only keys the General Settings form may read or write. */
+    private const GENERAL_KEYS = ['site_name', 'admin_email'];
+
     private \Setting $settingModel;
 
     public function __construct()
@@ -29,8 +32,20 @@ class SettingsController extends BaseController
             AuthMiddleware::ROLE_ADMIN,
         ]);
 
+        $settings = [];
+        foreach (self::GENERAL_KEYS as $key) {
+            $settings[$key] = (string) $this->settingModel->get($key, '');
+        }
+        // The template's old placeholder is shown as blank: saving it back
+        // would be the same as leaving the name unset anyway.
+        if (strcasecmp(trim($settings['site_name']), 'EduManager') === 0) {
+            $settings['site_name'] = '';
+        }
+
         $this->view('settings/index', [
-            'pageTitle' => 'System Settings',
+            'pageTitle'    => 'System Settings',
+            'settings'     => $settings,
+            'brandPreview' => \App\Services\PublicSite::brandName(),
         ]);
     }
 
@@ -49,11 +64,30 @@ class SettingsController extends BaseController
         verifyCsrfToken();
 
         $userId = (int) session_get('user_id');
-        $settings = $_POST['settings'] ?? [];
+        $posted = is_array($_POST['settings'] ?? null) ? $_POST['settings'] : [];
+
+        // Only the fields this form shows can be written from here; every
+        // other system setting has its own page and its own validation.
+        $settings = [];
+        foreach (self::GENERAL_KEYS as $key) {
+            if (array_key_exists($key, $posted) && is_string($posted[$key])) {
+                $settings[$key] = trim($posted[$key]);
+            }
+        }
+        if (isset($settings['site_name']) && mb_strlen($settings['site_name']) > 80) {
+            $this->flash('error', 'Site name must be 80 characters or fewer.');
+            $this->redirect(BASE_URL . '/settings');
+            return;
+        }
+        if (($settings['admin_email'] ?? '') !== '' && !filter_var($settings['admin_email'], FILTER_VALIDATE_EMAIL)) {
+            $this->flash('error', 'Please enter a valid email address.');
+            $this->redirect(BASE_URL . '/settings');
+            return;
+        }
 
         try {
             foreach ($settings as $key => $value) {
-                $this->settingModel->set((string) $key, (string) $value, $userId);
+                $this->settingModel->set($key, $value, $userId);
             }
             $this->logAudit('update_settings', 'settings', 0, ['keys' => array_keys($settings)]);
             $this->flash('success', 'Settings updated successfully.');

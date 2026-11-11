@@ -22,7 +22,7 @@ $displayName = htmlspecialchars($user['full_name'] ?? $user['name'] ?? 'User', E
 <div class="mb-3 d-flex justify-between items-center flex-wrap gap-1">
     <div>
         <h1 style="margin-bottom:0.25rem;"><?= te($greeting) ?>, <?= $displayName ?></h1>
-        <p class="text-muted" style="margin-bottom:0;"><?= te('Student Management & LMS Operational Control Center') ?></p>
+        <p class="text-muted" style="margin-bottom:0;"><?= htmlspecialchars(lang_date('l, j F Y', (new DateTime('now', new DateTimeZone('Asia/Colombo')))->format('Y-m-d')), ENT_QUOTES, 'UTF-8') ?> &middot; <?= htmlspecialchars(\App\Services\PublicSite::brandName(), ENT_QUOTES, 'UTF-8') ?></p>
     </div>
     <?php if ($role === 'super_admin'): ?>
     <div>
