@@ -123,7 +123,12 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
 <?php if ($teacher): ?>
 <section class="ts-section" id="teacher">
     <div class="ts-wrap ts-teacher ts-reveal">
-        <div class="ts-teacher__img"><img src="<?= BASE_URL ?>/assets/img/teacher-classroom.jpg" width="2048" height="1365" loading="lazy" alt="<?= $e(t('{name} with her students in class', ['name' => $teacher])) ?>"></div>
+        <div class="ts-teacher__img">
+            <img src="<?= BASE_URL ?>/assets/img/teacher-classroom.jpg" width="2048" height="1365" loading="lazy" alt="<?= $e(t('{name} with her students in class', ['name' => $teacher])) ?>">
+            <?php if ($facts['branches'] > 0): ?>
+            <div class="ts-teacher__badge"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.3-7-12a7 7 0 0 1 14 0c0 5.7-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><?= (int) $facts['branches'] ?> <?= te('branches') ?></div>
+            <?php endif; ?>
+        </div>
         <div>
             <div class="ts-kicker"><?= te('Your teacher') ?></div>
             <h2><?= $e($teacher) ?></h2>

@@ -7,6 +7,29 @@
     <meta name="description" content="<?= htmlspecialchars($metaDescription ?? 'Science classes for Grades 6 to 11.', ENT_QUOTES, 'UTF-8') ?>">
     <?= csrfMeta() ?>
 
+    <?php
+    $__ogTitle = $pageTitle ?? (\App\Services\PublicSite::teacherName() ?? t('Science classes'));
+    $__ogDesc = $metaDescription ?? 'Science classes for Grades 6 to 11.';
+    $__origin = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+    $__ogImagePath = \App\Services\PublicSite::content('teacher_photo_image');
+    $__ogImage = $__origin . BASE_URL . ($__ogImagePath !== '' ? $__ogImagePath : '/assets/img/teacher-smartboard.jpg');
+    $__ogUrl = $__origin . strtok($_SERVER['REQUEST_URI'] ?? (BASE_URL . '/'), '?');
+    ?>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='10' fill='%23FACC15'/%3E%3Cpath d='M15 6h6M16 6v9.2L8.6 28.5A2.4 2.4 0 0 0 10.7 32h14.6a2.4 2.4 0 0 0 2.1-3.5L20 15.2V6' fill='none' stroke='%230B1B3F' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+    <!-- Social share preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="<?= htmlspecialchars(\App\Services\PublicSite::teacherName() ?? t('Science classes'), ENT_QUOTES, 'UTF-8') ?>">
+    <meta property="og:title" content="<?= htmlspecialchars($__ogTitle, ENT_QUOTES, 'UTF-8') ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($__ogDesc, ENT_QUOTES, 'UTF-8') ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($__ogUrl, ENT_QUOTES, 'UTF-8') ?>">
+    <meta property="og:image" content="<?= htmlspecialchars($__ogImage, ENT_QUOTES, 'UTF-8') ?>">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= htmlspecialchars($__ogTitle, ENT_QUOTES, 'UTF-8') ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($__ogDesc, ENT_QUOTES, 'UTF-8') ?>">
+    <meta name="twitter:image" content="<?= htmlspecialchars($__ogImage, ENT_QUOTES, 'UTF-8') ?>">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
