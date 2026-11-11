@@ -88,6 +88,11 @@ class InstituteController extends BaseController
         $phone1        = trim($_POST['phone1'] ?? '');
         $phone2        = trim($_POST['phone2'] ?? '');
         $notes         = trim($_POST['notes'] ?? '');
+        // Only a real Google Maps address is kept -- this value is put in
+        // an iframe src on the public contact page.
+        $mapUrl        = \App\Services\PublicSite::isGoogleMapsUrl(trim($_POST['map_url'] ?? ''))
+            ? trim($_POST['map_url'])
+            : null;
         $status        = in_array($_POST['status'] ?? '', ['active', 'inactive'], true) ? $_POST['status'] : 'active';
 
         $errors = [];
@@ -108,6 +113,7 @@ class InstituteController extends BaseController
                 'name'           => $name,
                 'coordinator_id' => $coordinatorId,
                 'location'       => $location,
+                'map_url'        => $mapUrl,
                 'phone1'         => $phone1,
                 'phone2'         => $phone2,
                 'notes'          => $notes,
@@ -186,6 +192,11 @@ class InstituteController extends BaseController
         $phone1        = trim($_POST['phone1'] ?? '');
         $phone2        = trim($_POST['phone2'] ?? '');
         $notes         = trim($_POST['notes'] ?? '');
+        // Only a real Google Maps address is kept -- this value is put in
+        // an iframe src on the public contact page.
+        $mapUrl        = \App\Services\PublicSite::isGoogleMapsUrl(trim($_POST['map_url'] ?? ''))
+            ? trim($_POST['map_url'])
+            : null;
         $status        = in_array($_POST['status'] ?? '', ['active', 'inactive'], true) ? $_POST['status'] : $institute['status'];
 
         try {
@@ -193,6 +204,7 @@ class InstituteController extends BaseController
                 'name'           => $name,
                 'coordinator_id' => $coordinatorId,
                 'location'       => $location,
+                'map_url'        => $mapUrl,
                 'phone1'         => $phone1,
                 'phone2'         => $phone2,
                 'notes'          => $notes,

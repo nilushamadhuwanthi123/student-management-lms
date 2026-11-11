@@ -23,6 +23,10 @@ class SecurityHeaders
             . "font-src 'self' https://fonts.gstatic.com; "
             . "img-src 'self' data:; "
             . "connect-src 'self'; "
+            // The contact page embeds a Google map per branch. Without
+            // this, frame-src falls back to default-src 'self' and every
+            // map renders as an empty white box.
+            . "frame-src https://www.google.com https://maps.google.com; "
             . "frame-ancestors 'self'";
         header('Content-Security-Policy: ' . $csp);
 

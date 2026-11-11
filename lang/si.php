@@ -1950,4 +1950,13 @@ return [
     'Too many requests. Please wait 15 minutes and try again.' => 'ඉල්ලීම් ගණන වැඩියි. මිනිත්තු 15ක් රැඳී සිට නැවත උත්සාහ කරන්න.',
     'If that ID is on our records, a reset code is on its way to the phone number registered for it. It works once, for 30 minutes.' => 'එම අංකය අපගේ වාර්තාවල ඇත්නම්, ඒ සඳහා ලියාපදිංචි කර ඇති දුරකථන අංකයට යළි සැකසීමේ කේතයක් එවනු ලැබේ. එය මිනිත්තු 30ක් ඇතුළත එක් වරක් පමණක් වැඩ කරයි.',
     'Hello {name}. Your reset code for the class portal is {code}. It works once, within 30 minutes. If you did not ask for this, please tell the office.' => 'ආයුබෝවන් {name}. පන්ති ද්වාරය සඳහා ඔබගේ යළි සැකසීමේ කේතය {code} වේ. එය මිනිත්තු 30ක් ඇතුළත එක් වරක් පමණක් වැඩ කරයි. ඔබ මෙය ඉල්ලා නොසිටියේ නම්, කරුණාකර කාර්යාලයට දන්වන්න.',
+
+    // Contact page: branch maps and online links
+    'Map of {branch}' => '{branch} ශාඛාවේ සිතියම',
+    'Find us online' => 'අන්තර්ජාලයෙන් අප හමුවන්න',
+    'Facebook' => 'ෆේස්බුක්',
+
+    // Institute form: map link
+    'Google Maps link' => 'Google Maps සබැඳිය',
+    'Optional. Paste the Google Maps link for the building so the contact page pins it exactly. Left blank, the map searches for the branch name and town.' => 'විකල්පයි. ගොඩනැගිල්ලේ Google Maps සබැඳිය මෙහි අලවන්න, එවිට අමතන්න පිටුවේ සිතියම හරියටම එතැන සලකුණු කරයි. හිස්ව තැබුවොත්, ශාඛාවේ නම සහ නගරය අනුව සිතියම සොයයි.',
 ];
