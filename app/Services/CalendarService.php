@@ -79,7 +79,9 @@ class CalendarService
         $occurrences = array_merge(
             $this->classSessions($from, $to, $classIds),
             $this->quizWindows($from, $to, $classIds),
-            $this->events($from, $to, $classIds)
+            $this->events($from, $to, $classIds),
+            $this->homeworkDue($from, $to, $classIds),
+            $this->seminars($from, $to, $scope, $classIds)
         );
 
         usort($occurrences, static function (array $a, array $b): int {
@@ -361,8 +363,23 @@ class CalendarService
                 $placeholders[] = $key;
                 $params[$key] = $id;
             }
+            $in = implode(', ', $placeholders);
 
-            $sql .= ' AND (e.class_id IS NULL OR e.class_id IN (' . implode(', ', $placeholders) . '))';
+            // An event for one class reaches that class. An event with no
+            // class reaches a whole branch -- only the branch it names, or
+            // every branch when it names none (a public holiday). Without
+            // the branch check, one branch's notice showed on every other
+            // branch's calendar.
+            $instPlaceholders = [];
+            foreach (array_values($classIds) as $index => $id) {
+                $key = ":cal_inst{$index}";
+                $instPlaceholders[] = $key;
+                $params[$key] = $id;
+            }
+            $sql .= " AND (e.class_id IN ({$in})
+                       OR (e.class_id IS NULL
+                           AND (e.institute_id IS NULL
+                                OR e.institute_id IN (SELECT ci.institute_id FROM classes ci WHERE ci.id IN (" . implode(', ', $instPlaceholders) . ")))))";
         }
 
         $stmt = $this->db->prepare($sql);
@@ -389,6 +406,127 @@ class CalendarService
                     'class_name'     => $row['class_name'],
                     'grade'          => $row['grade'],
                     'institute_name' => $row['institute_name'],
+                ]
+            );
+        }
+
+        return $out;
+    }
+
+    /**
+     * Published homework, on the day it is due, for the classes in view.
+     *
+     * @param array<int, int>|null $classIds
+     * @return array<int, array<string, mixed>>
+     */
+    private function homeworkDue(DateTimeImmutable $from, DateTimeImmutable $to, ?array $classIds): array
+    {
+        $sql = "SELECT a.id, a.title, a.class_id, a.due_at, c.class_name
+                  FROM assignments a
+                  JOIN classes c ON c.id = a.class_id
+                 WHERE a.status = 'published'
+                   AND a.due_at BETWEEN :from AND :to";
+        [$sql, $params] = $this->applyClassFilter($sql, 'a.class_id', $classIds);
+        $params[':from'] = $from->format('Y-m-d') . ' 00:00:00';
+        $params[':to'] = $to->format('Y-m-d') . ' 23:59:59';
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Throwable $e) {
+            error_log('Calendar homework unavailable: ' . $e->getMessage());
+            return [];
+        }
+
+        $out = [];
+        foreach ($rows as $row) {
+            $due = new DateTimeImmutable((string) $row['due_at']);
+            $time = $due->format('H:i:s');
+            $out[] = $this->occurrence(
+                type: 'homework',
+                sourceId: (int) $row['id'],
+                classId: (int) $row['class_id'],
+                date: $due->format('Y-m-d'),
+                startTime: $time === '00:00:00' || $time === '23:59:59' ? null : $time,
+                endTime: null,
+                title: t('Homework due: {title}', ['title' => $row['title']]),
+                detail: (string) $row['class_name'],
+                room: null,
+                extra: ['class_name' => $row['class_name']]
+            );
+        }
+
+        return $out;
+    }
+
+    /**
+     * Published seminars and events, for exactly the people each one is
+     * for -- the same rule as the seminar lists: a student sees what is
+     * for students of their classes, branch or grade; a parent (scope
+     * as_parent) what is for parents; staff what is for their branch,
+     * their classes, or everyone. Cancelled ones drop off.
+     *
+     * @param array<string, mixed> $scope
+     * @param array<int, int>|null $classIds
+     * @return array<int, array<string, mixed>>
+     */
+    private function seminars(DateTimeImmutable $from, DateTimeImmutable $to, array $scope, ?array $classIds): array
+    {
+        $fromDate = $from->format('Y-m-d');
+        $toDate = $to->format('Y-m-d');
+
+        try {
+            if (isset($scope['student_id'])) {
+                $rows = array_filter(
+                    (new SeminarService($this->db))->forStudent((int) $scope['student_id'], !empty($scope['as_parent']), 200),
+                    static fn (array $s): bool => $s['event_date'] >= $fromDate && $s['event_date'] <= $toDate
+                );
+            } else {
+                $sql = "SELECT s.*, c.class_name, i.name AS institute_name
+                          FROM seminars s
+                          LEFT JOIN classes c ON c.id = s.class_id
+                          LEFT JOIN institutes i ON i.id = s.institute_id
+                         WHERE s.status = 'published' AND s.event_date BETWEEN :from AND :to";
+                $params = [':from' => $fromDate, ':to' => $toDate];
+                if ($classIds !== null) {
+                    $p = [];
+                    foreach (array_values($classIds) as $index => $id) {
+                        $p[] = ":sem{$index}";
+                        $params[":sem{$index}"] = $id;
+                    }
+                    $in = implode(', ', $p);
+                    $sql .= " AND ((s.target_scope = 'all' AND s.for_staff = 1)
+                               OR (s.target_scope = 'class' AND s.class_id IN ({$in}))
+                               OR (s.target_scope IN ('branch', 'grade') AND s.institute_id IN (SELECT cs.institute_id FROM classes cs WHERE cs.id IN ({$in})))
+                               OR (s.target_scope = 'grade' AND s.institute_id IS NULL AND s.grade IN (SELECT cg.grade FROM classes cg WHERE cg.id IN ({$in}))))";
+                }
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute($params);
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+        } catch (\Throwable $e) {
+            error_log('Calendar seminars unavailable: ' . $e->getMessage());
+            return [];
+        }
+
+        $out = [];
+        foreach ($rows as $row) {
+            $out[] = $this->occurrence(
+                type: 'seminar',
+                sourceId: (int) $row['id'],
+                classId: null,
+                date: (string) $row['event_date'],
+                startTime: $row['start_time'] ?? null,
+                endTime: $row['end_time'] ?? null,
+                title: (string) $row['title'],
+                detail: t('Seminar / event'),
+                room: $row['venue'] ?? null,
+                extra: [
+                    'event_type'     => 'seminar',
+                    'description'    => $row['description'] ?? null,
+                    'class_name'     => $row['class_name'] ?? null,
+                    'institute_name' => $row['institute_name'] ?? null,
                 ]
             );
         }

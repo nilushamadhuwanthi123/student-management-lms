@@ -1392,6 +1392,15 @@ return [
     'Choose who should see it, within your own branch, grade or classes.' => 'ඔබේම ශාඛාව, ශ්‍රේණිය හෝ පන්ති තුළ, කවුරුන් එය දැකිය යුතුද තෝරන්න.',
     'Seminar updated.' => 'සම්මන්ත්‍රණය යාවත්කාලීන කරන ලදී.',
 
+    // Calendar: homework and seminars; seminar audience
+    'Homework due: {title}' => 'ගෙදර වැඩ භාර දීම: {title}',
+    'Seminar / event' => 'සම්මන්ත්‍රණය / උත්සවය',
+    'Who receives this' => 'මෙය ලැබෙන්නේ කාටද',
+    '{n} students' => 'සිසුන් {n}',
+    '{n} parents' => 'දෙමාපියන් {n}',
+    '{n} staff' => 'කාර්ය මණ්ඩලය {n}',
+    'Nobody is in this group yet, so nobody will see it. Check the class or branch you chose.' => 'මෙම කණ්ඩායමේ තවම කිසිවෙකු නැති නිසා, කිසිවෙකුට මෙය නොපෙනේ. ඔබ තෝරාගත් පන්තිය හෝ ශාඛාව පරීක්ෂා කරන්න.',
+
     // Branch insights
     'Branch insights' => 'ශාඛා විශ්ලේෂණ',
     'Money and marks across every branch' => 'සියලු ශාඛාවල මුදල් සහ ලකුණු',

@@ -256,8 +256,8 @@ class CalendarController extends BaseController
             'month'      => $month,
             'gridFrom'   => $from,
             'gridTo'     => $to,
-            'byDate'     => $this->calendar->byDate($from, $to, ['student_id' => (int) $child['id']]),
-            'upcoming'   => $this->upcoming(['student_id' => (int) $child['id']], 8),
+            'byDate'     => $this->calendar->byDate($from, $to, ['student_id' => (int) $child['id'], 'as_parent' => true]),
+            'upcoming'   => $this->upcoming(['student_id' => (int) $child['id'], 'as_parent' => true], 8),
             'openMap'    => [],
             'childName'  => $child['full_name'],
         ]);

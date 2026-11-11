@@ -178,6 +178,7 @@ class SeminarController extends BaseController
             'pageTitle'  => $seminar['title'],
             'activePage' => 'seminars',
             'seminar'    => $seminar,
+            'audience'   => $seminarService->audienceCounts($seminar),
             'registeredCount' => $seminarService->registrationCount((int) $seminar['id']),
             'waitlistedCount' => $seminarService->waitlistCount((int) $seminar['id']),
             'attendedCount'   => $seminarService->attendedCount((int) $seminar['id']),
