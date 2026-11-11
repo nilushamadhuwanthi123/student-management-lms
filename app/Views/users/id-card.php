@@ -154,8 +154,8 @@ $cfg = $roleColors[$role] ?? [
         <!-- Front Side -->
         <div class="id-card">
             <div class="id-card__header">
-                <div class="id-card__logo">EduManager LMS</div>
-                <div class="id-card__sublogo">Higher Education Management</div>
+                <div class="id-card__logo"><?= htmlspecialchars(\App\Services\PublicSite::brandName(), ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="id-card__sublogo"><?= te('Science classes') ?> &middot; <?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
             </div>
 
             <div class="id-card__body">

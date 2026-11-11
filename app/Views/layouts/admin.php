@@ -51,7 +51,9 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title><?= te((string) ($pageTitle ?? 'EduManager')) ?> - EduManager</title>
+    <?php $__brand = \App\Services\PublicSite::brandName(); ?>
+    <title><?= isset($pageTitle) ? te((string) $pageTitle) . ' - ' : '' ?><?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?></title>
+    <?php include __DIR__ . '/../components/favicon.php'; ?>
     <?php if (function_exists('csrfMeta')): ?><?= csrfMeta() ?><?php endif; ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=<?= @filemtime(BASE_PATH . '/public/assets/css/style.css') ?: 1 ?>">
     <style>
@@ -273,12 +275,10 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar__header">
-            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                <rect width="32" height="32" rx="8" fill="var(--primary)"/>
-                <path d="M8 22V12l8-4 8 4v10l-8 4-8-4z" stroke="var(--text-inverse)" stroke-width="1.5" fill="none"/>
-                <path d="M16 12v10M8 12l8 4 8-4" stroke="var(--text-inverse)" stroke-width="1.5"/>
-            </svg>
-            <span class="sidebar__brand-text">EduManager</span>
+            <span aria-hidden="true" style="width:30px;height:30px;flex:0 0 30px;border-radius:9px;background:#FACC15;display:grid;place-items:center;color:#0B1B3F;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg>
+            </span>
+            <span class="sidebar__brand-text" title="<?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?>" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?></span>
 
             <button type="button" class="sidebar-collapse-btn" id="sidebarCollapse"
                     aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar"
@@ -684,7 +684,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
         </nav>
 
         <div class="sidebar__footer">
-            &copy; <?= date('Y') ?> EduManager
+            &copy; <?= date('Y') ?> <?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?>
         </div>
     </aside>
 

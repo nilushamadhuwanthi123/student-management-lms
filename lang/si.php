@@ -998,7 +998,7 @@ return [
     'English' => 'ඉංග්‍රීසි',
     'Tamil' => 'දෙමළ',
     // Public site v3 (teacher-centred)
-    'Harshani Dilrukshi' => 'හර්ෂනී දිල්රුක්ෂි',
+    'Harshani Madhuwanthi' => 'හර්ෂනී මධුවන්ති',
     'Science classes' => 'විද්‍යා පන්ති',
     'Grades {r}' => '{r} ශ්‍රේණි',
     'About the classes' => 'පන්ති ගැන',
@@ -1391,5 +1391,26 @@ return [
     'Write a title, pick a date, and check any links.' => 'මාතෘකාවක් ලියන්න, දිනයක් තෝරන්න, සහ ලින්ක් පරීක්ෂා කරන්න.',
     'Choose who should see it, within your own branch, grade or classes.' => 'ඔබේම ශාඛාව, ශ්‍රේණිය හෝ පන්ති තුළ, කවුරුන් එය දැකිය යුතුද තෝරන්න.',
     'Seminar updated.' => 'සම්මන්ත්‍රණය යාවත්කාලීන කරන ලදී.',
+
+    // General settings, error pages
+    'System Settings' => 'පද්ධති සැකසුම්',
+    'General Settings' => 'සාමාන්‍ය සැකසුම්',
+    'System Configuration' => 'පද්ධති වින්‍යාසය',
+    'Site name' => 'වෙබ් අඩවියේ නම',
+    'Shown in the portal header, browser tab and student ID cards. Leave blank to use the teacher\'s name.' => 'ද්වාරයේ ශීර්ෂයේ, බ්‍රවුසර ටැබයේ සහ සිසු හැඳුනුම්පත්වල පෙන්වයි. ගුරුතුමියගේ නම භාවිත කිරීමට හිස්ව තබන්න.',
+    'Timezone' => 'කාල කලාපය',
+    'Currency' => 'මුදල් ඒකකය',
+    'System timezone is fixed to Asia/Colombo' => 'පද්ධතියේ කාල කලාපය Asia/Colombo ලෙස ස්ථිරයි',
+    'System currency is fixed to LKR (Sri Lankan Rupees)' => 'පද්ධතියේ මුදල් ඒකකය LKR (ශ්‍රී ලංකා රුපියල්) ලෙස ස්ථිරයි',
+    'Admin contact email' => 'පරිපාලක සම්බන්ධතා විද්‍යුත් තැපෑල',
+    'Save Settings' => 'සැකසුම් සුරකින්න',
+    'Settings updated successfully.' => 'සැකසුම් සාර්ථකව යාවත්කාලීන කරන ලදී.',
+    'Site name must be 80 characters or fewer.' => 'වෙබ් අඩවියේ නම අක්ෂර 80කට නොවැඩි විය යුතුය.',
+    'Please enter a valid email address.' => 'කරුණාකර වලංගු විද්‍යුත් තැපැල් ලිපිනයක් ඇතුළත් කරන්න.',
+    'Page Not Found' => 'පිටුව හමු නොවීය',
+    'The page you are looking for does not exist or has been moved.' => 'ඔබ සොයන පිටුව නොපවතී, නැතහොත් වෙනත් තැනකට ගෙන ගොස් ඇත.',
+    'Go Home' => 'මුල් පිටුවට',
+    'Access Forbidden' => 'ප්‍රවේශය තහනම්',
+    'You do not have permission to access this page. Contact your administrator if you believe this is an error.' => 'මෙම පිටුවට පිවිසීමට ඔබට අවසර නැත. මෙය වැරදීමක් යැයි ඔබ සිතන්නේ නම් පරිපාලක අමතන්න.',
 
 ];

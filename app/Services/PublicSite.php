@@ -123,6 +123,35 @@ final class PublicSite
     }
 
     /**
+     * The name the portal shows in its header, tab titles and ID cards:
+     * the "Site name" the super admin saved under Settings, otherwise the
+     * teacher's name, otherwise a plain description. "EduManager" -- the
+     * name of the template this system started from -- counts as unset,
+     * so an install that never saved a name shows the teacher instead.
+     */
+    public static function brandName(): string
+    {
+        if (!array_key_exists('brand', self::$cache)) {
+            $name = '';
+            $db = self::db();
+            if ($db) {
+                try {
+                    $stmt = $db->prepare("SELECT setting_value FROM system_settings WHERE setting_key = 'site_name' LIMIT 1");
+                    $stmt->execute();
+                    $name = trim((string) ($stmt->fetchColumn() ?: ''));
+                } catch (\Throwable $e) {
+                    error_log('Site name unavailable: ' . $e->getMessage());
+                }
+            }
+            if ($name === '' || strcasecmp($name, 'EduManager') === 0) {
+                $name = self::teacherName() ?? t('Science classes');
+            }
+            self::$cache['brand'] = $name;
+        }
+        return (string) self::$cache['brand'];
+    }
+
+    /**
      * One of the small, fixed set of editable text blocks (see
      * SiteContentService) -- the only free text anywhere on this page,
      * everything else above stays strictly from real records.

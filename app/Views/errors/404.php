@@ -1,9 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<?php
+$__t = static fn (string $s): string => function_exists('te') ? te($s) : htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
+$__brand = class_exists(\App\Services\PublicSite::class) ? \App\Services\PublicSite::brandName() : '';
+?>
+<html lang="<?= function_exists('lang_current') ? lang_current() : 'en' ?>" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Page Not Found | EduManager</title>
+    <meta name="robots" content="noindex">
+    <title>404 - <?= $__t('Page Not Found') ?><?= $__brand !== '' ? ' | ' . htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') : '' ?></title>
+    <?php if (is_file(__DIR__ . '/../components/favicon.php')) { include __DIR__ . '/../components/favicon.php'; } ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
     <style>
         .error-page {
@@ -45,9 +51,9 @@
     <div class="error-page">
         <div>
             <div class="error-code">404</div>
-            <h1 class="error-title">Page Not Found</h1>
-            <p class="error-text">The page you are looking for does not exist or has been moved.</p>
-            <a href="<?= BASE_URL ?>/dashboard" class="btn btn--primary">Go Home</a>
+            <h1 class="error-title"><?= $__t('Page Not Found') ?></h1>
+            <p class="error-text"><?= $__t('The page you are looking for does not exist or has been moved.') ?></p>
+            <a href="<?= BASE_URL ?><?= (function_exists('session_get') && session_get('user_id')) ? '/dashboard' : '/' ?>" class="btn btn--primary"><?= $__t('Go Home') ?></a>
         </div>
     </div>
     <script>
