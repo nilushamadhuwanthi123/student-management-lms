@@ -54,6 +54,21 @@ final class SiteContentService
             'default' => 'Call the branch nearest to you, or send a message and the office will reply.',
             'type'    => self::TYPE_TEXT,
         ],
+        'contact_whatsapp' => [
+            'label'   => 'Contact page: WhatsApp number',
+            'default' => '077 354 2713',
+            'type'    => self::TYPE_TEXT,
+        ],
+        'contact_website_url' => [
+            'label'   => 'Contact page: website address',
+            'default' => 'https://www.harshani.com',
+            'type'    => self::TYPE_TEXT,
+        ],
+        'contact_facebook_url' => [
+            'label'   => 'Contact page: Facebook page address',
+            'default' => 'https://www.facebook.com/harshani.science',
+            'type'    => self::TYPE_TEXT,
+        ],
         'teacher_photo_image' => [
             'label'   => 'Teacher photo (home page hero and "Your teacher" section on the About page)',
             'default' => '',

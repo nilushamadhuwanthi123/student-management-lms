@@ -34,7 +34,7 @@ final class PublicSite
             if ($db) {
                 try {
                     self::$cache['branches'] = $db->query(
-                        "SELECT i.id, i.name, i.location, i.phone1, i.phone2,
+                        "SELECT i.id, i.name, i.location, i.map_url, i.phone1, i.phone2,
                                 (SELECT COUNT(*) FROM classes c WHERE c.institute_id = i.id AND c.status = 'active') AS class_count
                            FROM institutes i WHERE i.status = 'active' AND i.is_public = 1 ORDER BY i.id"
                     )->fetchAll(PDO::FETCH_ASSOC);
@@ -68,6 +68,69 @@ final class PublicSite
             }
         }
         return self::$cache['teacher'] !== null ? t((string) self::$cache['teacher']) : null;
+    }
+
+    /**
+     * The map to draw for a branch, as an embeddable Google Maps URL.
+     *
+     * A stored map_url is used only when it really is a Google Maps
+     * address, since this value ends up in an iframe src -- anything
+     * else falls back to searching for the branch name and town, which
+     * is as precise as the address on file anyway.
+     */
+    public static function mapEmbedUrl(array $branch): string
+    {
+        $stored = trim((string) ($branch['map_url'] ?? ''));
+        if ($stored !== '' && self::isGoogleMapsUrl($stored)) {
+            return str_contains($stored, 'output=embed')
+                ? $stored
+                : $stored . (str_contains($stored, '?') ? '&' : '?') . 'output=embed';
+        }
+
+        $name = trim((string) ($branch['name'] ?? ''));
+        $town = trim((string) ($branch['location'] ?? ''));
+
+        // Branch names here already carry the town ("Sepala - Pannipitiya"),
+        // so repeating it would only blur the search.
+        $query = ($town !== '' && stripos($name, $town) === false)
+            ? trim($name . ' ' . $town)
+            : ($name !== '' ? $name : $town);
+
+        return 'https://www.google.com/maps?q=' . rawurlencode($query) . '&output=embed';
+    }
+
+    /**
+     * An http(s) address safe to put in a link, or null.
+     *
+     * Everything else -- javascript:, data:, a bare word somebody typed
+     * into the settings box -- comes back null so the caller leaves the
+     * link out rather than rendering something unclickable or unsafe.
+     */
+    public static function externalUrl(?string $url): ?string
+    {
+        $url = trim((string) $url);
+        if ($url === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
+            return null;
+        }
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+
+        return in_array($scheme, ['http', 'https'], true) ? $url : null;
+    }
+
+    /** True only for an https Google Maps address, host checked exactly. */
+    public static function isGoogleMapsUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+        if (($parts['scheme'] ?? '') !== 'https' || !isset($parts['host'])) {
+            return false;
+        }
+        $host = strtolower($parts['host']);
+
+        return $host === 'maps.app.goo.gl'
+            || $host === 'goo.gl'
+            || $host === 'maps.google.com'
+            || $host === 'www.google.com'
+            || preg_match('/^(www\.)?google\.[a-z.]{2,6}$/', $host) === 1;
     }
 
     /**

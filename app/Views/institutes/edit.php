@@ -59,6 +59,12 @@ $coordinators = $coordinators ?? [];
             <input type="text" id="location" name="location" class="form-control" value="<?= htmlspecialchars($institute['location'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
         </div>
 
+        <div class="form-group">
+            <label class="form-label" for="map_url"><?= te('Google Maps link') ?></label>
+            <input type="url" id="map_url" name="map_url" class="form-control" value="<?= htmlspecialchars($institute['map_url'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="https://www.google.com/maps/...">
+            <div class="form-hint text-xs"><?= te('Optional. Paste the Google Maps link for the building so the contact page pins it exactly. Left blank, the map searches for the branch name and town.') ?></div>
+        </div>
+
         <!-- Phone 1 & Phone 2 -->
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1rem;" class="mt-2">
             <div class="form-group">

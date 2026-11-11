@@ -29,6 +29,12 @@ require __DIR__ . '/_site.php';
                     <?php if (!empty($b['location'])): ?>
                         <div class="ts-muted"><?= $e($b['location']) ?></div>
                         <a class="ts-muted" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=<?= rawurlencode($b['name'] . ' ' . $b['location']) ?>"><?= te('Open in Maps') ?></a>
+                        <iframe
+                            src="<?= $e(PublicSite::mapEmbedUrl($b)) ?>"
+                            title="<?= $e(t('Map of {branch}', ['branch' => $b['name']])) ?>"
+                            width="100%" height="190" style="border:0; border-radius:.6rem; margin-top:.7rem; display:block;"
+                            loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                            allowfullscreen></iframe>
                     <?php endif; ?>
                     <div style="margin-top:.6rem; display:flex; gap:.5rem; flex-wrap:wrap;">
                         <?php foreach (['phone1', 'phone2'] as $k): if (!empty($b[$k])): ?>
@@ -42,6 +48,33 @@ require __DIR__ . '/_site.php';
         <?php endif; ?>
     </div>
 </section>
+
+<?php
+$waNumber = \App\Services\WhatsAppService::normalisePhone(PublicSite::content('contact_whatsapp'));
+$siteUrl  = PublicSite::externalUrl(PublicSite::content('contact_website_url'));
+$fbUrl    = PublicSite::externalUrl(PublicSite::content('contact_facebook_url'));
+?>
+<?php if ($waNumber !== null || $siteUrl !== null || $fbUrl !== null): ?>
+<section class="ts-section">
+    <div class="ts-wrap">
+        <h2><?= te('Find us online') ?></h2>
+        <div style="display:flex; gap:.6rem; flex-wrap:wrap; margin-top:1rem;">
+            <?php if ($waNumber !== null): ?>
+                <a class="ts-btn ts-btn--line" target="_blank" rel="noopener"
+                   href="https://wa.me/<?= $e($waNumber) ?>">&#128172; <?= te('WhatsApp') ?> &middot; <?= $e(PublicSite::content('contact_whatsapp')) ?></a>
+            <?php endif; ?>
+            <?php if ($siteUrl !== null): ?>
+                <a class="ts-btn ts-btn--line" target="_blank" rel="noopener"
+                   href="<?= $e($siteUrl) ?>">&#127760; <?= $e(preg_replace('#^https?://#', '', $siteUrl)) ?></a>
+            <?php endif; ?>
+            <?php if ($fbUrl !== null): ?>
+                <a class="ts-btn ts-btn--line" target="_blank" rel="noopener"
+                   href="<?= $e($fbUrl) ?>">&#128100; <?= te('Facebook') ?></a>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
 
 <section class="ts-section ts-section--alt">
     <div class="ts-wrap" style="max-width:760px;">
