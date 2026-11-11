@@ -79,7 +79,7 @@ class ParentPortalController extends BaseController
     {
         [$parentId, $student] = $this->requireParent();
 
-        $p = $this->db->prepare("SELECT id, parent_name, phone1, phone2, whatsapp, status, created_at FROM parents WHERE id = :id");
+        $p = $this->db->prepare("SELECT id, parent_name, phone1, phone2, whatsapp, profile_photo, status, created_at FROM parents WHERE id = :id");
         $p->execute([':id' => $parentId]);
         $parent = $p->fetch(PDO::FETCH_ASSOC) ?: [];
 
@@ -100,6 +100,66 @@ class ParentPortalController extends BaseController
             'student'    => $student,
             'classes'    => $c->fetchAll(PDO::FETCH_ASSOC),
         ], 'layouts/admin');
+    }
+
+    /**
+     * Let a guardian set their own small profile photo. Nothing else
+     * about the account can be changed here -- the photo is purely
+     * cosmetic, so there is no reason to route it through the office.
+     *
+     * POST /family/account/photo
+     */
+    public function uploadPhoto(): void
+    {
+        [$parentId] = $this->requireParent();
+        verifyCsrfToken();
+
+        if (empty($_FILES['profile_photo']['name']) || $_FILES['profile_photo']['error'] !== UPLOAD_ERR_OK) {
+            $this->flash('error', t('Please choose a photo to upload.'));
+            $this->redirect('/family/account');
+        }
+
+        if ($_FILES['profile_photo']['size'] > 3 * 1024 * 1024) {
+            $this->flash('error', t('That photo is larger than 3 MB. Please choose a smaller one.'));
+            $this->redirect('/family/account');
+        }
+
+        $finfo    = new \finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->file($_FILES['profile_photo']['tmp_name']);
+        $allowed  = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+        if (!isset($allowed[$mimeType])) {
+            $this->flash('error', t('Photo must be a JPG, PNG, or WEBP image.'));
+            $this->redirect('/family/account');
+        }
+
+        $targetDir = BASE_PATH . '/public/uploads/profiles';
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0755, true);
+        }
+        $filename   = 'parent_' . $parentId . '_' . bin2hex(random_bytes(6)) . '.' . $allowed[$mimeType];
+        $targetPath = $targetDir . '/' . $filename;
+
+        if (!move_uploaded_file($_FILES['profile_photo']['tmp_name'], $targetPath)) {
+            $this->flash('error', t('Could not save the photo. Please try again.'));
+            $this->redirect('/family/account');
+        }
+
+        $old = $this->db->prepare('SELECT profile_photo FROM parents WHERE id = :id');
+        $old->execute([':id' => $parentId]);
+        $oldPhoto = (string) ($old->fetchColumn() ?: '');
+
+        $this->db->prepare('UPDATE parents SET profile_photo = :photo, updated_at = NOW() WHERE id = :id')
+            ->execute([':photo' => '/uploads/profiles/' . $filename, ':id' => $parentId]);
+
+        if ($oldPhoto !== '' && str_starts_with($oldPhoto, '/uploads/profiles/')) {
+            $oldPath = BASE_PATH . '/public' . $oldPhoto;
+            if (is_file($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+
+        $this->flash('success', t('Profile photo updated.'));
+        $this->redirect('/family/account');
     }
 
     /**

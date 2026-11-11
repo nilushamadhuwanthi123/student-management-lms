@@ -1,0 +1,2 @@
+ALTER TABLE parents
+  ADD COLUMN IF NOT EXISTS profile_photo VARCHAR(500) NULL AFTER whatsapp;

@@ -1666,4 +1666,12 @@ return [
     'Grade 11 (O/L)' => 'ශ්‍රේණිය 11 (O/L)',
     'Grade 12 (A/L)' => 'ශ්‍රේණිය 12 (A/L)',
     'Grade 13 (A/L)' => 'ශ්‍රේණිය 13 (A/L)',
+    // Parent account: profile photo upload
+    'Change photo' => 'ඡායාරූපය වෙනස් කරන්න',
+    'Add photo' => 'ඡායාරූපයක් එක් කරන්න',
+    'Please choose a photo to upload.' => 'උඩුගත කිරීමට ඡායාරූපයක් තෝරන්න.',
+    'That photo is larger than 3 MB. Please choose a smaller one.' => 'එම ඡායාරූපය 3 MB ට වඩා විශාලයි. කරුණාකර කුඩා එකක් තෝරන්න.',
+    'Photo must be a JPG, PNG, or WEBP image.' => 'ඡායාරූපය JPG, PNG, හෝ WEBP විය යුතුය.',
+    'Could not save the photo. Please try again.' => 'ඡායාරූපය සුරැකිය නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    'Profile photo updated.' => 'පැතිකඩ ඡායාරූපය යාවත්කාලීන කරන ලදී.',
 ];

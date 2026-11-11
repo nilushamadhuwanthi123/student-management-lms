@@ -33,10 +33,23 @@ $initial = mb_strtoupper(mb_substr((string) ($parent['parent_name'] ?? 'P'), 0, 
 <div class="acct">
     <div class="card" style="padding:1.25rem;">
         <div class="acct__head">
-            <div class="acct__avatar" aria-hidden="true"><?= $e($initial) ?></div>
+            <?php if (!empty($parent['profile_photo'])): ?>
+                <div class="acct__avatar" style="padding:0; overflow:hidden;">
+                    <img src="<?= $e($parent['profile_photo']) ?>" alt="" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+            <?php else: ?>
+                <div class="acct__avatar" aria-hidden="true"><?= $e($initial) ?></div>
+            <?php endif; ?>
             <div>
                 <div style="font-size:1.15rem; font-weight:700;"><?= $e($parent['parent_name'] ?? '') ?></div>
                 <div class="text-sm text-muted"><?= te('Parent / guardian') ?></div>
+                <form method="POST" action="<?= BASE_URL ?>/family/account/photo" enctype="multipart/form-data" style="margin-top:.4rem;">
+                    <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
+                    <label class="btn btn--ghost btn--xs" for="parentPhoto" style="cursor:pointer;">
+                        &#128247; <?= !empty($parent['profile_photo']) ? te('Change photo') : te('Add photo') ?>
+                    </label>
+                    <input type="file" id="parentPhoto" name="profile_photo" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="this.form.submit()">
+                </form>
             </div>
         </div>
         <div class="acct__rows">
