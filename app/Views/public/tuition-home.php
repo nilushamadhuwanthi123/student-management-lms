@@ -69,6 +69,43 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
     <svg class="ts-wave" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40c240 30 480 30 720 10s480-30 720 0v20H0z"/></svg>
     <div class="ts-wrap ts-hero-grid">
         <div>
+            <?php $adEvents = \App\Services\PublicSite::upcomingSeminars(6); ?>
+            <?php if ($adEvents !== []): ?>
+            <a href="#events" class="ts-ad" aria-label="<?= te('Upcoming seminars & events') ?>">
+                <span class="ts-ad__label"><?= te('Upcoming') ?></span>
+                <span class="ts-ad__rot" id="ts-ad-rot">
+                    <?php foreach ($adEvents as $i => $ad): $thumb = \App\Services\SeminarService::coverSrc($ad['cover_image_url'] ?? null); ?>
+                        <span class="ts-ad__item<?= $i === 0 ? ' is-on' : '' ?>"<?= $i === 0 ? '' : ' aria-hidden="true"' ?>>
+                            <?php if ($thumb !== ''): ?><img class="ts-ad__thumb" src="<?= $e($thumb) ?>" alt="" loading="lazy" onerror="this.remove();"><?php endif; ?>
+                            <span class="ts-ad__text"><?= $e($ad['title']) ?><small><?= $e(lang_date('j M', (string) $ad['event_date'])) ?></small></span>
+                        </span>
+                    <?php endforeach; ?>
+                </span>
+                <span class="ts-ad__go" aria-hidden="true">&rarr;</span>
+            </a>
+            <?php if (count($adEvents) > 1): ?>
+            <script>
+            (function () {
+                var box = document.getElementById('ts-ad-rot');
+                if (!box || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { return; }
+                var items = box.querySelectorAll('.ts-ad__item'), cur = 0, timer = null;
+                function next() {
+                    items[cur].classList.remove('is-on'); items[cur].setAttribute('aria-hidden', 'true');
+                    cur = (cur + 1) % items.length;
+                    items[cur].classList.add('is-on'); items[cur].removeAttribute('aria-hidden');
+                }
+                function play() { if (!timer) { timer = setInterval(next, 4000); } }
+                function stop() { clearInterval(timer); timer = null; }
+                box.parentNode.addEventListener('mouseenter', stop);
+                box.parentNode.addEventListener('mouseleave', play);
+                box.parentNode.addEventListener('focusin', stop);
+                box.parentNode.addEventListener('focusout', play);
+                document.addEventListener('visibilitychange', function () { document.hidden ? stop() : play(); });
+                play();
+            })();
+            </script>
+            <?php endif; ?>
+            <?php endif; ?>
             <div class="ts-eyebrow"><?= te('Science classes') ?> &middot; <?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
             <h1>
                 <?php if ($teacher): ?>
@@ -119,6 +156,55 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
         </div>
     </div>
 </section>
+
+<?php $events = \App\Services\PublicSite::upcomingSeminars(6); ?>
+<?php if ($events !== []): ?>
+<section class="ts-section ts-events" id="events" aria-labelledby="events-title">
+    <div class="ts-wrap">
+        <div class="ts-kicker">&#128227; <?= te("What's on") ?></div>
+        <h2 id="events-title"><?= te('Upcoming seminars & events') ?></h2><div class="ts-title-bar"></div>
+        <div class="ts-events__grid<?= count($events) === 1 ? ' ts-events__grid--one' : '' ?>">
+            <?php foreach ($events as $ev):
+                $poster = \App\Services\SeminarService::coverSrc($ev['cover_image_url'] ?? null);
+                $evTs = strtotime((string) $ev['event_date']);
+                $where = $ev['target_scope'] === 'all' || ($ev['target_scope'] === 'grade' && empty($ev['branch_name']))
+                    ? t('All branches') : (string) $ev['branch_name'];
+                $forGrade = $ev['target_scope'] === 'grade' ? (string) $ev['grade'] : ($ev['target_scope'] === 'class' ? (string) $ev['class_grade'] : '');
+                $desc = trim((string) ($ev['description'] ?? ''));
+            ?>
+            <article class="ts-event ts-reveal">
+                <div class="ts-event__media<?= $poster === '' ? ' ts-event__media--plain' : '' ?>">
+                    <?php if ($poster !== ''): ?>
+                        <img src="<?= $e($poster) ?>" alt="<?= $e($ev['title']) ?>" loading="lazy" onerror="var p=this.parentNode; this.remove(); if (p) { p.classList.add('ts-event__media--plain'); }">
+                    <?php endif; ?>
+                    <svg class="ts-event__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg>
+                    <div class="ts-event__date" aria-hidden="true">
+                        <span class="ts-event__day"><?= $e(date('j', $evTs)) ?></span>
+                        <span class="ts-event__mon"><?= $e(lang_date('M', (string) $ev['event_date'])) ?></span>
+                    </div>
+                    <?php if ($forGrade !== ''): ?><span class="ts-event__tag"><?= $e(t($forGrade)) ?></span><?php endif; ?>
+                </div>
+                <div class="ts-event__body">
+                    <h3><?= $e($ev['title']) ?></h3>
+                    <ul class="ts-event__meta">
+                        <li>&#128197; <?= $e(lang_date('l, j F Y', (string) $ev['event_date'])) ?><?php if (!empty($ev['start_time'])): ?> &middot; <?= $e(site_time($ev['start_time'])) ?><?php if (!empty($ev['end_time'])): ?> &ndash; <?= $e(site_time($ev['end_time'])) ?><?php endif; ?><?php endif; ?></li>
+                        <?php if (!empty($ev['venue'])): ?><li>&#128205; <?= $e($ev['venue']) ?></li><?php endif; ?>
+                        <li>&#127979; <?= $e($where) ?></li>
+                    </ul>
+                    <?php if ($desc !== ''): ?><p class="ts-event__desc"><?= $e($desc) ?></p><?php endif; ?>
+                    <div class="ts-event__actions">
+                        <a href="#inquiry" class="ts-btn ts-btn--blue"><?= te('Ask about this') ?></a>
+                        <?php if ((int) $ev['registration_required'] === 1): ?>
+                            <a href="<?= BASE_URL ?>/login" class="ts-btn ts-btn--line"><?= te('Students: register in the portal') ?></a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </article>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
 
 <?php if ($teacher): ?>
 <section class="ts-section" id="teacher">

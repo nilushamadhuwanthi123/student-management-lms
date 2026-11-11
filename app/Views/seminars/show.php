@@ -20,14 +20,16 @@ $where = match ($seminar['target_scope']) {
     </div>
 </div>
 <div class="card" style="max-width:760px; padding:1.25rem;">
-    <?php if (!empty($seminar['cover_image_url'])): ?>
-    <img src="<?= $e($seminar['cover_image_url']) ?>" alt="" style="width:100%; border-radius:8px; margin-bottom:1rem;" onerror="this.style.display='none';">
+    <?php $coverSrc = \App\Services\SeminarService::coverSrc($seminar['cover_image_url'] ?? null); ?>
+    <?php if ($coverSrc !== ''): ?>
+    <img src="<?= $e($coverSrc) ?>" alt="" style="width:100%; border-radius:8px; margin-bottom:1rem;" onerror="this.style.display='none';">
     <?php endif; ?>
     <div class="text-sm text-muted" style="margin-bottom:.75rem;">
         <?= $e(lang_date('j F Y', (string) $seminar['event_date'])) ?>
         <?php if ($seminar['start_time']): ?>, <?= $e(substr((string) $seminar['start_time'], 0, 5)) ?><?php if ($seminar['end_time']): ?> &ndash; <?= $e(substr((string) $seminar['end_time'], 0, 5)) ?><?php endif; ?><?php endif; ?>
         &middot; <?= $e($where) ?>
     </div>
+    <?php if (!empty($seminar['show_on_website'])): ?><div style="margin-bottom:.75rem;"><span class="badge badge--warning">&#128227; <?= te('On the website') ?></span> <span class="text-xs text-muted"><?= $seminar['status'] === 'published' ? te('Shown on the home page until the day of the event.') : te('Will appear on the home page once published.') ?></span></div><?php endif; ?>
     <?php if (!empty($seminar['venue'])): ?><div style="margin-bottom:.5rem;"><strong><?= te('Venue') ?>:</strong> <?= $e($seminar['venue']) ?></div><?php endif; ?>
     <?php if (!empty($seminar['online_url'])): ?><div style="margin-bottom:.5rem;"><strong><?= te('Online link') ?>:</strong> <a href="<?= $e($seminar['online_url']) ?>" target="_blank" rel="noopener"><?= $e($seminar['online_url']) ?></a></div><?php endif; ?>
     <?php if (!empty($seminar['description'])): ?><div style="margin-top:.75rem; white-space:pre-wrap;"><?= $e($seminar['description']) ?></div><?php endif; ?>

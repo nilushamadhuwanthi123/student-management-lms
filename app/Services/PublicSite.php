@@ -123,6 +123,49 @@ final class PublicSite
     }
 
     /**
+     * Seminars/events the staff chose to advertise on the website: published,
+     * ticked "Show on the website home page", today or later, and for a
+     * public branch (or for every branch). Only public details are read --
+     * the online meeting link is never selected here.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function upcomingSeminars(int $limit = 6): array
+    {
+        if (!array_key_exists('seminars', self::$cache)) {
+            self::$cache['seminars'] = [];
+            $db = self::db();
+            if ($db) {
+                try {
+                    $today = (new \DateTime('now', new \DateTimeZone('Asia/Colombo')))->format('Y-m-d');
+                    $stmt = $db->prepare(
+                        "SELECT s.id, s.title, s.description, s.cover_image_url, s.event_date, s.start_time, s.end_time,
+                                s.venue, s.target_scope, s.grade, s.registration_required,
+                                COALESCE(i1.name, i2.name) AS branch_name, c.grade AS class_grade
+                           FROM seminars s
+                      LEFT JOIN institutes i1 ON i1.id = s.institute_id
+                      LEFT JOIN classes c ON c.id = s.class_id
+                      LEFT JOIN institutes i2 ON i2.id = c.institute_id
+                          WHERE s.status = 'published' AND s.show_on_website = 1 AND s.event_date >= :today
+                            AND (s.target_scope = 'all'
+                                 OR (s.target_scope = 'grade' AND s.institute_id IS NULL)
+                                 OR (s.target_scope IN ('branch', 'grade') AND i1.is_public = 1 AND i1.status = 'active')
+                                 OR (s.target_scope = 'class' AND c.status = 'active' AND i2.is_public = 1 AND i2.status = 'active'))
+                       ORDER BY s.event_date ASC, s.start_time IS NULL, s.start_time ASC
+                          LIMIT " . max(1, min(12, $limit))
+                    );
+                    $stmt->execute([':today' => $today]);
+                    self::$cache['seminars'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                } catch (\Throwable $e) {
+                    // Before migration 021 the column does not exist: show no events, never an error.
+                    error_log('Public seminars unavailable: ' . $e->getMessage());
+                }
+            }
+        }
+        return self::$cache['seminars'];
+    }
+
+    /**
      * The name the portal shows in its header, tab titles and ID cards:
      * the "Site name" the super admin saved under Settings, otherwise the
      * teacher's name, otherwise a plain description. "EduManager" -- the
