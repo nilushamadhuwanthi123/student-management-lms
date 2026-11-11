@@ -157,7 +157,9 @@ class SeminarController extends BaseController
     {
         $this->requireStaffUser();
         $seminar = $this->findSeminar((int) $id);
-        if ($seminar === null) {
+        // Same rule as the list: a branch's staff never see another
+        // branch's seminar, even by typing its id into the address bar.
+        if ($seminar === null || !$this->staffMaySee($seminar)) {
             $this->flash('error', t('That seminar is not available.'));
             $this->redirect('/seminars');
         }
@@ -382,7 +384,20 @@ class SeminarController extends BaseController
         }
 
         $seminar = $this->findSeminar((int) $id);
-        if ($seminar === null || $seminar['status'] !== 'published' || (int) $seminar['registration_required'] !== 1) {
+        // Only a seminar this student (or this parent's child) is actually
+        // invited to: the same list /my/seminars shows, never any id.
+        $studentId = $type === 'student' ? $userId : 0;
+        if ($type === 'parent') {
+            $s = $this->db->prepare("SELECT student_id FROM parents WHERE id = :p");
+            $s->execute([':p' => $userId]);
+            $studentId = (int) $s->fetchColumn();
+        }
+        $invited = $studentId > 0 && in_array(
+            (int) $id,
+            array_map(static fn (array $r): int => (int) $r['id'], (new SeminarService($this->db))->forStudent($studentId, $type === 'parent')),
+            true
+        );
+        if ($seminar === null || !$invited || $seminar['status'] !== 'published' || (int) $seminar['registration_required'] !== 1) {
             $this->flash('error', t('Registration is not open for that seminar.'));
             $this->redirect($back);
         }
@@ -442,6 +457,27 @@ class SeminarController extends BaseController
                             && ($instituteId === null ? $branchScope->isGlobal() : $branchScope->allowsInstitute($instituteId)),
             'class'  => $classId !== null && $branchScope->allowsClass($classId),
             default  => false,
+        };
+    }
+
+    /**
+     * Whether the signed-in staff member may see this seminar at all --
+     * the exact rule index() applies in SQL, for a single row.
+     *
+     * @param array<string, mixed> $s
+     */
+    private function staffMaySee(array $s): bool
+    {
+        $scope = BranchScope::current();
+        if ($scope->isGlobal()) {
+            return true;
+        }
+        $inst = $s['institute_id'] !== null ? (int) $s['institute_id'] : null;
+        return match ((string) $s['target_scope']) {
+            'all'             => (int) $s['for_staff'] === 1,
+            'branch', 'grade' => $scope->allowsInstitute($inst),
+            'class'           => $scope->allowsClass($s['class_id'] !== null ? (int) $s['class_id'] : null),
+            default           => false,
         };
     }
 
