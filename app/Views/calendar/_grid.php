@@ -20,6 +20,8 @@ $monthEnd = date('Y-m-t', strtotime($monthStart));
 $tone = static fn (string $type, ?string $eventType): array => match (true) {
     $type === 'quiz_closes' => ['var(--danger)',  'rgba(180,35,24,.10)'],
     $type === 'quiz_opens'  => ['var(--info)',    'rgba(29,78,216,.10)'],
+    $type === 'seminar'     => ['#7C3AED',        'rgba(124,58,237,.12)'],
+    $type === 'homework'    => ['#DB2777',        'rgba(219,39,119,.10)'],
     $eventType === 'exam'   => ['var(--danger)',  'rgba(180,35,24,.12)'],
     $eventType === 'test'   => ['var(--warning)', 'rgba(245,179,1,.16)'],
     $eventType === 'holiday' => ['var(--success)', 'rgba(21,128,61,.10)'],

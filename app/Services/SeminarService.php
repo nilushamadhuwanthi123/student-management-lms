@@ -112,6 +112,24 @@ class SeminarService
         $s = $stmt->fetch(PDO::FETCH_ASSOC);
 
         $ann = new AnnouncementService();
+        $recipients = $this->recipients($s);
+
+        $when = date('j M', strtotime((string) $s['event_date']));
+        return $ann->notifyAll($recipients, 'Seminar: ' . $s['title'], $when . ' - ' . mb_substr((string) $s['description'], 0, 200), 'seminar', $seminarId);
+    }
+
+    /**
+     * Everyone a seminar is announced to: the students and/or parents of
+     * its class, branch, grade (in one branch or all) or of everyone, and
+     * -- when ticked -- the staff of that same class or branch. Staff of a
+     * grade-in-one-branch seminar are that branch's staff only.
+     *
+     * @param array<string, mixed> $s a seminars row
+     * @return list<array{type: string, id: int}>
+     */
+    public function recipients(array $s): array
+    {
+        $ann = new AnnouncementService();
         $recipients = match ($s['target_scope']) {
             'class'  => $ann->familiesFor((int) $s['class_id'], null, (bool) $s['for_students'], (bool) $s['for_parents']),
             'branch' => $ann->familiesFor(null, (int) $s['institute_id'], (bool) $s['for_students'], (bool) $s['for_parents']),
@@ -121,14 +139,15 @@ class SeminarService
 
         if ((int) $s['for_staff'] === 1) {
             $classId = $s['target_scope'] === 'class' ? (int) $s['class_id'] : null;
-            $instituteId = $s['target_scope'] === 'branch' ? (int) $s['institute_id'] : null;
+            $instituteId = in_array($s['target_scope'], ['branch', 'grade'], true) && $s['institute_id'] !== null
+                ? (int) $s['institute_id'] : null;
             if ($classId !== null) {
                 $q = $this->db->prepare("SELECT teacher_id FROM classes WHERE id = :c AND teacher_id IS NOT NULL");
                 $q->execute([':c' => $classId]);
                 $staff = $q->fetchAll(PDO::FETCH_COLUMN);
             } elseif ($instituteId !== null) {
                 $q = $this->db->prepare(
-                    "SELECT user_id FROM user_institutes WHERE institute_id = :i
+                    "SELECT ui.user_id FROM user_institutes ui JOIN users u ON u.id = ui.user_id AND u.status = 'active' WHERE ui.institute_id = :i
                      UNION SELECT teacher_id FROM classes WHERE institute_id = :i2 AND teacher_id IS NOT NULL"
                 );
                 $q->execute([':i' => $instituteId, ':i2' => $instituteId]);
@@ -141,8 +160,29 @@ class SeminarService
             }
         }
 
-        $when = date('j M', strtotime((string) $s['event_date']));
-        return $ann->notifyAll($recipients, 'Seminar: ' . $s['title'], $when . ' - ' . mb_substr((string) $s['description'], 0, 200), 'seminar', $seminarId);
+        return $recipients;
+    }
+
+    /**
+     * How many students, parents and staff a seminar reaches -- the same
+     * people recipients() would notify, counted.
+     *
+     * @param array<string, mixed> $s a seminars row
+     * @return array{student: int, parent: int, user: int}
+     */
+    public function audienceCounts(array $s): array
+    {
+        $out = ['student' => 0, 'parent' => 0, 'user' => 0];
+        $seen = [];
+        foreach ($this->recipients($s) as $r) {
+            $k = $r['type'] . ':' . $r['id'];
+            if (isset($seen[$k]) || !isset($out[$r['type']])) {
+                continue;
+            }
+            $seen[$k] = true;
+            $out[$r['type']]++;
+        }
+        return $out;
     }
 
     // ─── Registration (RSVP), capacity and waitlist ──────────────────

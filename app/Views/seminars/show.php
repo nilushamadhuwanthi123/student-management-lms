@@ -29,6 +29,15 @@ $where = match ($seminar['target_scope']) {
         <?php if ($seminar['start_time']): ?>, <?= $e(substr((string) $seminar['start_time'], 0, 5)) ?><?php if ($seminar['end_time']): ?> &ndash; <?= $e(substr((string) $seminar['end_time'], 0, 5)) ?><?php endif; ?><?php endif; ?>
         &middot; <?= $e($where) ?>
     </div>
+    <?php if (!empty($canManage) && isset($audience)): ?>
+    <div style="margin-bottom:.9rem; padding:.65rem .85rem; border-radius:10px; background:var(--primary-light); font-size:.9rem;">
+        <strong>&#128101; <?= te('Who receives this') ?>:</strong> <?= $e($where) ?> &middot;
+        <?= te('{n} students', ['n' => (int) $audience['student']]) ?>, <?= te('{n} parents', ['n' => (int) $audience['parent']]) ?>, <?= te('{n} staff', ['n' => (int) $audience['user']]) ?>
+        <?php if ($audience['student'] + $audience['parent'] + $audience['user'] === 0): ?>
+            <div style="color:var(--danger); margin-top:.3rem;"><?= te('Nobody is in this group yet, so nobody will see it. Check the class or branch you chose.') ?></div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
     <?php if (!empty($seminar['show_on_website'])): ?><div style="margin-bottom:.75rem;"><span class="badge badge--warning">&#128227; <?= te('On the website') ?></span> <span class="text-xs text-muted"><?= $seminar['status'] === 'published' ? te('Shown on the home page until the day of the event.') : te('Will appear on the home page once published.') ?></span></div><?php endif; ?>
     <?php if (!empty($seminar['venue'])): ?><div style="margin-bottom:.5rem;"><strong><?= te('Venue') ?>:</strong> <?= $e($seminar['venue']) ?></div><?php endif; ?>
     <?php if (!empty($seminar['online_url'])): ?><div style="margin-bottom:.5rem;"><strong><?= te('Online link') ?>:</strong> <a href="<?= $e($seminar['online_url']) ?>" target="_blank" rel="noopener"><?= $e($seminar['online_url']) ?></a></div><?php endif; ?>
