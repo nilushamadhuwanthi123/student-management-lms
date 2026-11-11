@@ -13,13 +13,13 @@ $search       = $search ?? '';
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">Institute Management</h1>
-        <p class="text-sm text-muted">Manage affiliated branch campuses, locations, and assigned coordinators</p>
+        <h1 class="page-header__title"><?= te('Institute Management') ?></h1>
+        <p class="text-sm text-muted"><?= te('Manage affiliated branch campuses, locations, and assigned coordinators') ?></p>
     </div>
     <div class="page-header__actions">
         <a href="<?= BASE_URL ?>/institutes/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            + Register Institute
+            + <?= te('Register Institute') ?>
         </a>
     </div>
 </div>
@@ -33,13 +33,13 @@ $search       = $search ?? '';
                     type="text" 
                     name="search" 
                     class="form-control" 
-                    placeholder="Search by Institute Name, location, or coordinator..." 
+                    placeholder="<?= te('Search by Institute Name, location, or coordinator...') ?>" 
                     value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>"
                 >
             </div>
-            <button type="submit" class="btn btn--primary btn--sm">Search</button>
+            <button type="submit" class="btn btn--primary btn--sm"><?= te('Search') ?></button>
             <?php if ($search !== ''): ?>
-                <a href="<?= BASE_URL ?>/institutes" class="btn btn--ghost btn--sm">Clear</a>
+                <a href="<?= BASE_URL ?>/institutes" class="btn btn--ghost btn--sm"><?= te('Clear') ?></a>
             <?php endif; ?>
         </form>
     </div>
@@ -49,11 +49,11 @@ $search       = $search ?? '';
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>INSTITUTE</th>
-                    <th>COORDINATOR</th>
-                    <th>PHONE (1)</th>
-                    <th>STATUS</th>
-                    <th style="text-align:right;">ACTIONS</th>
+                    <th><?= te('Institute') ?></th>
+                    <th><?= te('Coordinator') ?></th>
+                    <th><?= te('Phone') ?></th>
+                    <th><?= te('Status') ?></th>
+                    <th style="text-align:right;"><?= te('Actions') ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -72,7 +72,7 @@ $search       = $search ?? '';
                                             <?= htmlspecialchars($inst['name'], ENT_QUOTES, 'UTF-8') ?>
                                         </div>
                                         <div class="text-xs text-muted">
-                                            <?= htmlspecialchars($inst['location'] ?? 'No address', ENT_QUOTES, 'UTF-8') ?>
+                                            <?= htmlspecialchars($inst['location'] ?? te('No address'), ENT_QUOTES, 'UTF-8') ?>
                                         </div>
                                     </div>
                                 </div>
@@ -86,7 +86,7 @@ $search       = $search ?? '';
                                         <?= htmlspecialchars($inst['coordinator_display_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                                     </div>
                                 <?php else: ?>
-                                    <span class="text-xs text-muted">Not Assigned</span>
+                                    <span class="text-xs text-muted"><?= te('Not assigned') ?></span>
                                 <?php endif; ?>
                             </td>
                             <td>
@@ -97,26 +97,26 @@ $search       = $search ?? '';
                             </td>
                             <td>
                                 <span class="badge <?= $status === 'active' ? 'badge--success' : 'badge--neutral' ?>">
-                                    <?= ucfirst($status) ?>
+                                    <?= te(ucfirst($status)) ?>
                                 </span>
                             </td>
                             <td style="text-align:right;">
                                 <div class="d-flex gap-1 justify-end items-center">
-                                    <a href="<?= BASE_URL ?>/institutes/<?= (int) $inst['id'] ?>/edit" class="btn btn--ghost btn--xs" title="Edit Institute">
-                                        Edit
+                                    <a href="<?= BASE_URL ?>/institutes/<?= (int) $inst['id'] ?>/edit" class="btn btn--ghost btn--xs" title="<?= te('Edit Institute') ?>">
+                                        <?= te('Edit') ?>
                                     </a>
 
                                     <form method="POST" action="<?= BASE_URL ?>/institutes/<?= (int) $inst['id'] ?>/toggle-status" style="margin:0;">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                         <button type="submit" class="btn <?= $status === 'active' ? 'btn--secondary' : 'btn--primary' ?> btn--xs">
-                                            <?= $status === 'active' ? 'Deactivate' : 'Activate' ?>
+                                            <?= $status === 'active' ? te('Deactivate') : te('Activate') ?>
                                         </button>
                                     </form>
 
                                     <form method="POST" action="<?= BASE_URL ?>/institutes/<?= (int) $inst['id'] ?>/delete" style="margin:0;" data-confirm="<?= htmlspecialchars(t('Delete the branch {name}? This cannot be undone.', ['name' => $inst['name']]), ENT_QUOTES, 'UTF-8') ?>">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
-                                        <button type="submit" class="btn btn--danger btn--xs" title="Delete Institute">
-                                            Delete
+                                        <button type="submit" class="btn btn--danger btn--xs" title="<?= te('Delete Institute') ?>">
+                                            <?= te('Delete') ?>
                                         </button>
                                     </form>
                                 </div>
@@ -128,8 +128,8 @@ $search       = $search ?? '';
                         <td colspan="5">
                             <div class="empty-state">
                                 <div class="empty-state__icon">&#127979;</div>
-                                <div class="empty-state__title">No institutes found</div>
-                                <div class="empty-state__text">Click "+ Register Institute" to add your first branch campus.</div>
+                                <div class="empty-state__title"><?= te('No institutes found') ?></div>
+                                <div class="empty-state__text"><?= te('Click "+ Register Institute" to add your first branch campus.') ?></div>
                             </div>
                         </td>
                     </tr>
