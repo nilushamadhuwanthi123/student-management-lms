@@ -232,6 +232,7 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     // Classes Management
     $router->get('/classes', ['App\Controllers\ClassController', 'index']);
     $router->get('/classes/create', ['App\Controllers\ClassController', 'create']);
+    $router->get('/classes/rooms', ['App\Controllers\ClassController', 'rooms']);
     $router->post('/classes/create', ['App\Controllers\ClassController', 'store']);
     $router->get('/classes/{id}/edit', ['App\Controllers\ClassController', 'edit']);
     $router->post('/classes/{id}/edit', ['App\Controllers\ClassController', 'update']);
