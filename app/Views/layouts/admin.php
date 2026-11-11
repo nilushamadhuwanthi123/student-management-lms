@@ -252,13 +252,15 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                     <?php if (session_get('user_type') === 'student'): ?>
                         <a href="<?= BASE_URL ?>/my/profile" class="dropdown__item"><?= te('My Profile') ?></a>
                     <?php elseif (session_get('user_type') === 'parent'): ?>
+                        <a href="<?= BASE_URL ?>/family/account" class="dropdown__item"><?= te('My account') ?></a>
                         <a href="<?= BASE_URL ?>/family" class="dropdown__item"><?= te('My Child') ?></a>
                     <?php else: ?>
-                        <a href="<?= BASE_URL ?>/profile" class="dropdown__item">Profile</a>
+                        <a href="<?= BASE_URL ?>/profile" class="dropdown__item"><?= te('My Profile') ?></a>
                         <?php if (session_get('user_role') === 'super_admin'): ?>
                             <a href="<?= BASE_URL ?>/settings" class="dropdown__item"><?= te('Settings') ?></a>
                         <?php endif; ?>
                     <?php endif; ?>
+                    <a href="<?= BASE_URL ?>/change-password" class="dropdown__item"><?= te('Change password') ?></a>
                     <div class="dropdown__divider"></div>
                     <form method="POST" action="<?= BASE_URL ?>/logout" style="margin:0;">
                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
@@ -278,7 +280,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             <span aria-hidden="true" style="width:30px;height:30px;flex:0 0 30px;border-radius:9px;background:#FACC15;display:grid;place-items:center;color:#0B1B3F;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg>
             </span>
-            <span class="sidebar__brand-text" title="<?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?>" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="sidebar__brand-text" title="<?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?>" style="min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2;font-size:.95rem;white-space:normal;"><?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?></span>
 
             <button type="button" class="sidebar-collapse-btn" id="sidebarCollapse"
                     aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar"
@@ -470,6 +472,10 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <?= te('Help & questions') ?>
             </a>
             <?php endif; ?>
+            <a href="<?= BASE_URL ?>/family/account" class="sidebar__link <?= $isHere('/family/account') ? 'active' : '' ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M17 3l2 2-2 2"/></svg>
+                <?= te('My account') ?>
+            </a>
             <?php endif; ?>
 
             <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>

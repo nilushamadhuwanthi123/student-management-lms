@@ -247,7 +247,7 @@ function processScan(code, classId) {
     box.style.borderColor = '#3b82f6';
     box.style.background = '#eff6ff';
 
-    fetch('/attendance/scan', {
+    fetch('<?= BASE_URL ?>/attendance/scan', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

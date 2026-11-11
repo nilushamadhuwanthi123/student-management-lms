@@ -49,7 +49,7 @@ $q = $instituteId !== null ? '&institute_id=' . $instituteId : '';
     </div>
 </div>
 
-<div style="display:grid; grid-template-columns:minmax(0,3fr) minmax(260px,1fr); gap:1.25rem; align-items:start;">
+<div class="cal-layout">
     <div>
         <?php require __DIR__ . '/_grid.php'; ?>
 

@@ -31,9 +31,19 @@ $tone = static fn (string $type, ?string $eventType): array => match (true) {
 };
 ?>
 
+<style>
+    /* Side panel beside the month on wide screens, under it otherwise, so
+       the seven days always have the room they need. */
+    .cal-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+    @media (min-width: 1280px) { .cal-layout { grid-template-columns: minmax(0, 3fr) minmax(250px, 1fr); } }
+    .cal-table { table-layout: fixed; width: 100%; }
+    @media (max-width: 720px) { .cal-table { min-width: 680px; } }
+    .cal-item { border-radius: 4px; padding: .2rem .35rem; margin-bottom: .22rem; font-size: .72rem; line-height: 1.25;
+                overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+</style>
 <div class="card" style="padding:0; overflow:hidden;">
     <div class="table-wrap">
-        <table class="table" style="table-layout:fixed; min-width:760px;">
+        <table class="table cal-table">
             <thead>
                 <tr>
                     <?php foreach (['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as $dayName): ?>
@@ -66,9 +76,8 @@ $tone = static fn (string $type, ?string $eventType): array => match (true) {
                                 && $item['class_id'] !== null
                                 && ($openMap[$item['class_id']] ?? false) === false;
                             ?>
-                            <div style="background:<?= $background ?>; border-left:3px solid <?= $colour ?>;
-                                        border-radius:4px; padding:.2rem .35rem; margin-bottom:.22rem;
-                                        font-size:.72rem; line-height:1.25;">
+                            <div class="cal-item" style="background:<?= $background ?>; border-left:3px solid <?= $colour ?>;"
+                                 title="<?= htmlspecialchars(($item['start_time'] !== null ? $item['start_time'] . ' ' : '') . $item['title'], ENT_QUOTES, 'UTF-8') ?>">
                                 <?php if ($item['start_time'] !== null): ?>
                                     <strong style="color:<?= $colour ?>;"><?= htmlspecialchars($item['start_time'], ENT_QUOTES, 'UTF-8') ?></strong>
                                 <?php endif; ?>

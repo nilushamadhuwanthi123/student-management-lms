@@ -355,6 +355,7 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/family', ['App\Controllers\ParentPortalController', 'overview']);
     $router->get('/family/marks', ['App\Controllers\ParentPortalController', 'marks']);
     $router->get('/family/fees', ['App\Controllers\ParentPortalController', 'fees']);
+    $router->get('/family/account', ['App\Controllers\ParentPortalController', 'account']);
 
     // ---- Homework ----
     // Teacher side is under the class; access is checked against the

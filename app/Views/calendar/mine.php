@@ -32,10 +32,10 @@ $anyLocked = in_array(false, $openMap, true);
                 : te('My Calendar') ?>
         </h1>
         <p class="text-sm text-muted">
-            <?= te('Classes, quizzes and tests') ?> &middot; <?= htmlspecialchars(lang_date('F Y', $month . '-01'), ENT_QUOTES, 'UTF-8') ?>
+            <?= te('Classes, quizzes, tests, homework and events') ?> &middot; <?= htmlspecialchars(lang_date('F Y', $month . '-01'), ENT_QUOTES, 'UTF-8') ?>
         </p>
     </div>
-    <div class="page-header__actions" style="display:flex; gap:.5rem;">
+    <div class="page-header__actions" style="display:flex; gap:.5rem; flex-wrap:wrap;">
         <a href="<?= BASE_URL . $base ?>?month=<?= $prev ?>" class="btn btn--ghost">&larr;</a>
         <a href="<?= BASE_URL . $base ?>?month=<?= date('Y-m') ?>" class="btn btn--ghost"><?= te('Today') ?></a>
         <a href="<?= BASE_URL . $base ?>?month=<?= $next ?>" class="btn btn--ghost">&rarr;</a>
@@ -49,7 +49,7 @@ $anyLocked = in_array(false, $openMap, true);
     </div>
 <?php endif; ?>
 
-<div style="display:grid; grid-template-columns:minmax(0,3fr) minmax(250px,1fr); gap:1.25rem; align-items:start;">
+<div class="cal-layout">
     <div>
         <?php require __DIR__ . '/_grid.php'; ?>
     </div>

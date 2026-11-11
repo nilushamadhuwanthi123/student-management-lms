@@ -68,10 +68,23 @@ class UserController extends BaseController
                 'teachers'     => ['active' => $count(['teacher'], true), 'total' => $count(['teacher'], false)],
             ];
         }
-        // What the signed-in user may do to each card.
+        // What the signed-in user may do to each card, and the branches each
+        // person actually works in: the branches they are attached to plus
+        // the branches of the classes they teach (a teacher is linked by
+        // her classes, not by a branch row, so she used to show as
+        // "Not assigned").
+        $branchStmt = $this->db->prepare(
+            "SELECT DISTINCT i.name FROM institutes i
+              WHERE i.status = 'active'
+                AND (i.id IN (SELECT ui.institute_id FROM user_institutes ui WHERE ui.user_id = :u1)
+                  OR i.id IN (SELECT c.institute_id FROM classes c WHERE c.teacher_id = :u2 AND c.status = 'active'))
+              ORDER BY i.name"
+        );
         foreach ($users as &$u) {
             $u['can_manage'] = $scope->allowsManageUser((int) $u['id']);
             $u['manage_note'] = $u['can_manage'] ? '' : $this->manageBlockReason((int) $u['id']);
+            $branchStmt->execute([':u1' => (int) $u['id'], ':u2' => (int) $u['id']]);
+            $u['branch_names'] = $branchStmt->fetchAll(\PDO::FETCH_COLUMN);
         }
         unset($u);
 
