@@ -62,9 +62,13 @@ if (!function_exists('site_days')) {
 .ts-eyebrow { display: inline-flex; align-items: center; gap: .5rem; font-size: .9rem; font-weight: 600; letter-spacing: .02em; color: #FDE68A !important; margin-bottom: .9rem; }
 .ts-eyebrow::before { content: ''; width: 28px; height: 2px; background: #FACC15; border-radius: 2px; }
 .ts-hero h1 { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; }
-.ts-hero h1 .ts-name { display: block; color: #FACC15; }
+.ts-hero h1 .ts-name { display: block; position: relative; background: linear-gradient(100deg, #FACC15 0%, #FDE68A 30%, #fff 50%, #FDE68A 70%, #FACC15 100%); background-size: 220% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: tsShimmer 5s linear infinite; }
+@keyframes tsShimmer { to { background-position: -220% center; } }
+.ts-hero h1 .ts-name::after { content: ''; display: block; width: 72%; max-width: 220px; height: 7px; margin-top: .3rem; border-radius: 6px; background: linear-gradient(90deg, #FACC15, rgba(250,204,21,0)); opacity: .55; }
 .ts-hero h1 .ts-honour { display: block; font-size: .55em; font-weight: 600; color: #DBEAFE; margin-top: .35rem; }
 .ts-photo { position: relative; justify-self: center; width: min(100%, 420px); }
+.ts-photo::before { content: ''; position: absolute; inset: -14px; border-radius: 36px; background: conic-gradient(from 0deg, #FACC15, #60A5FA, #FACC15); opacity: .5; filter: blur(22px); z-index: -1; animation: tsSpin 10s linear infinite; }
+@keyframes tsSpin { to { transform: rotate(360deg); } }
 .ts-photo__frame { border-radius: 28px; overflow: hidden; aspect-ratio: 4 / 5; box-shadow: 0 30px 60px -20px rgba(2,6,23,.55), 0 0 0 6px rgba(255,255,255,.12); background: #DBEAFE; }
 .ts-photo__frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; }
 .ts-photo__tag { position: absolute; left: -14px; bottom: 26px; background: #fff; color: #0B1B3F !important; border-radius: 16px; padding: .7rem .95rem; box-shadow: 0 18px 40px -16px rgba(2,6,23,.45); display: flex; gap: .65rem; align-items: center; max-width: 85%; }
@@ -178,7 +182,7 @@ if (!function_exists('site_days')) {
 .ts-mbar a { flex: 1; justify-content: center; }
 @media (max-width: 700px) { .ts-mbar { display: flex; } body.public-layout { padding-bottom: 72px; } .ts-float { display: none; } }
 .ts-mbar a { white-space: nowrap; font-size: .9rem; }
-@media (prefers-reduced-motion: reduce) { .ts-float svg, .ts-photo__frame, .ts-hero h1, .ts-hero p, .ts-eyebrow { animation: none; } .ts-btn:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ts-float svg, .ts-photo__frame, .ts-hero h1, .ts-hero p, .ts-eyebrow, .ts-hero h1 .ts-name, .ts-photo::before { animation: none; } .ts-btn:hover { transform: none; } }
 
 /* ---- seminars & events advertised on the home page ----------------- */
 .ts-events { background: radial-gradient(900px 380px at 100% 0%, rgba(250,204,21,.12), transparent 60%), radial-gradient(800px 380px at 0% 100%, rgba(29,78,216,.10), transparent 60%); }

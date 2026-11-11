@@ -999,6 +999,7 @@ return [
     'Tamil' => 'දෙමළ',
     // Public site v3 (teacher-centred)
     'Harshani Madhuwanthi' => 'හර්ෂනී මධුවන්ති',
+    'Harshani Madhuwanthi Wanasinghe' => 'හර්ෂනී මධුවන්ති වනසිංහ',
     'Science classes' => 'විද්‍යා පන්ති',
     'Grades {r}' => '{r} ශ්‍රේණි',
     'About the classes' => 'පන්ති ගැන',
