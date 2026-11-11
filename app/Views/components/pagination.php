@@ -11,6 +11,11 @@
 $currentPage = (int) ($currentPage ?? 1);
 $totalPages  = (int) ($totalPages ?? 1);
 $baseUrl     = $baseUrl ?? '';
+// Callers pass a site path such as "/students?x=1"; the site may live in a
+// sub-folder (XAMPP: /student-management-lms), so prefix it once here.
+if (defined('BASE_URL') && BASE_URL !== '' && str_starts_with($baseUrl, '/') && !str_starts_with($baseUrl, BASE_URL . '/')) {
+    $baseUrl = BASE_URL . $baseUrl;
+}
 
 if ($totalPages <= 1) return;
 

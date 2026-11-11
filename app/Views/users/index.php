@@ -117,22 +117,25 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
         grid-template-columns: 1fr;
     }
 }
+.user-kpi-row { display:flex; justify-content:space-between; align-items:center; padding:.5rem .75rem; background:var(--surface-sunken); border-radius:var(--radius-sm); border-left:4px solid var(--primary); }
+.user-kpi-row__label { font-weight:600; color:var(--text); }
+.user-kpi-row .badge { background:var(--primary) !important; color:#fff !important; }
 .user-cards-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
     gap: 1.25rem;
 }
 </style>
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">User Management</h1>
-        <p class="text-sm text-muted">Manage Admins, Coordinators, Staff, and Teachers (Students managed separately)</p>
+        <h1 class="page-header__title"><?= te('User Management') ?></h1>
+        <p class="text-sm text-muted"><?= te('Admins, coordinators, staff and teachers. Students are managed separately.') ?></p>
     </div>
     <div class="page-header__actions">
         <a href="<?= BASE_URL ?>/users/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            + Create User
+            <?= te('Create user') ?>
         </a>
     </div>
 </div>
@@ -140,43 +143,43 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
 <div class="user-grid-layout">
     <!-- LEFT: Summary KPI Card (Document 1 Page 4) -->
     <aside class="user-kpi-sidebar">
-        <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem;">User Statistics</h3>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem;"><?= te('Staff summary') ?></h3>
         <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem;">
-            Total <?= (int) ($kpi['total'] ?? 0) ?>
+            <?= te('Total {n}', ['n' => (int) ($kpi['total'] ?? 0)]) ?>
         </div>
 
         <div style="font-weight: 600; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
-            Active Users
+            <?= te('Active / total') ?>
         </div>
 
         <div style="display:flex; flex-direction:column; gap: 0.75rem;">
             <!-- Admins -->
-            <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background: #F4F7FC; border-radius: var(--radius-sm); border-left: 4px solid #2563EB;">
-                <span style="font-weight: 600; color: #1A3FAF;">Admins</span>
+            <div class="user-kpi-row" style="border-left-color:#2563EB;">
+                <span class="user-kpi-row__label"><?= te('Admins') ?></span>
                 <span class="badge" style="background:#2563EB; color:#fff;">
                     <?= $kpi['admins']['active'] ?? 0 ?> / <?= $kpi['admins']['total'] ?? 0 ?>
                 </span>
             </div>
 
             <!-- Coordinators -->
-            <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background: #E8EEFC; border-radius: var(--radius-sm); border-left: 4px solid #2563EB;">
-                <span style="font-weight: 600; color: #1A3FAF;">Coordinators</span>
+            <div class="user-kpi-row" style="border-left-color:#0D9488;">
+                <span class="user-kpi-row__label"><?= te('Coordinators') ?></span>
                 <span class="badge" style="background:#2563EB; color:#fff;">
                     <?= $kpi['coordinators']['active'] ?? 0 ?> / <?= $kpi['coordinators']['total'] ?? 0 ?>
                 </span>
             </div>
 
             <!-- Staff -->
-            <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background: #FFF8E6; border-radius: var(--radius-sm); border-left: 4px solid #D99A00;">
-                <span style="font-weight: 600; color: #8A5B00;">Staff</span>
+            <div class="user-kpi-row" style="border-left-color:#D99A00;">
+                <span class="user-kpi-row__label"><?= te('Staff') ?></span>
                 <span class="badge" style="background:#D99A00; color:#fff;">
                     <?= $kpi['staff']['active'] ?? 0 ?> / <?= $kpi['staff']['total'] ?? 0 ?>
                 </span>
             </div>
 
             <!-- Teachers -->
-            <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background: #eff6ff; border-radius: var(--radius-sm); border-left: 4px solid #2563eb;">
-                <span style="font-weight: 600; color: #1d4ed8;">Teachers</span>
+            <div class="user-kpi-row" style="border-left-color:#7C3AED;">
+                <span class="user-kpi-row__label"><?= te('Teachers') ?></span>
                 <span class="badge" style="background:#2563eb; color:#fff;">
                     <?= $kpi['teachers']['active'] ?? 0 ?> / <?= $kpi['teachers']['total'] ?? 0 ?>
                 </span>
@@ -184,7 +187,7 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
         </div>
 
         <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.8125rem; color: var(--text-muted);">
-            Active Rate: <strong><?= $kpi['total'] > 0 ? round(($kpi['active_users'] / $kpi['total']) * 100, 1) : 0 ?>%</strong>
+            <?= te('Active rate') ?>: <strong><?= $kpi['total'] > 0 ? round(($kpi['active_users'] / $kpi['total']) * 100, 1) : 0 ?>%</strong>
         </div>
     </aside>
 
@@ -195,24 +198,24 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
             <form method="GET" action="<?= BASE_URL ?>/users" id="userFilterForm" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto; gap: 0.75rem; align-items: flex-end;">
                 <!-- i. Search by name or email -->
                 <div>
-                    <label class="form-label text-xs">Search Name / Email / ID</label>
+                    <label class="form-label text-xs"><?= te('Search') ?></label>
                     <input 
                         type="text" 
                         name="search" 
                         class="form-control form-control--sm" 
-                        placeholder="Search by name, email, ID..."
+                        placeholder="<?= te('Name, email or ID') ?>"
                         value="<?= htmlspecialchars($filters['search'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                     >
                 </div>
 
                 <!-- ii. All Roles DDL -->
                 <div>
-                    <label class="form-label text-xs">All Roles</label>
+                    <label class="form-label text-xs"><?= te('Role') ?></label>
                     <select name="role" class="form-control form-control--sm" onchange="this.form.submit()">
-                        <option value="">All Roles</option>
+                        <option value=""><?= te('All roles') ?></option>
                         <?php foreach ($roles as $rVal => $rLabel): ?>
                             <option value="<?= $rVal ?>" <?= ($filters['role'] ?? '') === $rVal ? 'selected' : '' ?>>
-                                <?= $rLabel ?>
+                                <?= te($rLabel) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -220,9 +223,9 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
 
                 <!-- iii. All Institutes DDL -->
                 <div>
-                    <label class="form-label text-xs">All Institutes</label>
+                    <label class="form-label text-xs"><?= te('Branch') ?></label>
                     <select name="institute_id" class="form-control form-control--sm" onchange="this.form.submit()">
-                        <option value="">All Institutes</option>
+                        <option value=""><?= te('All branches') ?></option>
                         <?php foreach ($institutes as $inst): ?>
                             <option value="<?= (int) $inst['id'] ?>" <?= ($filters['institute_id'] ?? '') == $inst['id'] ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($inst['name'], ENT_QUOTES, 'UTF-8') ?>
@@ -233,9 +236,9 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
 
                 <!-- iv. All Classes DDL (cascading from institute) -->
                 <div>
-                    <label class="form-label text-xs">All Classes</label>
+                    <label class="form-label text-xs"><?= te('Class') ?></label>
                     <select name="class_id" class="form-control form-control--sm" onchange="this.form.submit()">
-                        <option value="">All Classes</option>
+                        <option value=""><?= te('All classes') ?></option>
                         <?php foreach ($classes as $cls): ?>
                             <option value="<?= (int) $cls['id'] ?>" <?= ($filters['class_id'] ?? '') == $cls['id'] ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($cls['class_name'] ?? $cls['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
@@ -246,14 +249,14 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
 
                 <!-- Filter & Reset Buttons -->
                 <div class="d-flex gap-1">
-                    <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-                    <a href="<?= BASE_URL ?>/users" class="btn btn--ghost btn--sm">Reset</a>
+                    <button type="submit" class="btn btn--primary btn--sm"><?= te('Filter') ?></button>
+                    <a href="<?= BASE_URL ?>/users" class="btn btn--ghost btn--sm"><?= te('Reset') ?></a>
                 </div>
             </form>
         </div>
 
         <div class="d-flex justify-between items-center mb-2">
-            <span class="text-sm text-muted"><strong><?= count($users) ?></strong> Filtered records</span>
+            <span class="text-sm text-muted"><?= te('{n} people', ['n' => count($users)]) ?></span>
         </div>
 
         <!-- User Cards Container (Document 1 Page 4 Card Layout) -->
@@ -288,7 +291,7 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
                                             <?= htmlspecialchars($u['full_name'], ENT_QUOTES, 'UTF-8') ?>
                                         </span>
                                         <span class="badge" style="background:<?= $cfg['bg'] ?>; color:<?= $cfg['primary'] ?>; border:1px solid <?= $cfg['border'] ?>; font-size:0.7rem;">
-                                            <?= $cfg['label'] ?>
+                                            <?= te((string) $cfg['label']) ?>
                                         </span>
                                     </div>
                                     <div class="user-card__id"><?= htmlspecialchars($u['user_id_display'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
@@ -299,7 +302,7 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
                             <div class="user-card__details">
                                 <div class="user-card__detail-item">
                                     <span class="user-card__detail-icon">&#9993;</span>
-                                    <span><?= htmlspecialchars($u['email'] ?? 'No email', ENT_QUOTES, 'UTF-8') ?></span>
+                                    <span><?= !empty($u['email']) ? htmlspecialchars($u['email'], ENT_QUOTES, 'UTF-8') : te('No email') ?></span>
                                 </div>
 
                                 <div class="user-card__detail-item">
@@ -314,7 +317,7 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
 
                                 <div class="user-card__detail-item">
                                     <span class="user-card__detail-icon">&#127979;</span>
-                                    <span><?= htmlspecialchars($u['coordinated_institute_name'] ?? $u['primary_institute_name'] ?? 'Not assigned', ENT_QUOTES, 'UTF-8') ?></span>
+                                    <span><?= !empty($u['branch_names']) ? htmlspecialchars(implode(', ', $u['branch_names']), ENT_QUOTES, 'UTF-8') : ($u['role'] === 'super_admin' ? te('All branches') : te('No branch yet')) ?></span>
                                 </div>
 
                                 <?php if (!empty($u['assigned_class_names'])): ?>
@@ -330,19 +333,19 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
                                 <div class="user-card__detail-item mt-1">
                                     <span class="user-card__detail-icon">&#9679;</span>
                                     <?php if ($status === 'active'): ?>
-                                        <span class="badge badge--success">Active</span>
+                                        <span class="badge badge--success"><?= te('Active') ?></span>
                                     <?php elseif ($status === 'pending_first_login'): ?>
-                                        <span class="badge badge--warning">Pending first login</span>
+                                        <span class="badge badge--warning"><?= te('Waiting for first login') ?></span>
                                     <?php else: ?>
-                                        <span class="badge badge--neutral">Inactive</span>
+                                        <span class="badge badge--neutral"><?= te('Inactive') ?></span>
                                     <?php endif; ?>
                                 </div>
 
                                 <!-- Joined info -->
                                 <div class="text-xs text-muted mt-1">
-                                    Joined: <?= date('d/m/Y', strtotime($u['created_at'])) ?>
+                                    <?= te('Joined {date}', ['date' => lang_date('j M Y', (string) $u['created_at'])]) ?>
                                     <?php if (!empty($u['creator_name'])): ?>
-                                        by <?= htmlspecialchars($u['creator_name'], ENT_QUOTES, 'UTF-8') ?>
+                                        &middot; <?= te('by {name}', ['name' => $u['creator_name']]) ?>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -354,9 +357,13 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
                             <div class="d-flex items-center justify-between mb-2">
                                 <span class="text-xs text-muted"><?= te('Account') ?>: <strong><?= $status === 'active' ? te('Enabled') : te('Disabled') ?></strong></span>
                                 <?php if ($canManage): ?>
-                                <button type="button" class="btn btn--ghost btn--xs" onclick="openResetPasswordModal(<?= (int) $u['id'] ?>, <?= htmlspecialchars(json_encode((string) $u['full_name'], JSON_UNESCAPED_UNICODE | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') ?>)" title="<?= te('Reset Password') ?>">
-                                    &#128273; <?= te('Reset Password') ?>
-                                </button>
+                                <form method="POST" action="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/reset-password" style="margin:0;">
+                                    <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
+                                    <button type="submit" class="btn btn--ghost btn--xs" title="<?= te('Reset Password') ?>"
+                                            data-confirm="<?= htmlspecialchars(t('Create a one-time reset code for {name}? Give it to them only after confirming who is asking. They will choose their own new password with it.', ['name' => $u['full_name']]), ENT_QUOTES, 'UTF-8') ?>">
+                                        &#128273; <?= te('Reset Password') ?>
+                                    </button>
+                                </form>
                                 <?php endif; ?>
                             </div>
 
@@ -400,41 +407,10 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
         <?php else: ?>
             <div class="card empty-state">
                 <div class="empty-state__icon">&#128101;</div>
-                <div class="empty-state__title">No users found</div>
-                <div class="empty-state__text">Try changing your search or filter options.</div>
+                <div class="empty-state__title"><?= te('No one found') ?></div>
+                <div class="empty-state__text"><?= te('Try a different search or filter.') ?></div>
             </div>
         <?php endif; ?>
     </div>
 </div>
 
-<!-- Reset Password Modal -->
-<div class="modal-backdrop" id="resetPasswordModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-    <div class="card" style="width:100%; max-width:420px; margin:1rem;">
-        <h3 style="margin-bottom:0.75rem;">Reset User Password</h3>
-        <p class="text-sm text-muted mb-2">Resetting password for: <strong id="resetUserName"></strong></p>
-        <form method="POST" id="resetPasswordForm" action="">
-            <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
-            <div class="form-group mb-2">
-                <label class="form-label">New Password</label>
-                <input type="text" name="new_password" class="form-control" value="Password@123" required minlength="6">
-                <div class="form-hint text-xs">Default password is Password@123. The user will be required to change it on login.</div>
-            </div>
-            <div class="d-flex justify-end gap-1 mt-3">
-                <button type="button" class="btn btn--ghost btn--sm" onclick="closeResetPasswordModal()">Cancel</button>
-                <button type="submit" class="btn btn--primary btn--sm">Reset Password</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-function openResetPasswordModal(userId, userName) {
-    document.getElementById('resetUserName').textContent = userName;
-    document.getElementById('resetPasswordForm').action = '/users/' + userId + '/reset-password';
-    var m = document.getElementById('resetPasswordModal');
-    m.style.display = 'flex';
-}
-function closeResetPasswordModal() {
-    document.getElementById('resetPasswordModal').style.display = 'none';
-}
-</script>

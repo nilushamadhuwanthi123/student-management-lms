@@ -70,6 +70,39 @@ class ParentPortalController extends BaseController
     }
 
     /**
+     * The guardian's own account: who they are signed in as, the numbers
+     * the office holds for them, and the child the login is linked to.
+     * Read-only apart from changing the password -- the login number is
+     * the parent's identity, so the office changes it, not the parent.
+     */
+    public function account(): void
+    {
+        [$parentId, $student] = $this->requireParent();
+
+        $p = $this->db->prepare("SELECT id, parent_name, phone1, phone2, whatsapp, status, created_at FROM parents WHERE id = :id");
+        $p->execute([':id' => $parentId]);
+        $parent = $p->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        $c = $this->db->prepare(
+            "SELECT c.class_name, c.grade, i.name AS institute_name
+               FROM enrollments e
+               JOIN classes c ON c.id = e.class_id
+               LEFT JOIN institutes i ON i.id = c.institute_id
+              WHERE e.student_id = :s AND e.enrollment_status = 'active'
+              ORDER BY c.grade, c.class_name"
+        );
+        $c->execute([':s' => (int) $student['id']]);
+
+        $this->view('portal/parent-account', [
+            'pageTitle'  => t('My account'),
+            'activePage' => 'family-account',
+            'parent'     => $parent,
+            'student'    => $student,
+            'classes'    => $c->fetchAll(PDO::FETCH_ASSOC),
+        ], 'layouts/admin');
+    }
+
+    /**
      * Every mark the child has, newest first.
      */
     public function marks(): void

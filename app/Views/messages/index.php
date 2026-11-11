@@ -213,7 +213,7 @@ function viewNotification(id, title, body, date, type, isRead) {
     document.getElementById('msgDetailModal').style.display = 'flex';
 
     if (!isRead) {
-        fetch('/messages/' + id + '/read', {
+        fetch('<?= BASE_URL ?>/messages/' + id + '/read', {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
