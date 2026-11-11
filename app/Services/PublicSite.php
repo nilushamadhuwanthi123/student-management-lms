@@ -166,6 +166,52 @@ final class PublicSite
     }
 
     /**
+     * One combined, rotation-ready list for the home page's hero
+     * banner: the super admin's standalone announcements (migration
+     * 023) and the next few published, publicly-advertised seminars,
+     * each reduced to the same shape so the template does not need to
+     * know which kind of item it is drawing.
+     *
+     * @return list<array{title: string, subtitle: string, thumb: string, href: string}>
+     */
+    public static function homeAds(int $limit = 6): array
+    {
+        $items = [];
+
+        try {
+            $ads = (new \App\Services\SiteAdService())->active($limit);
+        } catch (\Throwable $e) {
+            $ads = [];
+        }
+        foreach ($ads as $ad) {
+            $thumb = '';
+            if (!empty($ad['image_path']) && preg_match('#^/uploads/site-ads/[A-Za-z0-9_]+\.(jpg|png|webp)$#', (string) $ad['image_path'])) {
+                $thumb = BASE_URL . $ad['image_path'];
+            }
+            $items[] = [
+                'title'    => (string) $ad['title'],
+                'subtitle' => '',
+                'thumb'    => $thumb,
+                'href'     => !empty($ad['link_url']) ? (string) $ad['link_url'] : '#ts-ad',
+            ];
+        }
+
+        foreach (self::upcomingSeminars($limit) as $sem) {
+            if (count($items) >= $limit) {
+                break;
+            }
+            $items[] = [
+                'title'    => (string) $sem['title'],
+                'subtitle' => lang_date('j M', (string) $sem['event_date']),
+                'thumb'    => \App\Services\SeminarService::coverSrc($sem['cover_image_url'] ?? null),
+                'href'     => '#events',
+            ];
+        }
+
+        return array_slice($items, 0, max(1, min(12, $limit)));
+    }
+
+    /**
      * The name the portal shows in its header, tab titles and ID cards:
      * the "Site name" the super admin saved under Settings, otherwise the
      * teacher's name, otherwise a plain description. "EduManager" -- the

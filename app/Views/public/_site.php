@@ -219,7 +219,7 @@ if (!function_exists('site_days')) {
 @keyframes tsPulse { 0% { box-shadow: 0 0 0 0 rgba(220,38,38,.7); } 70% { box-shadow: 0 0 0 7px rgba(220,38,38,0); } 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); } }
 .ts-ad__thumb { flex: 0 0 34px; width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.7); }
 .ts-ad__rot { position: relative; min-width: 0; display: grid; }
-.ts-ad__item { grid-area: 1 / 1; display: flex; align-items: center; gap: .55rem; min-width: 0; opacity: 0; transform: translateY(6px); transition: opacity .5s ease, transform .5s ease; pointer-events: none; }
+.ts-ad__item { grid-area: 1 / 1; display: flex; align-items: center; gap: .55rem; min-width: 0; opacity: 0; transform: translateY(6px); transition: opacity .5s ease, transform .5s ease; pointer-events: none; text-decoration: none; color: #fff; }
 .ts-ad__item.is-on { opacity: 1; transform: none; pointer-events: auto; }
 .ts-ad__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; font-weight: 600; }
 .ts-ad__text small { font-weight: 500; opacity: .85; margin-left: .35rem; }
