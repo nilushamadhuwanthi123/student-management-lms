@@ -208,7 +208,7 @@ $filters    = $filters ?? [];
                                         </button>
                                     </form>
 
-                                    <form method="POST" action="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/delete" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete class <?= htmlspecialchars($c['class_name'], ENT_QUOTES, 'UTF-8') ?>?');">
+                                    <form method="POST" action="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/delete" style="margin:0;" data-confirm="<?= htmlspecialchars(t('Delete the class {name}? This cannot be undone.', ['name' => $c['class_name']]), ENT_QUOTES, 'UTF-8') ?>">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                         <button type="submit" class="btn btn--danger btn--xs" title="Delete Class">
                                             Delete

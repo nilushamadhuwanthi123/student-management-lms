@@ -30,8 +30,8 @@ $action = $isEdit ? (BASE_URL . '/seminars/' . (int) $seminar['id'] . '/edit') :
             <div class="form-group">
                 <label class="form-label"><?= te('Time (optional)') ?></label>
                 <div style="display:flex; gap:.5rem;">
-                    <input type="time" name="start_time" class="form-control" value="<?= $e($seminar['start_time'] !== null ? substr((string) $seminar['start_time'], 0, 5) : '') ?>">
-                    <input type="time" name="end_time" class="form-control" value="<?= $e($seminar['end_time'] !== null ? substr((string) $seminar['end_time'], 0, 5) : '') ?>">
+                    <input type="time" name="start_time" class="form-control" aria-label="<?= te('Start time') ?>" value="<?= $e(substr((string) ($seminar['start_time'] ?? ''), 0, 5)) ?>">
+                    <input type="time" name="end_time" class="form-control" aria-label="<?= te('End time') ?>" value="<?= $e(substr((string) ($seminar['end_time'] ?? ''), 0, 5)) ?>">
                 </div>
             </div>
         </div>

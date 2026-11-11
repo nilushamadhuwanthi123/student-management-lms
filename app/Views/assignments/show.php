@@ -25,7 +25,7 @@ $marked = count(array_filter($roster, static fn (array $r): bool => $r['marks'] 
                 <button class="btn btn--primary" type="submit"><?= te('Publish and tell the class') ?></button></form>
         <?php endif; ?>
         <?php if ($canEdit && $a['status'] !== 'archived'): ?>
-            <form method="POST" action="<?= $base ?>/archive" style="margin:0;" onsubmit="return confirm(<?= $e(json_encode(t('Archive this assignment? Hand-ins and marks are kept.'))) ?>);"><?= csrfField() ?>
+            <form method="POST" action="<?= $base ?>/archive" style="margin:0;" data-confirm="<?= te('Archive this assignment? Hand-ins and marks are kept.') ?>"><?= csrfField() ?>
                 <button class="btn btn--ghost" type="submit"><?= te('Archive') ?></button></form>
         <?php endif; ?>
     </div>

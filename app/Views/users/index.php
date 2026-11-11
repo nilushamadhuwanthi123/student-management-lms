@@ -350,42 +350,48 @@ $roleColors = $roleColors ?? \User::ROLE_COLORS;
 
                         <!-- Footer Actions: View, Edit, ID Card, Inactive toggle, Delete, Reset Password -->
                         <div>
+                            <?php $canManage = !empty($u['can_manage']); ?>
                             <div class="d-flex items-center justify-between mb-2">
-                                <span class="text-xs text-muted">Settings: <strong><?= $status === 'active' ? 'Enabled' : 'Disabled' ?></strong></span>
-                                <button type="button" class="btn btn--ghost btn--xs" onclick="openResetPasswordModal(<?= (int) $u['id'] ?>, '<?= htmlspecialchars($u['full_name'], ENT_QUOTES, 'UTF-8') ?>')" title="Reset Password">
-                                    &#128273; Reset Password
+                                <span class="text-xs text-muted"><?= te('Account') ?>: <strong><?= $status === 'active' ? te('Enabled') : te('Disabled') ?></strong></span>
+                                <?php if ($canManage): ?>
+                                <button type="button" class="btn btn--ghost btn--xs" onclick="openResetPasswordModal(<?= (int) $u['id'] ?>, <?= htmlspecialchars(json_encode((string) $u['full_name'], JSON_UNESCAPED_UNICODE | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') ?>)" title="<?= te('Reset Password') ?>">
+                                    &#128273; <?= te('Reset Password') ?>
                                 </button>
+                                <?php endif; ?>
                             </div>
+
+                            <?php if (!$canManage && !empty($u['manage_note'])): ?>
+                                <p class="text-xs text-muted" style="margin:0 0 .6rem; display:flex; gap:.4rem; align-items:flex-start;">&#128274; <span><?= te($u['manage_note']) ?></span></p>
+                            <?php endif; ?>
 
                             <div class="user-card__footer">
                                 <div class="d-flex gap-1 flex-wrap">
-                                    <a href="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/edit" class="btn btn--ghost btn--xs">
-                                        Edit
-                                    </a>
-                                    <a href="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/id-card" target="_blank" class="btn btn--ghost btn--xs">
-                                        ID Card
-                                    </a>
+                                    <?php if ($canManage): ?>
+                                    <a href="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/edit" class="btn btn--ghost btn--xs"><?= te('Edit') ?></a>
+                                    <?php endif; ?>
+                                    <a href="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/id-card" target="_blank" rel="noopener" class="btn btn--ghost btn--xs"><?= te('ID Card') ?></a>
                                 </div>
 
+                                <?php if ($canManage): ?>
                                 <div class="d-flex gap-1 items-center">
-                                    <!-- Toggle Active / Inactive -->
                                     <form method="POST" action="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/toggle-status" style="margin:0;">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
-                                        <button type="submit" class="btn <?= $status === 'active' ? 'btn--secondary' : 'btn--primary' ?> btn--xs">
-                                            <?= $status === 'active' ? 'Inactive' : 'Activate' ?>
+                                        <button type="submit" class="btn <?= $status === 'active' ? 'btn--secondary' : 'btn--primary' ?> btn--xs"
+                                                <?php if ($status === 'active'): ?>data-confirm="<?= htmlspecialchars(t('Switch off {name}\'s account? They will be signed out and cannot log in until it is switched on again.', ['name' => $u['full_name']]), ENT_QUOTES, 'UTF-8') ?>"<?php endif; ?>>
+                                            <?= $status === 'active' ? te('Make inactive') : te('Activate') ?>
                                         </button>
                                     </form>
 
-                                    <!-- Delete Button -->
-                                    <?php if ($u['role'] !== 'super_admin'): ?>
-                                    <form method="POST" action="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/delete" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete user <?= htmlspecialchars($u['full_name'], ENT_QUOTES, 'UTF-8') ?>?');">
+                                    <?php if (\App\Services\BranchScope::current()->isGlobal() && $u['role'] !== 'super_admin'): ?>
+                                    <form method="POST" action="<?= BASE_URL ?>/users/<?= (int) $u['id'] ?>/delete" style="margin:0;">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
-                                        <button type="submit" class="btn btn--danger btn--xs">
-                                            Delete
+                                        <button type="submit" class="btn btn--danger btn--xs" data-confirm="<?= htmlspecialchars(t('Delete {name} permanently? This cannot be undone. To keep their history, make the account inactive instead.', ['name' => $u['full_name']]), ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= te('Delete') ?>
                                         </button>
                                     </form>
                                     <?php endif; ?>
                                 </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

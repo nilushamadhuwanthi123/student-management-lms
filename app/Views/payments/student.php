@@ -119,7 +119,7 @@ foreach ($payments as $p) {
                             <?php if ($pStatus !== 'paid'): ?>
                                 <form method="POST" action="<?= BASE_URL ?>/payments/<?= (int) $pmt['id'] ?>/mark-paid" style="display:inline;">
                                     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
-                                    <button type="submit" class="btn btn--primary btn--xs" onclick="return confirm('Confirm payment collection for this month?')">
+                                    <button type="submit" class="btn btn--primary btn--xs" data-confirm="<?= te('Confirm payment collection for this month?') ?>">
                                         Mark Paid
                                     </button>
                                 </form>

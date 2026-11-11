@@ -122,7 +122,7 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
                         <div style="margin-top:.75rem; text-align:right;">
                             <form method="POST"
                                   action="<?= BASE_URL ?>/classes/<?= $classId ?>/quizzes/<?= $quizId ?>/questions/<?= (int) $q['id'] ?>/delete"
-                                  onsubmit="return confirm('Remove question <?= (int) $q['question_number'] ?>?');">
+                                  data-confirm="<?= te('Remove question {n}?', ['n' => (int) $q['question_number']]) ?>">
                                 <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                                 <button type="submit" class="btn btn--ghost btn--sm" style="color:var(--danger);">
                                     Remove
