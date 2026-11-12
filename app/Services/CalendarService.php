@@ -123,6 +123,7 @@ class CalendarService
     {
         $sql = "SELECT c.id, c.class_name, c.grade, c.room, c.schedule_days,
                        c.start_time, c.end_time,
+                       c.delivery_mode, c.meeting_url,
                        i.name AS institute_name
                   FROM classes c
                   LEFT JOIN institutes i ON i.id = c.institute_id
@@ -171,6 +172,11 @@ class CalendarService
                             extra: [
                                 'grade'          => $class['grade'],
                                 'institute_name' => $class['institute_name'],
+                                // Carried so a student looking at an online
+                                // class can open it. Only ever shown to
+                                // someone already scoped to this class.
+                                'delivery_mode'  => $class['delivery_mode'] ?? 'physical',
+                                'meeting_url'    => $class['meeting_url'] ?? null,
                             ]
                         );
                     }

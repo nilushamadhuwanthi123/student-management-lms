@@ -62,6 +62,16 @@ $whenLabel = static function (array $item) use ($now): string {
 .sh-next__count strong { display:block; font-size:1.5rem; color:var(--accent); line-height:1.1; }
 .sh-lock { display:inline-block; margin-top:.35rem; font-size:.8rem; background:rgba(245,179,1,.22);
   padding:.15rem .55rem; border-radius:6px; }
+.sh-join { display:inline-flex; align-items:center; gap:.45rem; margin-top:.6rem; padding:.45rem .9rem;
+  border-radius:999px; font-size:.85rem; font-weight:600; text-decoration:none;
+  background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35); color:#fff; }
+.sh-join:hover { background:rgba(255,255,255,.28); }
+.sh-join--live { background:#16A34A; border-color:#16A34A; }
+.sh-join--live:hover { background:#15803D; }
+.sh-join__dot { width:.5rem; height:.5rem; border-radius:50%; background:#fff;
+  animation:shPulse 1.6s ease-in-out infinite; }
+@keyframes shPulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+@media (prefers-reduced-motion: reduce) { .sh-join__dot { animation:none; } }
 
 .sh-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-bottom:1.5rem; }
 .sh-stat { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1rem 1.1rem; }
@@ -132,6 +142,38 @@ $whenLabel = static function (array $item) use ($now): string {
                 </div>
                 <?php if (!$nextIsOpen): ?>
                     <span class="sh-lock">&#128274; <?= te("This month's notes and recordings for it are locked until the fee is settled") ?></span>
+                <?php endif; ?>
+                <?php
+                // The joining link for an online class, which until now was
+                // stored against the class but never shown to the student it
+                // was meant for. Only an http(s) link is ever turned into a
+                // button, and only for a class this student is scoped to.
+                $joinUrl = null;
+                if (($nextClass['delivery_mode'] ?? 'physical') !== 'physical') {
+                    $candidate = trim((string) ($nextClass['meeting_url'] ?? ''));
+                    if ($candidate !== '' && preg_match('#^https?://#i', $candidate) === 1) {
+                        $joinUrl = $candidate;
+                    }
+                }
+                $isLive = false;
+                if ($joinUrl !== null) {
+                    $startsAt = new DateTimeImmutable($nextClass['starts_at']);
+                    $endsAt = $nextClass['end_time'] !== null
+                        ? new DateTimeImmutable($nextClass['date'] . ' ' . $nextClass['end_time'])
+                        : $startsAt->modify('+2 hours');
+                    // Open the door a few minutes early, the way a hall does.
+                    $isLive = $now >= $startsAt->modify('-15 minutes') && $now <= $endsAt;
+                }
+                ?>
+                <?php if ($joinUrl !== null): ?>
+                    <a class="sh-join<?= $isLive ? ' sh-join--live' : '' ?>"
+                       href="<?= $e($joinUrl) ?>" target="_blank" rel="noopener noreferrer">
+                        <?php if ($isLive): ?>
+                            <span class="sh-join__dot" aria-hidden="true"></span><?= te('Join the class now') ?>
+                        <?php else: ?>
+                            &#128250; <?= te('Online class link') ?>
+                        <?php endif; ?>
+                    </a>
                 <?php endif; ?>
             </div>
             <div class="sh-next__count">
