@@ -53,8 +53,10 @@ require __DIR__ . '/_site.php';
 $waNumber = \App\Services\WhatsAppService::normalisePhone(PublicSite::content('contact_whatsapp'));
 $siteUrl  = PublicSite::externalUrl(PublicSite::content('contact_website_url'));
 $fbUrl    = PublicSite::externalUrl(PublicSite::content('contact_facebook_url'));
+$email    = trim(PublicSite::content('contact_email'));
+$email    = $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null;
 ?>
-<?php if ($waNumber !== null || $siteUrl !== null || $fbUrl !== null): ?>
+<?php if ($waNumber !== null || $siteUrl !== null || $fbUrl !== null || $email !== null): ?>
 <section class="ts-section">
     <div class="ts-wrap">
         <h2><?= te('Find us online') ?></h2>
@@ -70,6 +72,9 @@ $fbUrl    = PublicSite::externalUrl(PublicSite::content('contact_facebook_url'))
             <?php if ($fbUrl !== null): ?>
                 <a class="ts-btn ts-btn--line" target="_blank" rel="noopener"
                    href="<?= $e($fbUrl) ?>">&#128100; <?= te('Facebook') ?></a>
+            <?php endif; ?>
+            <?php if ($email !== null): ?>
+                <a class="ts-btn ts-btn--line" href="mailto:<?= $e($email) ?>">&#9993; <?= $e($email) ?></a>
             <?php endif; ?>
         </div>
     </div>

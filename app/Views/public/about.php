@@ -25,14 +25,14 @@ require __DIR__ . '/_site.php';
         <?php $teacherPhoto = PublicSite::content('teacher_photo_image'); ?>
         <div class="ts-teacher__img" style="aspect-ratio:4/5;"><img src="<?= $teacherPhoto !== '' ? BASE_URL . $e($teacherPhoto) : BASE_URL . '/assets/img/teacher-smartboard.jpg' ?>" width="1600" height="2000" loading="lazy" style="object-position:50% 18%;" alt="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>"></div>
         <div>
-            <div class="ts-kicker"><?= te('Your teacher') ?></div>
+            <div class="ts-kicker"><?= $e(PublicSite::content('home_teacher_kicker')) ?></div>
             <h2><?= $e($teacher) ?></h2>
-            <p class="ts-lead"><?= te('{name} teaches Science for Grades {r} at {n} branches, following the school syllabus step by step.', ['name' => $teacher, 'r' => $range, 'n' => (int) $facts['branches']]) ?></p>
+            <div class="ts-lead ts-rich"><?= PublicSite::content('home_teacher_text', ['name' => $teacher, 'r' => $range, 'n' => (int) $facts['branches']]) ?></div>
             <ul class="ts-ticks">
-                <li><?= te('Lessons with smart-board presentations') ?></li>
-                <li><?= te('Recordings and notes for every month, to revise at home') ?></li>
-                <li><?= te('Quizzes, homework and past papers, marked with feedback') ?></li>
-                <li><?= te('Parents can follow marks, attendance and fees in the portal') ?></li>
+                <?php foreach (['home_teacher_point_1', 'home_teacher_point_2', 'home_teacher_point_3', 'home_teacher_point_4'] as $pointKey): ?>
+                    <?php $point = trim(PublicSite::content($pointKey)); ?>
+                    <?php if ($point !== ''): ?><li><?= $e($point) ?></li><?php endif; ?>
+                <?php endforeach; ?>
             </ul>
         </div>
     </div>

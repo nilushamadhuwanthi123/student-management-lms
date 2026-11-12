@@ -77,6 +77,21 @@ function lang_dictionary(): array
 }
 
 /**
+ * Translate a sentence into a named language rather than the one the
+ * page is being shown in. Only the website-content editor needs this,
+ * to show what a field will say in the other language while the person
+ * editing it is working in this one. Anything with no entry, and any
+ * language that is not translated, comes back unchanged.
+ */
+function lang_translate_to(string $text, string $code): string
+{
+    if ($code !== 'si') {
+        return $text;
+    }
+    return lang_dictionary()[$text] ?? $text;
+}
+
+/**
  * Translate a sentence, then fill its {placeholders}.
  *
  * Returns plain text. Use te() when writing straight into HTML.

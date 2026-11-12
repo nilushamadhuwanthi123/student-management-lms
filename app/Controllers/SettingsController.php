@@ -372,7 +372,10 @@ class SettingsController extends BaseController
             'pageTitle'    => 'Website Content',
             'activeSubPage' => 'site-content',
             'fields'       => \App\Services\SiteContentService::FIELDS,
-            'values'       => $service->getAll(),
+            'groups'       => \App\Services\SiteContentService::GROUPS,
+            'langs'        => \App\Services\SiteContentService::LANGS,
+            'baseLang'     => \App\Services\SiteContentService::BASE_LANG,
+            'values'       => $service->getAllForEditing(),
         ]);
     }
 
@@ -405,8 +408,14 @@ class SettingsController extends BaseController
                     }
                     continue;
                 }
-                $value = trim((string) ($_POST['fields'][$key] ?? ''));
-                $service->set($key, mb_substr($value, 0, 4000), $userId);
+                foreach (\App\Services\SiteContentService::LANGS as $lang) {
+                    $posted = $_POST['fields'][$lang][$key] ?? null;
+                    if ($posted === null) {
+                        continue; // that language was not in the form at all
+                    }
+                    $value = trim((string) $posted);
+                    $service->set($key, mb_substr($value, 0, 4000), $userId, $lang);
+                }
             }
             $this->logAudit('update_site_content', 'site_content', 0);
             $this->flash('success', 'Website content updated.');
