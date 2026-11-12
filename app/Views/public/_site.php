@@ -71,6 +71,18 @@ if (!function_exists('site_days')) {
 .ts-photo { position: relative; justify-self: center; width: min(100%, 420px); }
 .ts-photo::before { content: ''; position: absolute; inset: -10px; border-radius: 32px; background: linear-gradient(135deg, #FACC15, #60A5FA); opacity: .35; filter: blur(26px); z-index: -1; }
 
+/* Seminar posters, shown at a size somebody can actually read. The
+   poster is the content, so the frame stays out of its way: the image
+   keeps its own shape rather than being cropped to a tile, and the
+   title sits underneath as a caption for anyone who cannot see it. */
+.ts-posters__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.4rem; margin-top: 1.8rem; align-items: start; }
+.ts-posters__grid--one { grid-template-columns: minmax(0, 460px); justify-content: center; }
+.ts-poster { display: block; text-decoration: none; color: inherit; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 18px 40px -22px rgba(2,6,23,.45); border: 1px solid rgba(15,23,42,.07); transition: transform .25s ease, box-shadow .25s ease; }
+a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-shadow: 0 26px 54px -24px rgba(2,6,23,.55); }
+.ts-poster img { display: block; width: 100%; height: auto; background: #EFF6FF; }
+.ts-poster__cap { display: block; padding: .8rem 1rem; font-size: .92rem; font-weight: 600; line-height: 1.35; color: #0B1B3F; }
+@media (prefers-reduced-motion: reduce) { a.ts-poster:hover, a.ts-poster:focus-visible { transform: none; } }
+
 /* A cursor that suits a Science class: a faint electron shell that
    follows the pointer, with a nucleus at the tip. Pointer-events are
    off throughout so it can never swallow a click, and the whole thing
@@ -235,7 +247,9 @@ if (!function_exists('site_days')) {
   .ts-events__grid--one .ts-event__actions { margin-top: .6rem; }
 }
 /* the rotating "Upcoming" announcement at the top of the hero */
-.ts-ad { position: relative; display: inline-flex; align-items: center; gap: .6rem; max-width: 100%; margin: 0 0 1.1rem; padding: .4rem .5rem .4rem .45rem; border-radius: 999px; background: rgba(255,255,255,.12); border: 1px solid rgba(250,204,21,.55); color: #fff !important; text-decoration: none; backdrop-filter: blur(6px); box-shadow: 0 10px 30px -14px rgba(250,204,21,.6); animation: tsRise .8s ease both; }
+/* Shrink-wrapped but still on a line of its own: as an inline-flex the
+   eyebrow underneath used to ride up beside it on a tablet. */
+.ts-ad { position: relative; display: flex; width: fit-content; align-items: center; gap: .6rem; max-width: 100%; margin: 0 0 1.1rem; padding: .4rem .5rem .4rem .45rem; border-radius: 999px; background: rgba(255,255,255,.12); border: 1px solid rgba(250,204,21,.55); color: #fff !important; text-decoration: none; backdrop-filter: blur(6px); box-shadow: 0 10px 30px -14px rgba(250,204,21,.6); }
 .ts-ad:hover { background: rgba(255,255,255,.18); }
 .ts-ad__label { flex: 0 0 auto; display: inline-flex; align-items: center; gap: .35rem; background: #FACC15; color: #0B1B3F; font-weight: 800; font-size: .76rem; padding: .28rem .65rem; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
 .ts-ad__label::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #DC2626; box-shadow: 0 0 0 0 rgba(220,38,38,.7); animation: tsPulse 1.6s infinite; }

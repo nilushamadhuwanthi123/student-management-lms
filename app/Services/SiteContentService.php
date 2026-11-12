@@ -49,6 +49,7 @@ final class SiteContentService
         'teacher'  => 'Home page: "Your teacher"',
         'how'      => 'Home page: how the classes work',
         'joining'  => 'Home page: the four steps to join',
+        'posters'  => 'Home page: seminar posters and notices',
         'lists'    => 'Home page: branches and classes',
         'faq'      => 'Home page: questions parents ask',
         'inquiry'  => 'Home page: the inquiry form',
@@ -185,6 +186,20 @@ final class SiteContentService
             'default' => 'Parents log in with their phone number to see marks, attendance and fees.',
             'type'    => self::TYPE_TEXT,
             'group'   => 'joining',
+        ],
+
+        // -- Home page: posters ----------------------------------------------
+        'home_posters_title' => [
+            'label'   => 'Heading above the posters',
+            'default' => 'Notices',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'posters',
+        ],
+        'home_posters_text' => [
+            'label'   => 'Line under that heading (leave blank to hide)',
+            'default' => '',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'posters',
         ],
 
         // -- Home page: branches and classes ---------------------------------

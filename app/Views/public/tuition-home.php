@@ -279,6 +279,26 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
 </section>
 
 
+<?php $posters = \App\Services\PublicSite::posterAds(4); ?>
+<?php if ($posters !== []): ?>
+<section class="ts-section ts-posters" id="posters" aria-labelledby="posters-title">
+    <div class="ts-wrap">
+        <h2 id="posters-title"><?= $sc('home_posters_title') ?></h2><div class="ts-title-bar"></div>
+        <?php $postersText = $sc('home_posters_text'); ?>
+        <?php if ($postersText !== ''): ?><p class="ts-lead"><?= $postersText ?></p><?php endif; ?>
+        <div class="ts-posters__grid<?= count($posters) === 1 ? ' ts-posters__grid--one' : '' ?>">
+            <?php foreach ($posters as $poster): ?>
+                <?php $tag = $poster['href'] !== null ? 'a' : 'div'; ?>
+                <<?= $tag ?> class="ts-poster ts-reveal"<?= $poster['href'] !== null ? ' href="' . $e($poster['href']) . '" target="_blank" rel="noopener noreferrer"' : '' ?>>
+                    <img src="<?= $e($poster['image']) ?>" alt="<?= $e($poster['title']) ?>" loading="lazy">
+                    <span class="ts-poster__cap"><?= $e($poster['title']) ?></span>
+                </<?= $tag ?>>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
 <?php if ($branches !== []): ?>
 <section class="ts-section ts-section--alt">
     <div class="ts-wrap">

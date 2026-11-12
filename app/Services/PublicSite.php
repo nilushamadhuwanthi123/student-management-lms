@@ -304,6 +304,47 @@ final class PublicSite
     }
 
     /**
+     * Ads the office has given a poster to, for showing full size.
+     *
+     * homeAds() above folds ads and seminars into the one-line ticker in
+     * the hero, where a poster is reduced to a thumbnail the size of a
+     * stamp. A seminar poster is designed to be read, so this returns
+     * only the ads that actually carry an image and leaves the wording
+     * to the poster itself.
+     *
+     * The path is checked against the shape setImage() writes, so a
+     * value edited to point anywhere else is dropped rather than
+     * rendered.
+     *
+     * @return array<int, array{title: string, image: string, href: ?string}>
+     */
+    public static function posterAds(int $limit = 4): array
+    {
+        if (!array_key_exists('posters', self::$cache)) {
+            $out = [];
+            try {
+                foreach ((new \App\Services\SiteAdService())->active(12) as $ad) {
+                    $path = (string) ($ad['image_path'] ?? '');
+                    if ($path === '' || !preg_match('#^/uploads/site-ads/[A-Za-z0-9_]+\.(jpg|png|webp)$#', $path)) {
+                        continue;
+                    }
+                    $link = trim((string) ($ad['link_url'] ?? ''));
+                    $out[] = [
+                        'title' => (string) $ad['title'],
+                        'image' => BASE_URL . $path,
+                        'href'  => preg_match('#^https?://#i', $link) === 1 ? $link : null,
+                    ];
+                }
+            } catch (\Throwable $e) {
+                $out = [];
+            }
+            self::$cache['posters'] = $out;
+        }
+
+        return array_slice(self::$cache['posters'], 0, max(1, $limit));
+    }
+
+    /**
      * One of the small, fixed set of editable text blocks (see
      * SiteContentService) -- the only free text anywhere on this page,
      * everything else above stays strictly from real records.
