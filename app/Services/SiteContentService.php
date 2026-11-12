@@ -32,52 +32,345 @@ final class SiteContentService
     public const TYPE_RICHTEXT = 'richtext';
     public const TYPE_IMAGE = 'image';
 
-    /** @var array<string, array{label: string, default: string, type: string}> */
+    /**
+     * The language whose wording is stored under the plain key, and the
+     * languages the site owner can write wording for. A photo is shared
+     * by every language, so only text/richtext fields are translatable.
+     */
+    public const BASE_LANG = 'en';
+    public const LANGS = ['en', 'si'];
+
+    /**
+     * The groups the fields below are shown in, in this order. Purely for
+     * the editing screen -- a group has no effect on what a page renders.
+     */
+    public const GROUPS = [
+        'hero'     => 'Home page: the top of the page',
+        'teacher'  => 'Home page: "Your teacher"',
+        'how'      => 'Home page: how the classes work',
+        'joining'  => 'Home page: the four steps to join',
+        'lists'    => 'Home page: branches and classes',
+        'faq'      => 'Home page: questions parents ask',
+        'inquiry'  => 'Home page: the inquiry form',
+        'about'    => 'About page',
+        'contact'  => 'Contact page',
+        'photos'   => 'Photos',
+    ];
+
+    /** @var array<string, array{label: string, default: string, type: string, group?: string}> */
     public const FIELDS = [
+        // -- Home page: hero -------------------------------------------------
         'home_hero_text' => [
-            'label'   => 'Home page: hero paragraph (under the heading)',
+            'label'   => 'Hero paragraph (under the heading)',
             'default' => 'Weekly Science classes for Grades {r}, following the school syllabus. Every lesson is backed by recordings, notes, quizzes and homework in the portal, and parents can follow their child\'s progress.',
             'type'    => self::TYPE_RICHTEXT,
+            'group'   => 'hero',
         ],
+        'home_hero_cta_1' => [
+            'label'   => 'Hero: first button',
+            'default' => 'Join a class',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'hero',
+        ],
+        'home_hero_cta_2' => [
+            'label'   => 'Hero: second button',
+            'default' => 'See the timetable',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'hero',
+        ],
+
+        // -- Home page: your teacher -----------------------------------------
+        'home_teacher_kicker' => [
+            'label'   => 'Small label above the teacher\'s name',
+            'default' => 'Your teacher',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'teacher',
+        ],
+        'home_teacher_text' => [
+            'label'   => 'Paragraph about the teacher',
+            'default' => '{name} teaches Science for Grades {r} at {n} branches, following the school syllabus step by step.',
+            'type'    => self::TYPE_RICHTEXT,
+            'group'   => 'teacher',
+        ],
+        'home_teacher_point_1' => [
+            'label'   => 'Tick 1',
+            'default' => 'Lessons with smart-board presentations',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'teacher',
+        ],
+        'home_teacher_point_2' => [
+            'label'   => 'Tick 2',
+            'default' => 'Recordings and notes for every month, to revise at home',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'teacher',
+        ],
+        'home_teacher_point_3' => [
+            'label'   => 'Tick 3',
+            'default' => 'Quizzes, homework and past papers, marked with feedback',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'teacher',
+        ],
+        'home_teacher_point_4' => [
+            'label'   => 'Tick 4',
+            'default' => 'Parents can follow marks, attendance and fees in the portal',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'teacher',
+        ],
+
+        // -- Home page: how the classes work ---------------------------------
+        'home_how_title' => [
+            'label'   => 'Section heading',
+            'default' => 'How the classes work',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'how',
+        ],
+        'home_how_text' => [
+            'label'   => 'Section intro line',
+            'default' => 'Each grade meets every week at a branch. Between classes, students keep learning from home.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'how',
+        ],
+
+        // -- Home page: joining ----------------------------------------------
+        'home_join_title' => [
+            'label'   => 'Section heading',
+            'default' => 'Four steps to join',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'joining',
+        ],
+        'home_step_1_title' => [
+            'label'   => 'Step 1 heading',
+            'default' => 'Send an inquiry',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'joining',
+        ],
+        'home_step_1_text' => [
+            'label'   => 'Step 1 text',
+            'default' => 'Fill in the form below or call the branch nearest to you.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'joining',
+        ],
+        'home_step_2_title' => [
+            'label'   => 'Step 2 heading',
+            'default' => 'Register at the office',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'joining',
+        ],
+        'home_step_2_text' => [
+            'label'   => 'Step 2 text',
+            'default' => 'The office registers your child and gives the student ID and a first password.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'joining',
+        ],
+        'home_step_3_title' => [
+            'label'   => 'Step 3 heading',
+            'default' => 'Come to class every week',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'joining',
+        ],
+        'home_step_3_text' => [
+            'label'   => 'Step 3 text',
+            'default' => 'Weekly class at the branch, with notes, recordings and quizzes online.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'joining',
+        ],
+        'home_step_4_title' => [
+            'label'   => 'Step 4 heading',
+            'default' => 'Follow the progress',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'joining',
+        ],
+        'home_step_4_text' => [
+            'label'   => 'Step 4 text',
+            'default' => 'Parents log in with their phone number to see marks, attendance and fees.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'joining',
+        ],
+
+        // -- Home page: branches and classes ---------------------------------
+        'home_branches_title' => [
+            'label'   => 'Branches: heading',
+            'default' => 'Our branches',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'lists',
+        ],
+        'home_branches_text' => [
+            'label'   => 'Branches: intro line',
+            'default' => 'Choose the branch nearest to you.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'lists',
+        ],
+        'home_classes_title' => [
+            'label'   => 'Classes by grade: heading',
+            'default' => 'Classes by grade',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'lists',
+        ],
+        'home_classes_text' => [
+            'label'   => 'Classes by grade: intro line',
+            'default' => 'Days and times for every grade. Ask the branch for a seat.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'lists',
+        ],
+
+        // -- Home page: questions parents ask --------------------------------
+        'home_faq_title' => [
+            'label'   => 'Section heading',
+            'default' => 'Questions parents ask',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'faq',
+        ],
+        'home_faq_1_q' => [
+            'label'   => 'Question 1',
+            'default' => 'How do I join a class?',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'faq',
+        ],
+        'home_faq_1_a' => [
+            'label'   => 'Answer 1',
+            'default' => 'Send the inquiry form below, or call the branch. The office registers the student and gives you the student ID for the portal.',
+            'type'    => self::TYPE_RICHTEXT,
+            'group'   => 'faq',
+        ],
+        'home_faq_2_q' => [
+            'label'   => 'Question 2',
+            'default' => 'How are fees paid?',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'faq',
+        ],
+        'home_faq_2_a' => [
+            'label'   => 'Answer 2',
+            'default' => 'Fees are monthly. Pay at the branch office, or pay by bank and upload the slip in the portal. The office checks every slip before the payment is recorded, and a receipt is then available to download.',
+            'type'    => self::TYPE_RICHTEXT,
+            'group'   => 'faq',
+        ],
+        'home_faq_3_q' => [
+            'label'   => 'Question 3',
+            'default' => 'What happens if a student misses a class?',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'faq',
+        ],
+        'home_faq_3_a' => [
+            'label'   => 'Answer 3',
+            'default' => 'Recordings and notes for the month are posted in the portal, so the lesson can be caught up at home.',
+            'type'    => self::TYPE_RICHTEXT,
+            'group'   => 'faq',
+        ],
+        'home_faq_4_q' => [
+            'label'   => 'Question 4',
+            'default' => 'Can parents see how their child is doing?',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'faq',
+        ],
+        'home_faq_4_a' => [
+            'label'   => 'Answer 4',
+            'default' => 'Yes. Parents log in with their phone number to see marks, attendance, progress, homework and fees.',
+            'type'    => self::TYPE_RICHTEXT,
+            'group'   => 'faq',
+        ],
+        'home_faq_5_q' => [
+            'label'   => 'Question 5 (leave blank to hide)',
+            'default' => 'Is the portal available in Sinhala?',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'faq',
+        ],
+        'home_faq_5_a' => [
+            'label'   => 'Answer 5',
+            'default' => 'Yes. Use the EN / Sinhala button at the top of the portal to switch.',
+            'type'    => self::TYPE_RICHTEXT,
+            'group'   => 'faq',
+        ],
+
+        // -- Home page: the inquiry form --------------------------------------
+        'home_inquiry_title' => [
+            'label'   => 'Heading beside the form',
+            'default' => 'Enquire about a class',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'inquiry',
+        ],
+        'home_inquiry_text' => [
+            'label'   => 'Line under that heading',
+            'default' => 'Leave your details and the branch office will call you back.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'inquiry',
+        ],
+        'home_inquiry_point_1' => [
+            'label'   => 'Tick 1',
+            'default' => 'Weekly classes by grade',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'inquiry',
+        ],
+        'home_inquiry_point_2' => [
+            'label'   => 'Tick 2',
+            'default' => 'Recordings, notes and quizzes online',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'inquiry',
+        ],
+        'home_inquiry_point_3' => [
+            'label'   => 'Tick 3',
+            'default' => 'A parent login to follow progress',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'inquiry',
+        ],
+
+        // -- About page -------------------------------------------------------
         'about_in_class_text' => [
-            'label'   => 'About page: "In class" paragraph',
+            'label'   => '"In class" paragraph',
             'default' => 'Each grade has its own weekly class at the branch. Students who miss a lesson can catch up from the recording and notes, and the class register lets parents know about an absence.',
             'type'    => self::TYPE_RICHTEXT,
+            'group'   => 'about',
         ],
         'about_extra_text' => [
-            'label'   => 'About page: extra paragraph (optional -- leave blank to hide)',
+            'label'   => 'Extra paragraph (optional -- leave blank to hide)',
             'default' => '',
             'type'    => self::TYPE_RICHTEXT,
+            'group'   => 'about',
         ],
+
+        // -- Contact page ------------------------------------------------------
         'contact_intro_text' => [
-            'label'   => 'Contact page: intro line (under the heading)',
+            'label'   => 'Intro line (under the heading)',
             'default' => 'Call the branch nearest to you, or send a message and the office will reply.',
             'type'    => self::TYPE_TEXT,
+            'group'   => 'contact',
         ],
         'contact_whatsapp' => [
-            'label'   => 'Contact page: WhatsApp number',
-            'default' => '077 354 2713',
+            'label'   => 'WhatsApp number (leave blank to hide)',
+            'default' => '',
             'type'    => self::TYPE_TEXT,
+            'group'   => 'contact',
+        ],
+        'contact_email' => [
+            'label'   => 'Email address (leave blank to hide)',
+            'default' => '',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'contact',
         ],
         'contact_website_url' => [
-            'label'   => 'Contact page: website address',
-            'default' => 'https://www.harshani.com',
+            'label'   => 'Website address (leave blank to hide)',
+            'default' => '',
             'type'    => self::TYPE_TEXT,
+            'group'   => 'contact',
         ],
         'contact_facebook_url' => [
-            'label'   => 'Contact page: Facebook page address',
-            'default' => 'https://www.facebook.com/harshani.science',
+            'label'   => 'Facebook page address (leave blank to hide)',
+            'default' => '',
             'type'    => self::TYPE_TEXT,
+            'group'   => 'contact',
         ],
+
+        // -- Photos ------------------------------------------------------------
         'teacher_photo_image' => [
             'label'   => 'Teacher photo (home page hero and "Your teacher" section on the About page)',
             'default' => '',
             'type'    => self::TYPE_IMAGE,
+            'group'   => 'photos',
         ],
         'about_class_image' => [
             'label'   => 'About page: "In class" section photo',
             'default' => '',
             'type'    => self::TYPE_IMAGE,
+            'group'   => 'photos',
         ],
     ];
 
@@ -92,34 +385,95 @@ final class SiteContentService
     }
 
     /**
-     * The stored value for $key, or its default when unset, empty, or
-     * on any error (fail open to the original hard-coded text/image,
-     * never to a blank page). $params are substituted the same way as
-     * te()'s placeholders -- {r}, {n}, etc. -- but without a translation
-     * lookup, since this is the site owner's own text, not an i18n key.
-     * Not applied to 'image' fields (a path has no placeholders).
+     * The wording to show for $key on the page being rendered: the site
+     * owner's own text for the current language where they have written
+     * one, else their language-neutral text, else the original default --
+     * failing open to the default on any error, never to a blank page.
+     *
+     * Text and richtext go through the dictionary on the way out, so a
+     * field nobody has edited reads in the language of the page rather
+     * than in English. $params are then substituted the same way as
+     * te()'s placeholders -- {r}, {n}, etc. Neither applies to an
+     * 'image' field, whose value is a path shared by every language.
      */
     public function get(string $key, array $params = []): string
     {
-        $value = self::FIELDS[$key]['default'] ?? '';
-        try {
-            $stmt = $this->db->prepare('SELECT content_value FROM site_content WHERE content_key = :k');
-            $stmt->execute([':k' => $key]);
-            $stored = $stmt->fetchColumn();
-            if ($stored !== false && trim((string) $stored) !== '') {
-                $value = (string) $stored;
+        $type = self::FIELDS[$key]['type'] ?? self::TYPE_TEXT;
+        $default = (string) (self::FIELDS[$key]['default'] ?? '');
+        $lang = self::currentLang();
+
+        // The wording the site owner saved for the language being viewed
+        // wins; failing that, the one they saved without a language; and
+        // failing that, the original default below.
+        $stored = null;
+        $candidates = $lang === '' ? [$key] : [self::langKey($key, $lang), $key];
+        foreach ($candidates as $candidate) {
+            $found = $this->fetch($candidate);
+            if ($found !== null) {
+                $stored = $found;
+                break;
             }
-        } catch (\Throwable $e) {
-            error_log('Site content unavailable: ' . $e->getMessage());
         }
 
-        if ((self::FIELDS[$key]['type'] ?? self::TYPE_TEXT) !== self::TYPE_IMAGE) {
-            foreach ($params as $ph => $v) {
-                $value = str_replace('{' . $ph . '}', (string) $v, $value);
-            }
+        if ($type === self::TYPE_IMAGE) {
+            return $stored ?? $default;
+        }
+
+        $value = $stored ?? $default;
+
+        // A field the owner has never touched falls back to its default,
+        // which is the English wording that used to be hard-coded on the
+        // page -- so it has to go through the dictionary, or the Sinhala
+        // site shows English here. The owner's own wording goes through
+        // t() as well, which hands anything it has no entry for straight
+        // back, so their text is never altered.
+        if (function_exists('t')) {
+            $value = (string) t($value);
+        }
+
+        foreach ($params as $ph => $v) {
+            $value = str_replace('{' . $ph . '}', (string) $v, $value);
         }
 
         return $value;
+    }
+
+    /** The stored value for an exact storage key, or null when unset, blank or unreadable. */
+    private function fetch(string $storageKey): ?string
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT content_value FROM site_content WHERE content_key = :k');
+            $stmt->execute([':k' => $storageKey]);
+            $stored = $stmt->fetchColumn();
+        } catch (\Throwable $e) {
+            error_log('Site content unavailable: ' . $e->getMessage());
+            return null;
+        }
+        if ($stored === false || trim((string) $stored) === '') {
+            return null;
+        }
+        return (string) $stored;
+    }
+
+    /**
+     * The storage key holding $key's wording for $lang. The base key keeps
+     * its own name, so everything saved before this existed still reads
+     * back unchanged; a translation is suffixed. content_key is 64 chars,
+     * which every key in FIELDS leaves room for.
+     */
+    public static function langKey(string $key, string $lang): string
+    {
+        return $lang === '' || $lang === self::BASE_LANG ? $key : $key . '::' . $lang;
+    }
+
+    /** The language the page is being rendered in, or '' when there is no i18n. */
+    private static function currentLang(): string
+    {
+        if (!function_exists('lang_current')) {
+            return '';
+        }
+        $lang = (string) lang_current();
+        return in_array($lang, self::LANGS, true) ? $lang : '';
     }
 
     /** @return array<string, string> every known key => its current (or default) value */
@@ -132,15 +486,50 @@ final class SiteContentService
         return $out;
     }
 
-    /** @throws \InvalidArgumentException if $key is not one of the fixed, known fields */
-    public function set(string $key, string $value, int $updatedBy): void
+    /**
+     * Every known key => the owner's own stored wording per language,
+     * with '' where they have not written one (so the form can show the
+     * default as a placeholder rather than as a value to re-save).
+     * Untranslated and shared by every language.
+     *
+     * @return array<string, array<string, string>> key => lang => stored value
+     */
+    public function getAllForEditing(): array
+    {
+        $out = [];
+        foreach (self::FIELDS as $key => $field) {
+            $out[$key] = [];
+            if (($field['type'] ?? self::TYPE_TEXT) === self::TYPE_IMAGE) {
+                $out[$key][self::BASE_LANG] = $this->fetch($key) ?? '';
+                continue;
+            }
+            foreach (self::LANGS as $lang) {
+                $out[$key][$lang] = $this->fetch(self::langKey($key, $lang)) ?? '';
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * @throws \InvalidArgumentException if $key is not one of the fixed, known
+     *         fields, or $lang is not one this site is written in
+     */
+    public function set(string $key, string $value, int $updatedBy, string $lang = self::BASE_LANG): void
     {
         if (!array_key_exists($key, self::FIELDS)) {
             throw new \InvalidArgumentException("Unknown site content key: {$key}");
         }
-        if ((self::FIELDS[$key]['type'] ?? self::TYPE_TEXT) === self::TYPE_RICHTEXT) {
+        if (!in_array($lang, self::LANGS, true)) {
+            throw new \InvalidArgumentException("Unknown site content language: {$lang}");
+        }
+        $type = self::FIELDS[$key]['type'] ?? self::TYPE_TEXT;
+        if ($type === self::TYPE_IMAGE && $lang !== self::BASE_LANG) {
+            throw new \InvalidArgumentException("Photos are shared by every language: {$key}");
+        }
+        if ($type === self::TYPE_RICHTEXT) {
             $value = self::sanitizeRichText($value);
         }
+        $key = self::langKey($key, $lang);
         $this->db->prepare(
             'INSERT INTO site_content (content_key, content_value, updated_by, updated_at)
              VALUES (:k, :v, :by, NOW())

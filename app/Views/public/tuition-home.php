@@ -10,6 +10,15 @@ $branches = $branches ?? [];
 $classes = $classes ?? [];
 $teacher = $teacher ?? null;
 $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+
+// Wording the super admin can change from Settings > Website Content. $sc
+// returns a plain line, already translated and escaped, ready for a heading
+// or a button; $scr returns a sanitised richtext passage to echo as HTML.
+$sc = static fn (string $key, array $params = []): string
+    => htmlspecialchars(\App\Services\PublicSite::content($key, $params), ENT_QUOTES, 'UTF-8');
+$scr = static fn (string $key, array $params = []): string
+    => \App\Services\PublicSite::content($key, $params);
+
 $pickGrade = preg_match('/^(6|7|8|9|10|11)$/', (string) ($_GET['grade'] ?? '')) ? (string) $_GET['grade'] : '';
 $pickBranch = (int) ($_GET['branch'] ?? 0);
 $byGrade = [];
@@ -123,8 +132,8 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
             </h1>
             <div class="ts-rich"><?= \App\Services\PublicSite::content('home_hero_text', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
             <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
-                <a href="#inquiry" class="ts-btn ts-btn--yellow"><?= te('Join a class') ?></a>
-                <a href="<?= BASE_URL ?>/timetable" class="ts-btn ts-btn--ghost"><?= te('See the timetable') ?></a>
+                <a href="#inquiry" class="ts-btn ts-btn--yellow"><?= $sc('home_hero_cta_1') ?></a>
+                <a href="<?= BASE_URL ?>/timetable" class="ts-btn ts-btn--ghost"><?= $sc('home_hero_cta_2') ?></a>
             </div>
             <div class="ts-chips">
                 <a class="ts-chip" style="color:#fff; text-decoration:none;" href="<?= BASE_URL ?>/login"><svg width="15" height="15" style="vertical-align:-2px; margin-right:.3rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><?= te('Student login') ?></a>
@@ -218,14 +227,14 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
             <?php endif; ?>
         </div>
         <div>
-            <div class="ts-kicker"><?= te('Your teacher') ?></div>
+            <div class="ts-kicker"><?= $sc('home_teacher_kicker') ?></div>
             <h2><?= $e($teacher) ?></h2>
-            <p class="ts-lead" style="margin-bottom:.4rem;"><?= te('{name} teaches Science for Grades {r} at {n} branches, following the school syllabus step by step.', ['name' => $teacher, 'r' => \App\Services\PublicSite::gradeRange(), 'n' => (int) $facts['branches']]) ?></p>
+            <div class="ts-lead ts-rich" style="margin-bottom:.4rem;"><?= $scr('home_teacher_text', ['name' => $teacher, 'r' => \App\Services\PublicSite::gradeRange(), 'n' => (int) $facts['branches']]) ?></div>
             <ul class="ts-ticks">
-                <li><?= te('Lessons with smart-board presentations') ?></li>
-                <li><?= te('Recordings and notes for every month, to revise at home') ?></li>
-                <li><?= te('Quizzes, homework and past papers, marked with feedback') ?></li>
-                <li><?= te('Parents can follow marks, attendance and fees in the portal') ?></li>
+                <?php foreach (['home_teacher_point_1', 'home_teacher_point_2', 'home_teacher_point_3', 'home_teacher_point_4'] as $pointKey): ?>
+                    <?php $point = $sc($pointKey); ?>
+                    <?php if ($point !== ''): ?><li><?= $point ?></li><?php endif; ?>
+                <?php endforeach; ?>
             </ul>
             <a href="<?= BASE_URL ?>/about" class="ts-btn ts-btn--line"><?= te('About the classes') ?> &rarr;</a>
         </div>
@@ -236,8 +245,8 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
 <section class="ts-section ts-section--alt" id="how">
     <div class="ts-wrap">
         <div class="ts-kicker"><?= te('How it works') ?></div>
-        <h2><?= te('How the classes work') ?></h2><div class="ts-title-bar"></div>
-        <p class="ts-lead"><?= te('Each grade meets every week at a branch. Between classes, students keep learning from home.') ?></p>
+        <h2><?= $sc('home_how_title') ?></h2><div class="ts-title-bar"></div>
+        <p class="ts-lead"><?= $sc('home_how_text') ?></p>
         <div class="ts-grid">
             <div class="ts-card ts-reveal"><div class="ts-icon ts-icon--c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg></div><h3><?= te('Weekly classes') ?></h3><p class="ts-muted"><?= te('Regular classes by grade at each branch, following the school Science syllabus.') ?></p></div>
             <div class="ts-card ts-reveal"><div class="ts-icon ts-icon--c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg></div><h3><?= te('Recordings and notes') ?></h3><p class="ts-muted"><?= te('Missed a class or need a second look? Recordings, notes and videos are posted for each month.') ?></p></div>
@@ -254,12 +263,17 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
 <section class="ts-section" id="join-steps">
     <div class="ts-wrap">
         <div class="ts-kicker"><?= te('Joining') ?></div>
-        <h2><?= te('Four steps to join') ?></h2><div class="ts-title-bar"></div>
+        <h2><?= $sc('home_join_title') ?></h2><div class="ts-title-bar"></div>
         <div class="ts-steps" style="margin-top:1.8rem;">
-            <div class="ts-step ts-reveal"><h3><?= te('Send an inquiry') ?></h3><p class="ts-muted"><?= te('Fill in the form below or call the branch nearest to you.') ?></p></div>
-            <div class="ts-step ts-reveal"><h3><?= te('Register at the office') ?></h3><p class="ts-muted"><?= te('The office registers your child and gives the student ID and a first password.') ?></p></div>
-            <div class="ts-step ts-reveal"><h3><?= te('Come to class every week') ?></h3><p class="ts-muted"><?= te('Weekly class at the branch, with notes, recordings and quizzes online.') ?></p></div>
-            <div class="ts-step ts-reveal"><h3><?= te('Follow the progress') ?></h3><p class="ts-muted"><?= te('Parents log in with their phone number to see marks, attendance and fees.') ?></p></div>
+            <?php foreach ([1, 2, 3, 4] as $stepNo): ?>
+                <?php $stepTitle = $sc('home_step_' . $stepNo . '_title'); ?>
+                <?php $stepText = $sc('home_step_' . $stepNo . '_text'); ?>
+                <?php if ($stepTitle === '' && $stepText === '') { continue; } ?>
+                <div class="ts-step ts-reveal">
+                    <?php if ($stepTitle !== ''): ?><h3><?= $stepTitle ?></h3><?php endif; ?>
+                    <?php if ($stepText !== ''): ?><p class="ts-muted"><?= $stepText ?></p><?php endif; ?>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
@@ -268,8 +282,8 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
 <?php if ($branches !== []): ?>
 <section class="ts-section ts-section--alt">
     <div class="ts-wrap">
-        <h2><?= te('Our branches') ?></h2><div class="ts-title-bar"></div>
-        <p class="ts-lead"><?= te('Choose the branch nearest to you.') ?></p>
+        <h2><?= $sc('home_branches_title') ?></h2><div class="ts-title-bar"></div>
+        <p class="ts-lead"><?= $sc('home_branches_text') ?></p>
         <div class="ts-grid">
             <?php foreach ($branches as $b): ?>
                 <div class="ts-card ts-branch ts-reveal">
@@ -291,8 +305,8 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
 
 <section class="ts-section ts-section--alt" id="classes">
     <div class="ts-wrap">
-        <h2><?= te('Classes by grade') ?></h2><div class="ts-title-bar"></div>
-        <p class="ts-lead"><?= te('Days and times for every grade. Ask the branch for a seat.') ?> <a href="<?= BASE_URL ?>/timetable"><?= te('Full timetable') ?> &rarr;</a></p>
+        <h2><?= $sc('home_classes_title') ?></h2><div class="ts-title-bar"></div>
+        <p class="ts-lead"><?= $sc('home_classes_text') ?> <a href="<?= BASE_URL ?>/timetable"><?= te('Full timetable') ?> &rarr;</a></p>
         <?php if ($byGrade === []): ?>
             <p class="ts-muted"><?= te('The timetable will appear here soon. Please send an inquiry below.') ?></p>
         <?php endif; ?>
@@ -328,12 +342,16 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
 
 <section class="ts-section">
     <div class="ts-wrap ts-faq">
-        <h2><?= te('Questions parents ask') ?></h2><div class="ts-title-bar"></div>
-        <details><summary><?= te('How do I join a class?') ?></summary><p class="ts-muted"><?= te('Send the inquiry form below, or call the branch. The office registers the student and gives you the student ID for the portal.') ?></p></details>
-        <details><summary><?= te('How are fees paid?') ?></summary><p class="ts-muted"><?= te('Fees are monthly. Pay at the branch office, or pay by bank and upload the slip in the portal. The office checks every slip before the payment is recorded, and a receipt is then available to download.') ?></p></details>
-        <details><summary><?= te('What happens if a student misses a class?') ?></summary><p class="ts-muted"><?= te('Recordings and notes for the month are posted in the portal, so the lesson can be caught up at home.') ?></p></details>
-        <details><summary><?= te('Can parents see how their child is doing?') ?></summary><p class="ts-muted"><?= te('Yes. Parents log in with their phone number to see marks, attendance, progress, homework and fees.') ?></p></details>
-        <details><summary><?= te('Is the portal available in Sinhala?') ?></summary><p class="ts-muted"><?= te('Yes. Use the EN / Sinhala button at the top of the portal to switch.') ?></p></details>
+        <h2><?= $sc('home_faq_title') ?></h2><div class="ts-title-bar"></div>
+        <?php foreach ([1, 2, 3, 4, 5] as $qNo): ?>
+            <?php $question = $sc('home_faq_' . $qNo . '_q'); ?>
+            <?php $answer = $scr('home_faq_' . $qNo . '_a'); ?>
+            <?php if ($question === '' || trim(strip_tags($answer)) === '') { continue; } ?>
+            <details>
+                <summary><?= $question ?></summary>
+                <div class="ts-muted ts-rich"><?= $answer ?></div>
+            </details>
+        <?php endforeach; ?>
     </div>
 </section>
 
@@ -343,12 +361,13 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
             <div class="ts-join__side">
                 <?php if ($teacher): ?><div class="ts-join__avatar"><img src="<?= BASE_URL ?>/assets/img/teacher-smartboard.jpg" width="96" height="96" loading="lazy" alt="<?= $e($teacher) ?>"></div><?php endif; ?>
                 <div class="ts-kicker" style="color:#FDE68A;"><?= te('Join a class') ?></div>
-                <h2 style="margin:0 0 .5rem;"><?= te('Enquire about a class') ?></h2>
-                <p style="opacity:.9;"><?= te('Leave your details and the branch office will call you back.') ?></p>
+                <h2 style="margin:0 0 .5rem;"><?= $sc('home_inquiry_title') ?></h2>
+                <p style="opacity:.9;"><?= $sc('home_inquiry_text') ?></p>
                 <ul class="ts-ticks">
-                    <li><?= te('Weekly classes by grade') ?></li>
-                    <li><?= te('Recordings, notes and quizzes online') ?></li>
-                    <li><?= te('A parent login to follow progress') ?></li>
+                    <?php foreach (['home_inquiry_point_1', 'home_inquiry_point_2', 'home_inquiry_point_3'] as $pointKey): ?>
+                        <?php $point = $sc($pointKey); ?>
+                        <?php if ($point !== ''): ?><li><?= $point ?></li><?php endif; ?>
+                    <?php endforeach; ?>
                 </ul>
                 <?php foreach ($branches as $b): if (!empty($b['phone1'])): ?>
                     <div style="font-size:.9rem; margin-top:.3rem;"><strong><?= $e($b['name']) ?></strong> &middot; <a href="<?= $e(\App\Services\PublicSite::telHref($b['phone1'])) ?>"><?= $e($b['phone1']) ?></a></div>
