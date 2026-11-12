@@ -338,9 +338,107 @@
 
         /* Noscript fallback */
         noscript .reveal { opacity: 1; transform: none; }
+
+        /* ---- Opening titles ------------------------------------------
+           The sheet is `hidden` in the markup and only revealed by the
+           script, so with scripting off nothing ever covers the page. */
+        .ts-intro { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center;
+            background: radial-gradient(120% 120% at 50% 0%, #15368F 0%, #0B1B3F 60%, #070F29 100%);
+            transition: opacity .55s ease, transform .55s ease; }
+        .ts-intro[hidden] { display: none; }
+        .ts-intro.is-out { opacity: 0; transform: translateY(-3%); pointer-events: none; }
+        /* Hold the scrollbar still while the sheet is up. */
+        html.ts-intro-on, html.ts-intro-on body { overflow: hidden; }
+
+        .ts-intro__inner { display: grid; justify-items: center; gap: 1.3rem; padding: 2rem; text-align: center; }
+        .ts-intro__atom { width: clamp(96px, 22vw, 140px); height: clamp(96px, 22vw, 140px);
+            fill: none; overflow: visible; }
+        .ts-intro__nucleus { fill: #FACC15; opacity: 0; animation: tsiCore .5s ease .55s forwards; }
+        .ts-intro__shell { stroke: rgba(147, 197, 253, .9); stroke-width: 1.6; stroke-linecap: round;
+            /* 2*pi*sqrt((50^2+19^2)/2) is near enough for a dash sweep. */
+            stroke-dasharray: 240; stroke-dashoffset: 240;
+            animation: tsiDraw .85s ease forwards; transform-origin: 60px 60px; }
+        .ts-intro__shell--b { animation-delay: .16s; transform: rotate(60deg); }
+        .ts-intro__shell--c { animation-delay: .32s; transform: rotate(120deg); }
+
+        .ts-intro__text { display: grid; gap: .35rem; opacity: 0; animation: tsiRise .7s ease .75s forwards; }
+        .ts-intro__name { font-family: 'Playfair Display', 'Noto Sans Sinhala', Georgia, serif;
+            font-size: clamp(1.5rem, 5vw, 2.3rem); font-weight: 700; color: #FDE9B0; letter-spacing: .01em; }
+        .ts-intro__miss { display: inline-block; vertical-align: middle; font-family: 'Inter', sans-serif;
+            font-size: .42em; font-weight: 700; letter-spacing: .04em; color: #0B1B3F;
+            background: #FACC15; border-radius: 6px; padding: .3em .6em; margin-left: .3em; }
+        .ts-intro__sub { font-size: clamp(.78rem, 2.4vw, .92rem); font-weight: 500;
+            letter-spacing: .06em; text-transform: uppercase; color: rgba(219, 234, 254, .8); }
+
+        @keyframes tsiDraw { to { stroke-dashoffset: 0; } }
+        @keyframes tsiCore { to { opacity: 1; } }
+        @keyframes tsiRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .ts-intro { display: none !important; } }
     </style>
 </head>
 <body class="public-layout">
+
+    <?php
+    // The opening titles: an atom draws itself, the teacher's name
+    // arrives under it, and the whole sheet lifts off the page.
+    //
+    // Three rules keep a decorative thing from ever costing someone the
+    // site: it is shown once per browser session, it is skipped for
+    // anyone who asks for reduced motion, and it is torn down by a
+    // timer as well as by the load event, so a stalled image or a
+    // scripting error cannot leave the page behind a blue sheet. With
+    // scripting off it is never shown at all.
+    $introName = \App\Services\PublicSite::teacherName();
+    ?>
+    <div id="tsIntro" class="ts-intro" aria-hidden="true" hidden>
+        <div class="ts-intro__inner">
+            <svg class="ts-intro__atom" viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="ts-intro__nucleus" cx="60" cy="60" r="7"/>
+                <ellipse class="ts-intro__shell" cx="60" cy="60" rx="50" ry="19"/>
+                <ellipse class="ts-intro__shell ts-intro__shell--b" cx="60" cy="60" rx="50" ry="19"/>
+                <ellipse class="ts-intro__shell ts-intro__shell--c" cx="60" cy="60" rx="50" ry="19"/>
+            </svg>
+            <div class="ts-intro__text">
+                <?php if ($introName !== null): ?>
+                    <span class="ts-intro__name"><?= htmlspecialchars((string) strtok((string) $introName, ' '), ENT_QUOTES, 'UTF-8') ?> <span class="ts-intro__miss"><?= te('Miss') ?></span></span>
+                <?php endif; ?>
+                <span class="ts-intro__sub"><?= te('Science classes') ?> &middot; <?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></span>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function () {
+        var sheet = document.getElementById('tsIntro');
+        if (!sheet) { return; }
+
+        var seen = false;
+        try { seen = window.sessionStorage.getItem('tsIntroSeen') === '1'; } catch (e) { seen = false; }
+        var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (seen || still) { sheet.parentNode.removeChild(sheet); return; }
+
+        try { window.sessionStorage.setItem('tsIntroSeen', '1'); } catch (e) {}
+
+        sheet.hidden = false;
+        document.documentElement.classList.add('ts-intro-on');
+
+        var gone = false;
+        function finish() {
+            if (gone) { return; }
+            gone = true;
+            document.documentElement.classList.remove('ts-intro-on');
+            sheet.classList.add('is-out');
+            // Take it out of the page once the lift-off has played.
+            setTimeout(function () { if (sheet.parentNode) { sheet.parentNode.removeChild(sheet); } }, 900);
+        }
+
+        // Whichever comes first: the page finishing, or 2.2 seconds.
+        window.addEventListener('load', function () { setTimeout(finish, 450); });
+        setTimeout(finish, 2200);
+        // A click should never be trapped behind it.
+        sheet.addEventListener('click', finish);
+    })();
+    </script>
 
     <!-- Liquid-Glass Navbar -->
     <nav class="navbar navbar--liquid-glass<?= in_array($activePage ?? '', ['home', 'about', 'contact', 'branch'], true) ? ' navbar--on-dark' : '' ?>" id="mainNav">

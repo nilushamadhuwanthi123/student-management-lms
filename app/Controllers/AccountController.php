@@ -162,12 +162,17 @@ class AccountController extends BaseController
     }
 
     /**
-     * Issue a code for a confirmed account and queue it for delivery.
+     * Issue a code for a confirmed account and get it to the phone on
+     * that account.
      *
-     * There is no SMS gateway in this system -- WhatsApp messages go out
-     * through click-to-chat, which a person taps. So the code is queued
-     * like any other message and the office sends it from the queue. A
-     * failure here is swallowed on purpose: the caller must answer the
+     * Where the office has configured an SMS gateway the code is texted
+     * straight out, which is the only thing that scales past a handful
+     * of students. With no gateway, or when the gateway refuses, the
+     * code is queued as a WhatsApp message for the office to send by
+     * hand -- the behaviour this had before a gateway was possible.
+     * Only one of the two happens, so nobody gets the code twice.
+     *
+     * A failure here is swallowed on purpose: the caller must answer the
      * same way whether or not anything was sent.
      */
     private function sendCode(array $target): void
@@ -180,18 +185,23 @@ class AccountController extends BaseController
                 ['name' => $target['name'], 'code' => $result['code']]
             );
 
-            (new WhatsAppService())->queue([
-                'recipient_name'  => $target['name'],
-                'recipient_phone' => $target['phone'],
-                'recipient_type'  => $target['type'] === 'parent' ? 'parent' : 'student',
-                'template_key'    => 'password_reset_code',
-                'body'            => $body,
-                'student_id'      => $target['type'] === 'student' ? $target['id'] : null,
-            ]);
+            $texted = (new \App\Services\SmsService())->send($target['phone'], $body);
+
+            if (!$texted) {
+                (new WhatsAppService())->queue([
+                    'recipient_name'  => $target['name'],
+                    'recipient_phone' => $target['phone'],
+                    'recipient_type'  => $target['type'] === 'parent' ? 'parent' : 'student',
+                    'template_key'    => 'password_reset_code',
+                    'body'            => $body,
+                    'student_id'      => $target['type'] === 'student' ? $target['id'] : null,
+                ]);
+            }
 
             // The code itself never reaches the audit log.
             $this->audit(null, 'system', 'self_reset_code_requested', $target['type'], $target['id'], [
                 'expires_at' => $result['expires_at'],
+                'delivery'   => $texted ? 'sms' : 'whatsapp_queue',
             ]);
         } catch (\Throwable $e) {
             error_log('Self-service reset code failed: ' . $e->getMessage());

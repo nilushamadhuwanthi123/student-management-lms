@@ -379,6 +379,100 @@ class SettingsController extends BaseController
         ]);
     }
 
+    /**
+     * The SMS gateway that carries password-reset codes to the phone on
+     * the account. Super Admin only: the API key is a credential.
+     */
+    public function sms(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+
+        $service = new \App\Services\SmsService($this->settingModel);
+        $config = $service->config();
+
+        $this->view('settings/sms', [
+            'pageTitle'      => 'Text messages (SMS)',
+            'activeSubPage'  => 'sms',
+            'providers'      => \App\Services\SmsService::PROVIDERS,
+            'config'         => $config,
+            'isConfigured'   => $service->isConfigured(),
+            // Never sent back to the browser; the form shows whether one
+            // is saved and replaces it only when a new one is typed.
+            'hasApiKey'      => $config[\App\Services\SmsService::KEY_API_KEY] !== '',
+        ]);
+    }
+
+    public function updateSms(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        verifyCsrfToken();
+
+        $userId = (int) session_get('user_id');
+        $keys = \App\Services\SmsService::class;
+
+        try {
+            $provider = (string) ($_POST['sms_provider'] ?? '');
+            if ($provider !== '' && !isset(\App\Services\SmsService::PROVIDERS[$provider])) {
+                throw new \InvalidArgumentException(t('Choose one of the listed gateways.'));
+            }
+
+            $this->settingModel->set($keys::KEY_ENABLED, empty($_POST['sms_enabled']) ? '0' : '1', $userId);
+            $this->settingModel->set($keys::KEY_PROVIDER, $provider, $userId);
+            $this->settingModel->set($keys::KEY_USER_ID, trim((string) ($_POST['sms_user_id'] ?? '')), $userId);
+            $this->settingModel->set($keys::KEY_SENDER_ID, trim((string) ($_POST['sms_sender_id'] ?? '')), $userId);
+            $this->settingModel->set($keys::KEY_CUSTOM_URL, trim((string) ($_POST['sms_custom_url'] ?? '')), $userId);
+
+            // An empty key box means "leave the saved one alone", so a
+            // save after a reload does not wipe the credential.
+            $apiKey = trim((string) ($_POST['sms_api_key'] ?? ''));
+            if ($apiKey !== '') {
+                $this->settingModel->set($keys::KEY_API_KEY, $apiKey, $userId);
+            }
+
+            $this->logAudit('update_sms_settings', 'system_settings', 0);
+            $this->flash('success', t('Text message settings saved.'));
+        } catch (\InvalidArgumentException $e) {
+            $this->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            error_log('SMS settings update error: ' . $e->getMessage());
+            $this->flash('error', t('Could not save the text message settings.'));
+        }
+
+        $this->redirect(BASE_URL . '/settings/sms');
+    }
+
+    /**
+     * Send one real message to a number the Super Admin types, so the
+     * gateway can be proven before a student depends on it.
+     */
+    public function testSms(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        verifyCsrfToken();
+
+        $to = trim((string) ($_POST['test_phone'] ?? ''));
+        $service = new \App\Services\SmsService($this->settingModel);
+
+        if (!$service->isConfigured()) {
+            $this->flash('error', t('Fill in the gateway details and switch it on first.'));
+            $this->redirect(BASE_URL . '/settings/sms');
+        }
+
+        $sent = $service->send($to, t('This is a test message from the class portal. The gateway is working.'));
+
+        $this->logAudit('test_sms', 'system_settings', 0);
+        if ($sent) {
+            $this->flash('success', t('Test message sent. Check the phone.'));
+        } else {
+            $this->flash('error', t('The gateway did not accept the message. Check the number and the details, then try again.'));
+        }
+
+        $this->redirect(BASE_URL . '/settings/sms');
+    }
+
     public function updateSiteContent(): void
     {
         AuthMiddleware::requireAuth();

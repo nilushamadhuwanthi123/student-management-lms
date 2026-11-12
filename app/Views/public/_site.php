@@ -70,6 +70,26 @@ if (!function_exists('site_days')) {
 .ts-hero h1 .ts-honour { display: block; font-size: .55em; font-weight: 600; color: #DBEAFE; margin-top: .35rem; }
 .ts-photo { position: relative; justify-self: center; width: min(100%, 420px); }
 .ts-photo::before { content: ''; position: absolute; inset: -10px; border-radius: 32px; background: linear-gradient(135deg, #FACC15, #60A5FA); opacity: .35; filter: blur(26px); z-index: -1; }
+
+/* A cursor that suits a Science class: a faint electron shell that
+   follows the pointer, with a nucleus at the tip. Pointer-events are
+   off throughout so it can never swallow a click, and the whole thing
+   is only built for a real mouse (see the script), never on a phone. */
+.ts-cur, .ts-cur-dot { position: fixed; top: 0; left: 0; z-index: 9998; pointer-events: none;
+  border-radius: 50%; will-change: transform; opacity: 0; transition: opacity .25s ease; }
+.ts-cur { width: 34px; height: 34px; margin: -17px 0 0 -17px;
+  border: 1.5px solid rgba(250, 204, 21, .75); }
+.ts-cur::before, .ts-cur::after { content: ''; position: absolute; inset: -1.5px; border-radius: 50%;
+  border: 1.5px solid rgba(96, 165, 250, .45); }
+.ts-cur::before { transform: rotate(60deg) scaleY(.38); }
+.ts-cur::after { transform: rotate(-60deg) scaleY(.38); }
+.ts-cur-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: #FACC15;
+  box-shadow: 0 0 10px 2px rgba(250, 204, 21, .55); z-index: 9999; }
+.ts-cur.is-on, .ts-cur-dot.is-on { opacity: 1; }
+/* Over something clickable the shell swells and cools to blue. */
+.ts-cur.is-hot { width: 52px; height: 52px; margin: -26px 0 0 -26px;
+  border-color: rgba(96, 165, 250, .9); transition: opacity .25s ease, width .18s ease, height .18s ease, margin .18s ease, border-color .18s ease; }
+@media (prefers-reduced-motion: reduce) { .ts-cur, .ts-cur-dot { display: none; } }
 @keyframes tsSpin { to { transform: rotate(360deg); } }
 .ts-photo__frame { border-radius: 28px; overflow: hidden; aspect-ratio: 4 / 5; box-shadow: 0 30px 60px -20px rgba(2,6,23,.55), 0 0 0 6px rgba(255,255,255,.12); background: #DBEAFE; }
 .ts-photo__frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; }
@@ -268,5 +288,62 @@ document.addEventListener('DOMContentLoaded', function () {
         entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); } });
     }, { rootMargin: '0px 0px -40px 0px' });
     els.forEach(function (e) { io.observe(e); });
+});
+
+/* The electron-shell cursor. Built only for a device that actually has a
+   mouse -- on a phone there is no pointer to follow and it would just be
+   two stray dots -- and skipped for anyone who asks for less motion. The
+   nucleus tracks the pointer exactly; the shell eases after it, which is
+   what makes it feel like it is orbiting rather than glued on. */
+document.addEventListener('DOMContentLoaded', function () {
+    var fine = window.matchMedia('(pointer: fine)').matches;
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!fine || still) { return; }
+
+    var shell = document.createElement('div');
+    shell.className = 'ts-cur';
+    var core = document.createElement('div');
+    core.className = 'ts-cur-dot';
+    shell.setAttribute('aria-hidden', 'true');
+    core.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(shell);
+    document.body.appendChild(core);
+
+    var tx = window.innerWidth / 2, ty = window.innerHeight / 2, sx = tx, sy = ty, on = false, frame = null;
+
+    function draw() {
+        // Ease the shell toward the pointer; the core is already there.
+        sx += (tx - sx) * 0.18;
+        sy += (ty - sy) * 0.18;
+        shell.style.transform = 'translate(' + sx + 'px,' + sy + 'px)';
+        core.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
+        frame = requestAnimationFrame(draw);
+    }
+
+    document.addEventListener('mousemove', function (ev) {
+        tx = ev.clientX;
+        ty = ev.clientY;
+        if (!on) {
+            on = true;
+            shell.classList.add('is-on');
+            core.classList.add('is-on');
+            if (frame === null) { frame = requestAnimationFrame(draw); }
+        }
+        var over = ev.target && ev.target.closest
+            ? ev.target.closest('a, button, summary, input, select, textarea, [role="tab"], .ts-card')
+            : null;
+        shell.classList.toggle('is-hot', over !== null);
+    }, { passive: true });
+
+    // Stop drawing when the pointer or the tab leaves, so an idle
+    // background tab is not running an animation frame loop forever.
+    function sleep() {
+        on = false;
+        shell.classList.remove('is-on');
+        core.classList.remove('is-on');
+        if (frame !== null) { cancelAnimationFrame(frame); frame = null; }
+    }
+    document.addEventListener('mouseleave', sleep);
+    document.addEventListener('visibilitychange', function () { if (document.hidden) { sleep(); } });
 });
 </script>

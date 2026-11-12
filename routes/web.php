@@ -509,6 +509,9 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/settings/feature-visibility', ['App\Controllers\SettingsController', 'updateFeatureVisibility']);
     $router->get('/settings/site-content', ['App\Controllers\SettingsController', 'siteContent']);
     $router->post('/settings/site-content', ['App\Controllers\SettingsController', 'updateSiteContent']);
+    $router->get('/settings/sms', ['App\Controllers\SettingsController', 'sms']);
+    $router->post('/settings/sms', ['App\Controllers\SettingsController', 'updateSms']);
+    $router->post('/settings/sms/test', ['App\Controllers\SettingsController', 'testSms']);
     $router->get('/settings/ads', ['App\Controllers\SettingsController', 'ads']);
     $router->post('/settings/ads', ['App\Controllers\SettingsController', 'storeAd']);
     $router->post('/settings/ads/{id}/update', ['App\Controllers\SettingsController', 'updateAd']);
