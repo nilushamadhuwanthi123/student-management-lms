@@ -107,14 +107,15 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
             <?php endif; ?>
             <?php endif; ?>
             <div class="ts-eyebrow"><?= te('Science classes') ?> &middot; <?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
+            <?php $teacherFirst = $teacher ? trim((string) strtok($teacher, ' ')) : null; ?>
             <h1>
                 <?php if ($teacher): ?>
                     <?php if ($isSi): ?>
-                        <span class="ts-name"><?= $e($teacher) ?> <?= te('teacher (honorific)') ?></span>
+                        <span class="ts-name"><?= $e($teacherFirst) ?> <span class="ts-honor"><?= te('Miss') ?></span></span>
                         <span><?= te('with Science') ?></span>
                     <?php else: ?>
                         <span><?= te('Learn Science with') ?></span>
-                        <span class="ts-name"><?= $e($teacher) ?></span>
+                        <span class="ts-name"><?= $e($teacherFirst) ?> <span class="ts-honor"><?= te('Miss') ?></span></span>
                     <?php endif; ?>
                 <?php else: ?>
                     <?= te('Science classes for') ?> <span class="ts-name"><?= te('Grades 6 to 11') ?></span>
@@ -132,6 +133,7 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
         </div>
         <?php if ($teacher): ?>
         <div class="ts-photo">
+            <svg class="ts-photo__ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 6" stroke-linecap="round"/></svg>
             <?php $teacherPhoto = \App\Services\PublicSite::content('teacher_photo_image'); ?>
             <div class="ts-photo__frame">
                 <img src="<?= $teacherPhoto !== '' ? BASE_URL . $e($teacherPhoto) : BASE_URL . '/assets/img/teacher-smartboard.jpg' ?>" width="1600" height="2000" alt="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>" fetchpriority="high">
@@ -139,7 +141,7 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
             <div class="ts-photo__badge"><?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
             <div class="ts-photo__tag">
                 <div class="ts-photo__dot"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5z"/><path d="M6 12v5c3 2.5 9 2.5 12 0v-5"/></svg></div>
-                <div><strong><?= $e($teacher) ?></strong><span><?= te('Science teacher') ?></span></div>
+                <div><strong><?= $e($teacherFirst) ?> <span class="ts-honor ts-honor--dark"><?= te('Miss') ?></span></strong><span><?= te('Science teacher') ?></span></div>
             </div>
         </div>
         <?php endif; ?>
