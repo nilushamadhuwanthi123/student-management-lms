@@ -215,6 +215,22 @@ $barTone = static fn (?float $v): string => $v === null ? 'var(--border)' : ($v 
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
+                <?php
+                // The joining link for an online class. Only an http(s) link
+                // becomes a button, and only on a class this student is in.
+                $joinUrl = null;
+                if (($n['delivery_mode'] ?? 'physical') !== 'physical') {
+                    $candidate = trim((string) ($n['meeting_url'] ?? ''));
+                    if ($candidate !== '' && preg_match('#^https?://#i', $candidate) === 1) {
+                        $joinUrl = $candidate;
+                    }
+                }
+                ?>
+                <?php if ($joinUrl !== null): ?>
+                    <a class="mc-join" href="<?= $e($joinUrl) ?>" target="_blank" rel="noopener noreferrer">
+                        &#128250; <?= te('Join the online class') ?>
+                    </a>
+                <?php endif; ?>
             <?php else: ?>
                 <p class="mc-muted"><?= te('No sessions in the next 7 days.') ?></p>
             <?php endif; ?>
