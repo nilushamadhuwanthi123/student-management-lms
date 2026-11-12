@@ -1036,6 +1036,8 @@ return [
     'The gateway did not accept the message. Check the number and the details, then try again.' => 'ගේට්වේ පණිවිඩය පිළිගත්තේ නැත. අංකය සහ විස්තර පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
     'This is a test message from the class portal. The gateway is working.' => 'මෙය පන්ති ද්වාරයෙන් එන පරීක්ෂණ පණිවිඩයකි. ගේට්වේ ක්‍රියා කරයි.',
 
+    'Class timetable' => 'පන්ති කාලසටහන',
+
     // Seminar posters on the home page
     'Notices' => 'දැන්වීම්',
     'Home page: seminar posters and notices' => 'මුල් පිටුව: සම්මන්ත්‍රණ පෝස්ටර් සහ දැන්වීම්',
