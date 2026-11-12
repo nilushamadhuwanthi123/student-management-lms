@@ -281,8 +281,47 @@
             }
         }
 
+        /*
+         * The public nav carries more than the base style.css's 768px
+         * breakpoint was built for (a long brand name + subtitle, 4
+         * links, a language switch, a login button and a theme toggle),
+         * so it wrapped and overlapped the logo on tablet-width screens.
+         * Collapse it into the hamburger menu earlier -- up to 1040px --
+         * on this nav specifically (base .navbar__toggle/.navbar__links
+         * rules are a lower-specificity single class, so these win).
+         */
+        @media (max-width: 1040px) {
+            .navbar--liquid-glass .navbar__toggle { display: block; }
+            .navbar--liquid-glass .navbar__links {
+                display: none;
+                position: absolute;
+                top: 64px;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                align-items: stretch;
+                padding: 1rem;
+                gap: .75rem;
+                background: var(--glass-bg, var(--surface));
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+                border-bottom: 1px solid var(--border);
+            }
+            .navbar--liquid-glass .navbar__links.open { display: flex; }
+            .navbar--on-dark .navbar__toggle,
+            .navbar--on-dark .navbar__brand,
+            .navbar--on-dark .navbar__brand small { color: #fff !important; }
+        }
+        @media (min-width: 1041px) and (max-width: 1180px) {
+            .navbar__brand small { display: none; }
+        }
+        .navbar__brand { min-width: 0; }
+        .navbar__brand .brand-text { min-width: 0; }
+        .navbar__brand .font-semibold { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 46vw; }
+        body.public-layout { overflow-x: hidden; }
+
         /* Navigation over the dark blue hero (desktop): white until scrolled */
-        @media (min-width: 769px) {
+        @media (min-width: 1041px) {
             .navbar--on-dark:not(.scrolled) .navbar__brand,
             .navbar--on-dark:not(.scrolled) .navbar__brand small,
             .navbar--on-dark:not(.scrolled) .navbar__links > li > a:not(.nav-login),

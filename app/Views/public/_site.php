@@ -62,12 +62,14 @@ if (!function_exists('site_days')) {
 .ts-eyebrow { display: inline-flex; align-items: center; gap: .5rem; font-size: .9rem; font-weight: 600; letter-spacing: .02em; color: #FDE68A !important; margin-bottom: .9rem; }
 .ts-eyebrow::before { content: ''; width: 28px; height: 2px; background: #FACC15; border-radius: 2px; }
 .ts-hero h1 { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; }
-.ts-hero h1 .ts-name { display: block; position: relative; background: linear-gradient(100deg, #FACC15 0%, #FDE68A 30%, #fff 50%, #FDE68A 70%, #FACC15 100%); background-size: 220% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: tsShimmer 5s linear infinite; }
-@keyframes tsShimmer { to { background-position: -220% center; } }
-.ts-hero h1 .ts-name::after { content: ''; display: block; width: 72%; max-width: 220px; height: 7px; margin-top: .3rem; border-radius: 6px; background: linear-gradient(90deg, #FACC15, rgba(250,204,21,0)); opacity: .55; }
+.ts-hero h1 .ts-name { display: block; position: relative; font-family: 'Playfair Display', 'Noto Sans Sinhala', Georgia, serif; font-weight: 700; color: #FDE9B0 !important; letter-spacing: .01em; }
+.ts-hero h1 .ts-name::after { content: ''; display: block; width: 64px; height: 3px; margin-top: .55rem; border-radius: 3px; background: #FACC15; }
+.ts-honor { display: inline-block; vertical-align: middle; font-family: 'Inter', sans-serif; font-size: .38em; font-weight: 700; letter-spacing: .04em; color: #0B1B3F !important; background: #FACC15; border-radius: 6px; padding: .3em .6em; margin-left: .4em; box-shadow: 0 6px 16px -8px rgba(0,0,0,.4); }
+.ts-honor--dark { font-size: .72em; background: #FACC15; box-shadow: none; }
+.ts-photo__ring { position: absolute; inset: -22px; width: calc(100% + 44px); height: calc(100% + 44px); color: rgba(255,255,255,.55); animation: tsSpin 22s linear infinite; pointer-events: none; }
 .ts-hero h1 .ts-honour { display: block; font-size: .55em; font-weight: 600; color: #DBEAFE; margin-top: .35rem; }
 .ts-photo { position: relative; justify-self: center; width: min(100%, 420px); }
-.ts-photo::before { content: ''; position: absolute; inset: -14px; border-radius: 36px; background: conic-gradient(from 0deg, #FACC15, #60A5FA, #FACC15); opacity: .5; filter: blur(22px); z-index: -1; animation: tsSpin 10s linear infinite; }
+.ts-photo::before { content: ''; position: absolute; inset: -10px; border-radius: 32px; background: linear-gradient(135deg, #FACC15, #60A5FA); opacity: .35; filter: blur(26px); z-index: -1; }
 @keyframes tsSpin { to { transform: rotate(360deg); } }
 .ts-photo__frame { border-radius: 28px; overflow: hidden; aspect-ratio: 4 / 5; box-shadow: 0 30px 60px -20px rgba(2,6,23,.55), 0 0 0 6px rgba(255,255,255,.12); background: #DBEAFE; }
 .ts-photo__frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; }
@@ -119,10 +121,7 @@ if (!function_exists('site_days')) {
 .ts-wave path { fill: var(--bg, #F5F7FB); }
 .ts-hero { padding-bottom: 6rem; }
 .ts-stats { margin-top: -4.2rem; }
-.ts-photo__frame { animation: tsRise .9s ease both; }
-@keyframes tsRise { from { opacity: 0; transform: translateY(24px) scale(.98); } to { opacity: 1; transform: none; } }
-.ts-hero h1, .ts-hero p, .ts-eyebrow { animation: tsRise .8s ease both; }
-.ts-hero p { animation-delay: .12s; }
+
 .ts-btn { transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
 .ts-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -12px rgba(2,6,23,.45); }
 .ts-btn--yellow { box-shadow: 0 10px 24px -10px rgba(250,204,21,.7); }
@@ -182,7 +181,7 @@ if (!function_exists('site_days')) {
 .ts-mbar a { flex: 1; justify-content: center; }
 @media (max-width: 700px) { .ts-mbar { display: flex; } body.public-layout { padding-bottom: 72px; } .ts-float { display: none; } }
 .ts-mbar a { white-space: nowrap; font-size: .9rem; }
-@media (prefers-reduced-motion: reduce) { .ts-float svg, .ts-photo__frame, .ts-hero h1, .ts-hero p, .ts-eyebrow, .ts-hero h1 .ts-name, .ts-photo::before { animation: none; } .ts-btn:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ts-float svg, .ts-photo__ring { animation: none; } .ts-btn:hover { transform: none; } }
 
 /* ---- seminars & events advertised on the home page ----------------- */
 .ts-events { background: radial-gradient(900px 380px at 100% 0%, rgba(250,204,21,.12), transparent 60%), radial-gradient(800px 380px at 0% 100%, rgba(29,78,216,.10), transparent 60%); }
