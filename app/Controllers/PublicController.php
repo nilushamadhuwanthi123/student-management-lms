@@ -32,7 +32,7 @@ class PublicController extends BaseController
         $branch = ctype_digit((string) ($_GET['branch'] ?? '')) ? (int) $_GET['branch'] : null;
 
         $this->view('public/classes', [
-            'pageTitle'       => 'Class timetable | Science Grades 6-11',
+            'pageTitle'       => t('Class timetable') . ' | ' . t('Science classes') . ' ' . t('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]),
             'metaDescription' => 'Science class timetable for Grades 6 to 11 at each branch, with physical and online options.',
             'activePage'      => 'classes',
             'branches'        => $this->publicBranches(),
@@ -56,7 +56,7 @@ class PublicController extends BaseController
         }
 
         $this->view('public/branch', [
-            'pageTitle'       => $branch['name'] . ' | Science classes',
+            'pageTitle'       => $branch['name'] . ' | ' . t('Science classes'),
             'metaDescription' => 'Science classes for Grades 6 to 11 at ' . $branch['name'] . '.',
             'activePage'      => 'branch',
             'branch'          => $branch,
