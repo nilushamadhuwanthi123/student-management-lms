@@ -15,7 +15,7 @@ $cfg = $roleColors[$role] ?? [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ID Card - <?= htmlspecialchars($user['full_name'] ?? 'User', ENT_QUOTES, 'UTF-8') ?></title>
+    <title><?= te('ID Card') ?> - <?= htmlspecialchars($user['full_name'] ?? te('User'), ENT_QUOTES, 'UTF-8') ?></title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -147,7 +147,7 @@ $cfg = $roleColors[$role] ?? [
 <body>
 
     <button type="button" class="print-btn" onclick="window.print()">
-        &#128424; Print ID Card
+        &#128424; <?= te('Print ID Card') ?>
     </button>
 
     <div class="id-card-wrapper">
@@ -173,22 +173,22 @@ $cfg = $roleColors[$role] ?? [
 
                 <table class="id-card__info-table">
                     <tr>
-                        <td style="font-weight:600; width:35%;">Phone:</td>
+                        <td style="font-weight:600; width:35%;"><?= te('Phone:') ?></td>
                         <td><?= htmlspecialchars($user['phone1'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
                     </tr>
                     <tr>
-                        <td style="font-weight:600;">Email:</td>
+                        <td style="font-weight:600;"><?= te('Email:') ?></td>
                         <td><?= htmlspecialchars($user['email'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
                     </tr>
                     <tr>
-                        <td style="font-weight:600;">Issue Date:</td>
+                        <td style="font-weight:600;"><?= te('Issue Date:') ?></td>
                         <td><?= date('d/m/Y', strtotime($user['created_at'])) ?></td>
                     </tr>
                 </table>
             </div>
 
             <div class="id-card__footer">
-                Official Staff Identification Card &bull; Scan for Attendance & Verification
+                <?= te('Official Staff Identification Card') ?> &bull; <?= te('Scan for Attendance & Verification') ?>
             </div>
         </div>
     </div>

@@ -110,10 +110,17 @@ $timeFmt = static function (?string $t): string {
                                     &middot; <?= htmlspecialchars($b['teacher'], ENT_QUOTES, 'UTF-8') ?>
                                 <?php endif; ?>
                             </div>
+                            <?php if (!empty($b['id'])): ?>
+                            <form method="POST" action="<?= BASE_URL ?>/classes/<?= (int) $b['id'] ?>/update-room" style="display:flex; gap:0.35rem; align-items:center; margin-top:0.4rem;">
+                                <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
+                                <input type="text" name="room" class="form-control form-control--sm" style="width:120px;" value="<?= htmlspecialchars($roomName, ENT_QUOTES, 'UTF-8') ?>" placeholder="<?= te('Hall') ?>">
+                                <button type="submit" class="btn btn--secondary btn--sm"><?= te('Move') ?></button>
+                            </form>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
-                <div class="card__footer" style="padding:0.5rem 1rem;">
+                <div class="card__footer" style="padding:0.5rem 1rem; display:flex; flex-direction:column; gap:0.5rem;">
                     <a href="<?= BASE_URL ?>/classes?institute_id=<?= (int) $instituteId ?>&search=<?= urlencode($roomName) ?>" class="text-sm">
                         <?= te('View these classes') ?> &rarr;
                     </a>
@@ -130,14 +137,23 @@ $timeFmt = static function (?string $t): string {
         <div class="card__header"><strong><?= te('Classes with no hall assigned yet') ?></strong></div>
         <div class="card__body" style="padding:0;">
             <?php foreach ($unassigned as $b): ?>
-                <div style="padding:0.65rem 1rem; border-top:1px solid var(--border-color, #eee);">
-                    <?= htmlspecialchars($b['name'], ENT_QUOTES, 'UTF-8') ?>
-                    <span class="text-sm text-muted">
-                        <?= $dayShort($b['days']) ?>
-                        <?php if ($b['start'] && $b['end']): ?>
-                            &middot; <?= $timeFmt($b['start']) ?> - <?= $timeFmt($b['end']) ?>
-                        <?php endif; ?>
-                    </span>
+                <div style="padding:0.65rem 1rem; border-top:1px solid var(--border-color, #eee); display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+                    <div>
+                        <?= htmlspecialchars($b['name'], ENT_QUOTES, 'UTF-8') ?>
+                        <span class="text-sm text-muted">
+                            <?= $dayShort($b['days']) ?>
+                            <?php if ($b['start'] && $b['end']): ?>
+                                &middot; <?= $timeFmt($b['start']) ?> - <?= $timeFmt($b['end']) ?>
+                            <?php endif; ?>
+                        </span>
+                    </div>
+                    <?php if (!empty($b['id'])): ?>
+                    <form method="POST" action="<?= BASE_URL ?>/classes/<?= (int) $b['id'] ?>/update-room" style="display:flex; gap:0.4rem; align-items:center; margin:0;">
+                        <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
+                        <input type="text" name="room" class="form-control form-control--sm" style="width:140px;" placeholder="<?= te('Assign hall') ?>" required>
+                        <button type="submit" class="btn btn--secondary btn--sm"><?= te('Assign') ?></button>
+                    </form>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         </div>

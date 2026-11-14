@@ -21,16 +21,16 @@ $tone = [
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">Message log</h1>
-        <p class="text-sm text-muted">Every WhatsApp message composed here</p>
+        <h1 class="page-header__title"><?= te('Message log') ?></h1>
+        <p class="text-sm text-muted"><?= te('Every WhatsApp message composed here') ?></p>
     </div>
     <div class="page-header__actions">
-        <a href="<?= BASE_URL ?>/whatsapp/reminders" class="btn btn--primary">Send reminders</a>
+        <a href="<?= BASE_URL ?>/whatsapp/reminders" class="btn btn--primary"><?= te('Send reminders') ?></a>
     </div>
 </div>
 
 <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-bottom:1.5rem;">
-    <?php foreach (['sent' => 'Confirmed sent', 'queued' => 'Opened, unconfirmed', 'skipped' => 'Skipped', 'failed' => 'Failed'] as $key => $label): ?>
+    <?php foreach (['sent' => te('Confirmed sent'), 'queued' => te('Opened, unconfirmed'), 'skipped' => te('Skipped'), 'failed' => te('Failed')] as $key => $label): ?>
         <a href="<?= BASE_URL ?>/whatsapp/log?status=<?= $key ?>" class="card"
            style="padding:1rem; text-decoration:none; color:inherit; <?= $status === $key ? 'border-color:var(--primary);' : '' ?>">
             <div class="text-sm text-muted"><?= $label ?></div>
@@ -43,8 +43,8 @@ $tone = [
 
 <?php if ($status !== null): ?>
     <p class="text-sm" style="margin-bottom:1rem;">
-        Showing <strong><?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?></strong> only.
-        <a href="<?= BASE_URL ?>/whatsapp/log">Show everything</a>
+        <?= te('Showing {status} only.', ['status' => '<strong>' . htmlspecialchars($status, ENT_QUOTES, 'UTF-8') . '</strong>']) ?>
+        <a href="<?= BASE_URL ?>/whatsapp/log"><?= te('Show everything') ?></a>
     </p>
 <?php endif; ?>
 
@@ -52,20 +52,20 @@ $tone = [
     <?php if ($messages === []): ?>
         <div style="padding:3rem 1.5rem; text-align:center;">
             <div style="font-size:2.5rem;">&#128172;</div>
-            <h4 style="margin:.75rem 0 .35rem;">Nothing sent yet</h4>
-            <p class="text-sm text-muted" style="margin:0;">Fee reminders you compose will appear here.</p>
+            <h4 style="margin:.75rem 0 .35rem;"><?= te('Nothing sent yet') ?></h4>
+            <p class="text-sm text-muted" style="margin:0;"><?= te('Fee reminders you compose will appear here.') ?></p>
         </div>
     <?php else: ?>
         <div class="table-wrap">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>When</th>
-                        <th>About</th>
-                        <th>To</th>
-                        <th>Message</th>
-                        <th>Status</th>
-                        <th>By</th>
+                        <th><?= te('When') ?></th>
+                        <th><?= te('About') ?></th>
+                        <th><?= te('To') ?></th>
+                        <th><?= te('Message') ?></th>
+                        <th><?= te('Status') ?></th>
+                        <th><?= te('By') ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -91,7 +91,7 @@ $tone = [
                         </td>
                         <td>
                             <span class="badge" style="background:var(--surface-sunken); color:<?= $tone[$m['send_status']] ?? 'var(--text-muted)' ?>; text-transform:capitalize;">
-                                <?= htmlspecialchars($m['send_status'], ENT_QUOTES, 'UTF-8') ?>
+                                <?= te(ucfirst($m['send_status'])) ?>
                             </span>
                             <?php if (!empty($m['note'])): ?>
                                 <div class="text-sm text-muted"><?= htmlspecialchars($m['note'], ENT_QUOTES, 'UTF-8') ?></div>

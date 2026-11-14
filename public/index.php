@@ -88,6 +88,12 @@ set_exception_handler(function (Throwable $e) use ($appDebug): void {
     error_log($e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
 });
 
+// Always send an explicit UTF-8 charset with the response, so the
+// browser never has to guess (or fall back to a different default)
+// before it reaches the <meta charset="UTF-8"> tag in the HTML --
+// without this, Sinhala text can render as mojibake in some browsers.
+header('Content-Type: text/html; charset=UTF-8');
+
 // Apply security headers
 \App\Middleware\SecurityHeaders::apply();
 

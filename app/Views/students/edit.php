@@ -171,11 +171,19 @@ foreach ($enrollments as $enr) {
 </form>
 
 <script>
+var TL = <?= json_encode([
+    'selectInstitute' => te('Select an institute to see available classes.'),
+    'noClasses'       => te('No classes available for this institute.'),
+    'fullPayment'     => te('Full Payment'),
+    'failedLoad'      => te('Failed to load classes. Please try again.'),
+], JSON_UNESCAPED_UNICODE) ?>;
+</script>
+<script>
 document.getElementById('institute_id').addEventListener('change', function () {
     var instituteId = this.value;
     var container = document.getElementById('classCheckboxes');
     if (!instituteId) {
-        container.innerHTML = '<p class="text-muted text-sm">Select an institute to see available classes.</p>';
+        container.innerHTML = '<p class="text-muted text-sm">' + TL.selectInstitute + '</p>';
         return;
     }
     container.innerHTML = '<div class="spinner-overlay"><div class="spinner spinner--sm"></div></div>';
@@ -186,7 +194,7 @@ document.getElementById('institute_id').addEventListener('change', function () {
     .then(function (res) { return res.json(); })
     .then(function (classes) {
         if (!classes.length) {
-            container.innerHTML = '<p class="text-muted text-sm">No classes available for this institute.</p>';
+            container.innerHTML = '<p class="text-muted text-sm">' + TL.noClasses + '</p>';
             return;
         }
         var enrolled = <?= json_encode($enrolledClassIds) ?>;
@@ -203,7 +211,7 @@ document.getElementById('institute_id').addEventListener('change', function () {
                 + cls.name + '<span class="text-muted text-sm">' + fee + '</span>'
                 + '</label>'
                 + '<select name="scholarship_type[' + cls.id + ']" class="form-control" style="width:auto;min-width:160px;">'
-                + '<option value="full_payment"' + (sch === 'full_payment' ? ' selected' : '') + '>Full Payment</option>'
+                + '<option value="full_payment"' + (sch === 'full_payment' ? ' selected' : '') + '>' + TL.fullPayment + '</option>'
                 + '<option value="half_payment"' + (sch === 'half_payment' ? ' selected' : '') + '>Half Payment (50%)</option>'
                 + '<option value="free_card"' + (sch === 'free_card' ? ' selected' : '') + '>Free Card (100%)</option>'
                 + '</select>'
@@ -212,7 +220,7 @@ document.getElementById('institute_id').addEventListener('change', function () {
         container.innerHTML = html;
     })
     .catch(function () {
-        container.innerHTML = '<p class="text-muted text-sm">Failed to load classes. Please try again.</p>';
+        container.innerHTML = '<p class="text-muted text-sm">' + TL.failedLoad + '</p>';
     });
 });
 </script>

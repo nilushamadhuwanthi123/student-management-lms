@@ -96,6 +96,11 @@ class DashboardController extends BaseController
                 ? $count("SELECT COUNT(*) FROM contact_messages WHERE status = 'new'")
                 : $count("SELECT COUNT(*) FROM contact_messages WHERE status = 'new' AND kind = 'enrollment'{$inInst}")];
 
+        $items[] = ['label' => t('Enrolment requests awaiting review'), 'url' => '/enrollment-requests', 'tone' => 'primary',
+            'count' => $scope->isGlobal()
+                ? $count("SELECT COUNT(*) FROM enrollment_requests WHERE status = 'pending'")
+                : $count("SELECT COUNT(*) FROM enrollment_requests WHERE status = 'pending'{$inInst}")];
+
         $openHelp = "status IN ('open','in_progress')";
         if ($scope->isGlobal()) {
             $help = $count("SELECT COUNT(*) FROM help_threads WHERE $openHelp");

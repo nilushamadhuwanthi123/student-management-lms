@@ -35,3 +35,7 @@ node_modules/
 # Private uploads: homework, help-desk files, payment slips (never commit client files)
 storage/uploads/attachments/
 storage/uploads/materials/*
+
+# Database dumps: data snapshots, not source -- may contain student/parent PII
+storage/backups/*.sql
+database/backup_before_030.sql

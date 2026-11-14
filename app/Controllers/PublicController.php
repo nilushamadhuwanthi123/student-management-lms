@@ -22,6 +22,7 @@ class PublicController extends BaseController
             'branches'        => $branches,
             'classes'         => $this->publicClasses(),
             'teacher'         => \App\Services\PublicSite::teacherName(),
+            'seminars'        => $this->publicSeminars(),
         ], 'layouts/public');
     }
 
@@ -39,6 +40,36 @@ class PublicController extends BaseController
             'classes'         => $this->publicClasses($grade, $branch),
             'grade'           => $grade,
             'branch'          => $branch,
+        ], 'layouts/public');
+    }
+
+    /**
+     * Classes landing page: one card per public branch (photo,
+     * description, class count) with a "My Classes" button into that
+     * branch's own timetable at /branches/{id}.
+     */
+    public function classesLanding(): void
+    {
+        $this->view('public/classes-landing', [
+            'pageTitle'       => t('Classes') . ' | ' . t('Science classes') . ' ' . t('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]),
+            'metaDescription' => 'Science classes for Grades 6 to 11 at each branch -- pick a branch to see its classes.',
+            'activePage'      => 'classes',
+            'branches'        => $this->publicBranches(),
+        ], 'layouts/public');
+    }
+
+    /**
+     * Events page: every seminar/event the staff chose to advertise on
+     * the website (see PublicSite::upcomingSeminars()), newest-first by
+     * date. A separate nav tab from "About", placed right after it.
+     */
+    public function events(): void
+    {
+        $this->view('public/events', [
+            'pageTitle'       => t('Events') . ' | ' . t('Science classes') . ' ' . t('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]),
+            'metaDescription' => 'Upcoming seminars and events for Science class students, Grades 6 to 11.',
+            'activePage'      => 'events',
+            'events'          => \App\Services\PublicSite::upcomingSeminars(60),
         ], 'layouts/public');
     }
 
@@ -126,11 +157,11 @@ class PublicController extends BaseController
         }
         try {
             return $this->db->query(
-                "SELECT i.id, i.name, i.location, i.phone1, i.phone2, i.public_show_fees,
+                "SELECT i.id, i.name, i.location, i.phone1, i.phone2, i.public_show_fees, i.banner_size,
                         (SELECT COUNT(*) FROM classes c WHERE c.institute_id = i.id AND c.status = 'active') AS class_count
                    FROM institutes i
                   WHERE i.status = 'active' AND i.is_public = 1
-                  ORDER BY i.id"
+                  ORDER BY i.sort_order ASC, i.id ASC"
             )->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Throwable $e) {
             error_log('Public branches unavailable: ' . $e->getMessage());
@@ -284,5 +315,53 @@ class PublicController extends BaseController
 
         $this->flash('success', t('Thank you! The branch office will contact you soon.'));
         $this->redirect('/contact');
+    }
+
+    /**
+     * Published seminars flagged show_on_website, upcoming or recent.
+     */
+    private function publicSeminars(int $limit = 6): array
+    {
+        $db = \Database::connect();
+        return $db->query(
+            "SELECT s.id, s.title, s.description, s.event_date, s.start_time,
+                    s.end_time, s.venue, s.cover_image_url,
+                    i.name AS institute_name
+               FROM seminars s
+               LEFT JOIN institutes i ON i.id = s.institute_id
+              WHERE s.status = 'published'
+                AND s.show_on_website = 1
+                AND s.event_date >= CURDATE() - INTERVAL 3 DAY
+              ORDER BY s.event_date ASC, s.id DESC
+              LIMIT " . max(1, min(20, $limit))
+        )->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Public view of a single seminar (poster + details). No login needed.
+     */
+    public function seminar(string $id): void
+    {
+        $db = \Database::connect();
+        $stmt = $db->prepare(
+            "SELECT s.*, i.name AS institute_name
+               FROM seminars s
+               LEFT JOIN institutes i ON i.id = s.institute_id
+              WHERE s.id = :id AND s.status = 'published' AND s.show_on_website = 1"
+        );
+        $stmt->execute([':id' => (int) $id]);
+        $seminar = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$seminar) {
+            $this->redirect('/');
+            return;
+        }
+
+        $this->view('public/seminar', [
+            'pageTitle'       => $seminar['title'] . ' | ' . t('Seminar'),
+            'metaDescription' => mb_strimwidth(strip_tags((string) ($seminar['description'] ?? '')), 0, 155, '...'),
+            'activePage'      => 'home',
+            'seminar'         => $seminar,
+        ], 'layouts/public');
     }
 }

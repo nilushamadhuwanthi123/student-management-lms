@@ -76,7 +76,7 @@ $month    = $month ?? date('Y-m-01');
     <?php foreach ($byBranch as $branch => $classes): ?>
         <h3 style="margin:1.75rem 0 .875rem; font-size:1.05rem; color:var(--text-secondary);">
             <?= htmlspecialchars($branch, ENT_QUOTES, 'UTF-8') ?>
-            <span class="text-sm text-muted">&middot; <?= count($classes) ?> class<?= count($classes) === 1 ? '' : 'es' ?></span>
+            <span class="text-sm text-muted">&middot; <?= count($classes) ?> <?= te('class') ?><?= count($classes) === 1 ? '' : 'es' ?></span>
         </h3>
 
         <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:1.1rem;">
@@ -91,7 +91,7 @@ $month    = $month ?? date('Y-m-01');
                                     <?= htmlspecialchars($c['class_name'], ENT_QUOTES, 'UTF-8') ?>
                                 </h4>
                                 <div class="text-sm text-muted">
-                                    <?= (int) $c['students'] ?> students
+                                    <?= (int) $c['students'] ?> <?= te('students') ?>
                                     <?php if ($days !== []): ?>
                                         &middot; <?= htmlspecialchars(implode(', ', $days), ENT_QUOTES, 'UTF-8') ?>
                                     <?php endif; ?>
@@ -99,7 +99,7 @@ $month    = $month ?? date('Y-m-01');
                             </div>
                             <?php if ((int) $c['awaiting_marking'] > 0): ?>
                                 <span class="badge" style="background:var(--warning-light); color:var(--warning); white-space:nowrap;">
-                                    <?= (int) $c['awaiting_marking'] ?> to mark
+                                    <?= (int) $c['awaiting_marking'] ?> <?= te('to mark') ?>
                                 </span>
                             <?php endif; ?>
                         </div>

@@ -76,6 +76,72 @@ class AuditController extends BaseController
     }
 
     /**
+     * Export the (filtered) audit log as a CSV file.
+     * Reuses the same filters as index() so "Export CSV" exports exactly
+     * what the admin is currently looking at.
+     */
+    public function export(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+
+        $filters = [
+            'date_from'   => $_GET['date_from'] ?? '',
+            'date_to'     => $_GET['date_to'] ?? '',
+            'action'      => $_GET['action'] ?? ($_GET['action_type'] ?? ''),
+            'entity_type' => $_GET['entity_type'] ?? '',
+            'user_id'     => $_GET['user_id'] ?? '',
+        ];
+        $activeFilters = array_filter($filters, fn($v) => $v !== '');
+
+        $entries = [];
+        try {
+            $entries = $this->auditModel->search($activeFilters);
+        } catch (\Throwable $e) {
+            error_log('Audit log export error: ' . $e->getMessage());
+        }
+
+        $filename = 'audit-log-' . date('Y-m-d') . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $out = fopen('php://output', 'w');
+        fwrite($out, "\xEF\xBB\xBF");
+        fputcsv($out, ['Date/Time', 'User', 'Action', 'Entity Type', 'Entity ID', 'IP Address', 'Details']);
+
+        foreach ($entries as $row) {
+            $details = $row['details'] ?? '';
+            fputcsv($out, array_map(static function ($v) {
+                if (is_string($v) && $v !== '' && in_array($v[0], ['=', '+', '-', '@', "\t", "\r"], true) && !is_numeric($v)) {
+                    return "'" . $v;
+                }
+                return $v;
+            }, [
+                $row['created_at'] ?? '',
+                $row['user_name'] ?? 'System',
+                $row['action'] ?? '',
+                $row['entity_type'] ?? '',
+                $row['entity_id'] ?? '',
+                $row['ip_address'] ?? '',
+                $details,
+            ]));
+        }
+
+        try {
+            $user = $this->getCurrentUser();
+            $this->auditModel->log((int) ($user['id'] ?? 0), 'user', $user['role'] ?? 'unknown', 'export_report', 'audit_log', null, ['file' => $filename]);
+        } catch (\Throwable $e) {
+            error_log('Audit export log failed: ' . $e->getMessage());
+        }
+
+        fclose($out);
+        exit;
+    }
+
+    /**
      * Show audit trail for a specific user.
      */
     public function userHistory(string $id): void

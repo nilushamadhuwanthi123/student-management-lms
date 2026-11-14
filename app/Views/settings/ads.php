@@ -87,6 +87,10 @@ $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'
                     <input type="checkbox" name="is_active" value="1" <?= $ad['is_active'] ? 'checked' : '' ?>>
                     <?= te('Active') ?>
                 </label>
+                <label style="display:flex; align-items:center; gap:.4rem; margin:.75rem 0;">
+                    <input type="checkbox" name="show_as_popup" value="1" <?= !empty($ad['show_as_popup']) ? 'checked' : '' ?>>
+                    <?= te('Also show as a popup on every public page (once per visit)') ?>
+                </label>
                 <button type="submit" class="btn btn--primary btn--sm"><?= te('Save changes') ?></button>
             </form>
         </div>
@@ -129,6 +133,10 @@ $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'
         <label style="display:flex; align-items:center; gap:.4rem; margin:.75rem 0;">
             <input type="checkbox" name="is_active" value="1" checked>
             <?= te('Active') ?>
+        </label>
+        <label style="display:flex; align-items:center; gap:.4rem; margin:.75rem 0;">
+            <input type="checkbox" name="show_as_popup" value="1">
+            <?= te('Also show as a popup on every public page (once per visit)') ?>
         </label>
         <button type="submit" class="btn btn--primary"><?= te('Create ad') ?></button>
     </form>

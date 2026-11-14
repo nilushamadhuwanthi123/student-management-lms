@@ -55,6 +55,9 @@ final class SiteContentService
         'inquiry'  => 'Home page: the inquiry form',
         'about'    => 'About page',
         'contact'  => 'Contact page',
+        'classes'  => 'Classes page',
+        'events'   => 'Events page',
+        'downloads' => 'Downloads page',
         'photos'   => 'Photos',
     ];
 
@@ -216,14 +219,14 @@ final class SiteContentService
             'group'   => 'lists',
         ],
         'home_classes_title' => [
-            'label'   => 'Classes by grade: heading',
-            'default' => 'Classes by grade',
+            'label'   => 'Classes teaser: heading',
+            'default' => 'Explore our classes',
             'type'    => self::TYPE_TEXT,
             'group'   => 'lists',
         ],
         'home_classes_text' => [
-            'label'   => 'Classes by grade: intro line',
-            'default' => 'Days and times for every grade. Ask the branch for a seat.',
+            'label'   => 'Classes teaser: intro line',
+            'default' => 'Every branch, grade, day and time -- pick a branch and see its full class list.',
             'type'    => self::TYPE_TEXT,
             'group'   => 'lists',
         ],
@@ -243,7 +246,7 @@ final class SiteContentService
         ],
         'home_faq_1_a' => [
             'label'   => 'Answer 1',
-            'default' => 'Send the inquiry form below, or call the branch. The office registers the student and gives you the student ID for the portal.',
+            'default' => 'Fill the enrol form (pick a branch and class, upload your bank deposit slip) and the branch office approves it -- or send an inquiry below and the office will call you back. Either way you get a student ID and password for the portal.',
             'type'    => self::TYPE_RICHTEXT,
             'group'   => 'faq',
         ],
@@ -372,6 +375,84 @@ final class SiteContentService
             'default' => '',
             'type'    => self::TYPE_TEXT,
             'group'   => 'contact',
+        ],
+
+        // -- Classes page (/our-classes) ---------------------------------------
+        'classes_eyebrow' => [
+            'label'   => 'Small label above the heading',
+            'default' => 'Classes',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'classes',
+        ],
+        'classes_title' => [
+            'label'   => 'Heading',
+            'default' => 'Pick a branch',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'classes',
+        ],
+        'classes_text' => [
+            'label'   => 'Intro line (under the heading)',
+            'default' => 'See the classes, photos and timings for each branch, then view that branch\'s classes.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'classes',
+        ],
+        'classes_empty_text' => [
+            'label'   => 'Shown when no branch is published yet',
+            'default' => 'No branch is published on the website yet.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'classes',
+        ],
+
+        // -- Events page (/events) ----------------------------------------------
+        'events_eyebrow' => [
+            'label'   => 'Small label above the heading',
+            'default' => 'Events',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'events',
+        ],
+        'events_title' => [
+            'label'   => 'Heading',
+            'default' => 'Seminars & events',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'events',
+        ],
+        'events_text' => [
+            'label'   => 'Intro line (under the heading)',
+            'default' => 'Upcoming seminars, revision classes and events for our students.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'events',
+        ],
+        'events_empty_text' => [
+            'label'   => 'Shown when no event is published yet',
+            'default' => 'No upcoming events are published yet. Check back soon.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'events',
+        ],
+
+        // -- Downloads page (/downloads) ------------------------------------------
+        'downloads_eyebrow' => [
+            'label'   => 'Small label above the heading',
+            'default' => 'Resources',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'downloads',
+        ],
+        'downloads_title' => [
+            'label'   => 'Heading',
+            'default' => 'Downloads',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'downloads',
+        ],
+        'downloads_text' => [
+            'label'   => 'Intro line (under the heading)',
+            'default' => 'Past papers, notes and other files the teacher or super admin has shared.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'downloads',
+        ],
+        'downloads_empty_text' => [
+            'label'   => 'Shown when nothing has been shared yet',
+            'default' => 'Nothing has been shared here yet.',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'downloads',
         ],
 
         // -- Photos ------------------------------------------------------------

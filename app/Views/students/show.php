@@ -118,23 +118,23 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
 
             <div class="s360-profile__body">
                 <div class="s360-profile__row">
-                    <span class="s360-profile__label">Phone</span>
+                    <span class="s360-profile__label"><?= te('Phone') ?></span>
                     <span class="s360-profile__value"><?= $e($student['phone1'] ?? '-') ?></span>
                 </div>
                 <?php if (!empty($student['phone2'])): ?>
                 <div class="s360-profile__row">
-                    <span class="s360-profile__label">Phone 2</span>
+                    <span class="s360-profile__label"><?= te('Phone 2') ?></span>
                     <span class="s360-profile__value"><?= $e($student['phone2']) ?></span>
                 </div>
                 <?php endif; ?>
                 <?php if (!empty($student['whatsapp'])): ?>
                 <div class="s360-profile__row">
-                    <span class="s360-profile__label">WhatsApp</span>
+                    <span class="s360-profile__label"><?= te('WhatsApp') ?></span>
                     <span class="s360-profile__value"><?= $e($student['whatsapp']) ?></span>
                 </div>
                 <?php endif; ?>
                 <div class="s360-profile__row">
-                    <span class="s360-profile__label">Email</span>
+                    <span class="s360-profile__label"><?= te('Email') ?></span>
                     <span class="s360-profile__value"><?= $e($student['email'] ?? '-') ?></span>
                 </div>
                 <div class="s360-profile__row">
@@ -142,47 +142,47 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                     <span class="s360-profile__value"><?= !empty($student['date_of_birth']) ? date('M d, Y', strtotime($student['date_of_birth'])) : '-' ?></span>
                 </div>
                 <div class="s360-profile__row">
-                    <span class="s360-profile__label">Address</span>
+                    <span class="s360-profile__label"><?= te('Address') ?></span>
                     <span class="s360-profile__value"><?= $e($student['address'] ?? '-') ?></span>
                 </div>
                 <?php if (!empty($student['province']) || !empty($student['district'])): ?>
                 <div class="s360-profile__row">
-                    <span class="s360-profile__label">Province / District</span>
+                    <span class="s360-profile__label"><?= te('Province / District') ?></span>
                     <span class="s360-profile__value"><?= $e(($student['district'] ?? '') . ($student['district'] && $student['province'] ? ', ' : '') . ($student['province'] ?? '')) ?></span>
                 </div>
                 <?php endif; ?>
                 <?php if (!empty($student['home_number'])): ?>
                 <div class="s360-profile__row">
-                    <span class="s360-profile__label">Home No.</span>
+                    <span class="s360-profile__label"><?= te('Home No.') ?></span>
                     <span class="s360-profile__value"><?= $e($student['home_number']) ?></span>
                 </div>
                 <?php endif; ?>
                 <div class="s360-profile__row">
-                    <span class="s360-profile__label">Registered</span>
+                    <span class="s360-profile__label"><?= te('Registered') ?></span>
                     <span class="s360-profile__value"><?= !empty($student['created_at']) ? date('M d, Y', strtotime($student['created_at'])) : '-' ?></span>
                 </div>
                 <?php if ($createdByName !== ''): ?>
                 <div class="s360-profile__row">
-                    <span class="s360-profile__label">Created By</span>
+                    <span class="s360-profile__label"><?= te('Created By') ?></span>
                     <span class="s360-profile__value"><?= $e($createdByName) ?></span>
                 </div>
                 <?php endif; ?>
                 <?php if (!empty($student['notes'])): ?>
                 <div class="s360-profile__row">
-                    <span class="s360-profile__label">Notes</span>
+                    <span class="s360-profile__label"><?= te('Notes') ?></span>
                     <span class="s360-profile__value"><?= $e($student['notes']) ?></span>
                 </div>
                 <?php endif; ?>
             </div>
 
             <div class="s360-profile__actions">
-                <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/edit" class="btn btn--secondary btn--sm">Edit</a>
+                <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/edit" class="btn btn--secondary btn--sm"><?= te('Edit') ?></a>
                 <?php if ($status === 'active'): ?>
-                    <button type="button" class="btn btn--ghost btn--sm" onclick="openModal('deactivateModal')">Deactivate</button>
+                    <button type="button" class="btn btn--ghost btn--sm" onclick="openModal('deactivateModal')"><?= te('Deactivate') ?></button>
                 <?php elseif ($status === 'deactivated'): ?>
                     <form method="POST" action="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/reactivate" style="display:inline;">
                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
-                        <button type="submit" class="btn btn--success btn--sm">Reactivate</button>
+                        <button type="submit" class="btn btn--success btn--sm"><?= te('Reactivate') ?></button>
                     </form>
                 <?php endif; ?>
                 <?php if (in_array(session_get('user_role'), ['super_admin', 'admin', 'coordinator'], true)): ?>
@@ -192,7 +192,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                         <button type="submit" class="btn btn--ghost btn--sm"><?= te('Password reset code') ?></button>
                     </form>
                 <?php endif; ?>
-                <button type="button" class="btn btn--danger btn--sm" onclick="openModal('deleteModal')">Delete</button>
+                <button type="button" class="btn btn--danger btn--sm" onclick="openModal('deleteModal')"><?= te('Delete') ?></button>
             </div>
         </div>
 
@@ -200,20 +200,20 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
         <div class="s360-section" style="margin-top:1rem;">
             <div class="s360-section__title">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                Parent / Guardian
+                <?= te('Parent / Guardian') ?>
             </div>
             <?php if (!empty($parents)): ?>
                 <?php foreach ($parents as $parent): ?>
                     <div style="padding:0.5rem 0; border-bottom:1px solid var(--border); font-size:0.8125rem;">
                         <div style="font-weight:600; margin-bottom:0.25rem;"><?= $e($parent['parent_name']) ?></div>
                         <?php if (!empty($parent['phone1'])): ?>
-                            <div style="color:var(--text-muted);">Phone: <?= $e($parent['phone1']) ?></div>
+                            <div style="color:var(--text-muted);"><?= te('Phone:') ?> <?= $e($parent['phone1']) ?></div>
                         <?php endif; ?>
                         <?php if (!empty($parent['phone2'])): ?>
-                            <div style="color:var(--text-muted);">Phone 2: <?= $e($parent['phone2']) ?></div>
+                            <div style="color:var(--text-muted);"><?= te('Phone 2:') ?> <?= $e($parent['phone2']) ?></div>
                         <?php endif; ?>
                         <?php if (!empty($parent['whatsapp'])): ?>
-                            <div style="color:var(--text-muted);">WhatsApp: <?= $e($parent['whatsapp']) ?></div>
+                            <div style="color:var(--text-muted);"><?= te('WhatsApp:') ?> <?= $e($parent['whatsapp']) ?></div>
                         <?php endif; ?>
                         <span class="badge <?= ($parent['status'] ?? 'active') === 'active' ? 'badge--success' : 'badge--danger' ?>" style="font-size:0.6875rem; margin-top:0.25rem;">
                             <?= ucfirst($e($parent['status'] ?? 'active')) ?>
@@ -243,7 +243,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <p class="text-sm text-muted" style="margin:0;">No parent/guardian linked.</p>
+                <p class="text-sm text-muted" style="margin:0;"><?= te('No parent/guardian linked.') ?></p>
             <?php endif; ?>
             <?php if (in_array(session_get('user_role'), ['super_admin', 'admin', 'coordinator'], true)): ?>
                 <a href="<?= BASE_URL ?>/students/<?= (int) ($student['id'] ?? 0) ?>/parents/create" class="btn btn--ghost btn--sm" style="font-size:.75rem; margin-top:.5rem;">+ <?= te('Add another guardian') ?></a>
@@ -257,31 +257,31 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
         <div class="s360-kpi-row">
             <div class="s360-kpi s360-kpi--blue">
                 <div class="s360-kpi__value"><?= count($activeEnrollments) ?></div>
-                <div class="s360-kpi__label">Active Classes</div>
+                <div class="s360-kpi__label"><?= te('Active Classes') ?></div>
             </div>
             <div class="s360-kpi s360-kpi--green">
                 <div class="s360-kpi__value"><?= $attRate ?>%</div>
-                <div class="s360-kpi__label">Attendance Rate</div>
+                <div class="s360-kpi__label"><?= te('Attendance Rate') ?></div>
             </div>
             <div class="s360-kpi s360-kpi--orange">
                 <div class="s360-kpi__value"><?= $paymentSummary['pending_count'] ?></div>
-                <div class="s360-kpi__label">Pending Payments</div>
+                <div class="s360-kpi__label"><?= te('Pending Payments') ?></div>
             </div>
             <div class="s360-kpi s360-kpi--red">
                 <div class="s360-kpi__value"><?= $paymentSummary['overdue_count'] ?></div>
-                <div class="s360-kpi__label">Overdue</div>
+                <div class="s360-kpi__label"><?= te('Overdue') ?></div>
             </div>
         </div>
 
         <!-- Tabs -->
         <div class="s360-tabs" role="tablist">
-            <button class="s360-tab active" role="tab" data-tab="enrollments" onclick="s360Tab('enrollments', this)">Enrollments</button>
-            <button class="s360-tab" role="tab" data-tab="payments" onclick="s360Tab('payments', this)">Payments</button>
-            <button class="s360-tab" role="tab" data-tab="attendance" onclick="s360Tab('attendance', this)">Attendance</button>
-            <button class="s360-tab" role="tab" data-tab="fee-risk" onclick="s360Tab('fee-risk', this)">Fee Risk</button>
-            <button class="s360-tab" role="tab" data-tab="goals" onclick="s360Tab('goals', this)">Goals<?= $studentGoals !== [] ? ' (' . count($studentGoals) . ')' : '' ?></button>
-            <button class="s360-tab" role="tab" data-tab="workflows" onclick="s360Tab('workflows', this)">Workflows</button>
-            <button class="s360-tab" role="tab" data-tab="audit" onclick="s360Tab('audit', this)">Audit Trail</button>
+            <button class="s360-tab active" role="tab" data-tab="enrollments" onclick="s360Tab('enrollments', this)"><?= te('Enrollments') ?></button>
+            <button class="s360-tab" role="tab" data-tab="payments" onclick="s360Tab('payments', this)"><?= te('Payments') ?></button>
+            <button class="s360-tab" role="tab" data-tab="attendance" onclick="s360Tab('attendance', this)"><?= te('Attendance') ?></button>
+            <button class="s360-tab" role="tab" data-tab="fee-risk" onclick="s360Tab('fee-risk', this)"><?= te('Fee Risk') ?></button>
+            <button class="s360-tab" role="tab" data-tab="goals" onclick="s360Tab('goals', this)"><?= te('Goals') ?><?= $studentGoals !== [] ? ' (' . count($studentGoals) . ')' : '' ?></button>
+            <button class="s360-tab" role="tab" data-tab="workflows" onclick="s360Tab('workflows', this)"><?= te('Workflows') ?></button>
+            <button class="s360-tab" role="tab" data-tab="audit" onclick="s360Tab('audit', this)"><?= te('Audit Trail') ?></button>
         </div>
 
         <!-- ─── Enrollments Tab ─── -->
@@ -290,13 +290,13 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Class</th>
-                            <th>Institute</th>
-                            <th>Schedule</th>
-                            <th>Monthly Fee</th>
-                            <th>Scholarship</th>
-                            <th>Status</th>
-                            <th>Enrolled</th>
+                            <th><?= te('Class') ?></th>
+                            <th><?= te('Institute') ?></th>
+                            <th><?= te('Schedule') ?></th>
+                            <th><?= te('Monthly Fee') ?></th>
+                            <th><?= te('Scholarship') ?></th>
+                            <th><?= te('Status') ?></th>
+                            <th><?= te('Enrolled') ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -327,9 +327,9 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                                         <?php
                                         $schType = $enr['scholarship_type'] ?? 'full_payment';
                                         echo match ($schType) {
-                                            'half_payment' => '<span class="badge badge--info">Half (50%)</span>',
-                                            'free_card'    => '<span class="badge badge--success">Free Card</span>',
-                                            default        => '<span class="badge badge--neutral">Full</span>',
+                                            'half_payment' => '<span class="badge badge--info">' . te('Half (50%)') . '</span>',
+                                            'free_card'    => '<span class="badge badge--success">' . te('Free Card') . '</span>',
+                                            default        => '<span class="badge badge--neutral">' . te('Full') . '</span>',
                                         };
                                         ?>
                                     </td>
@@ -343,7 +343,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="7" class="table-empty">No enrollments found.</td></tr>
+                            <tr><td colspan="7" class="table-empty"><?= te('No enrollments found.') ?></td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -356,15 +356,15 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
             <div class="s360-kpi-row" style="margin-bottom:1rem;">
                 <div class="s360-kpi">
                     <div class="s360-kpi__value" style="color:var(--text);">LKR <?= number_format($paymentSummary['total_due'], 2) ?></div>
-                    <div class="s360-kpi__label">Total Due</div>
+                    <div class="s360-kpi__label"><?= te('Total Due') ?></div>
                 </div>
                 <div class="s360-kpi s360-kpi--green">
                     <div class="s360-kpi__value">LKR <?= number_format($paymentSummary['total_paid'], 2) ?></div>
-                    <div class="s360-kpi__label">Total Paid</div>
+                    <div class="s360-kpi__label"><?= te('Total Paid') ?></div>
                 </div>
                 <div class="s360-kpi s360-kpi--orange">
                     <div class="s360-kpi__value">LKR <?= number_format($paymentSummary['total_due'] - $paymentSummary['total_paid'], 2) ?></div>
-                    <div class="s360-kpi__label">Outstanding</div>
+                    <div class="s360-kpi__label"><?= te('Outstanding') ?></div>
                 </div>
             </div>
 
@@ -372,12 +372,12 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Month</th>
-                            <th>Class</th>
-                            <th>Due (LKR)</th>
-                            <th>Paid (LKR)</th>
-                            <th>Status</th>
-                            <th>Paid Date</th>
+                            <th><?= te('Month') ?></th>
+                            <th><?= te('Class') ?></th>
+                            <th><?= te('Due (LKR)') ?></th>
+                            <th><?= te('Paid (LKR)') ?></th>
+                            <th><?= te('Status') ?></th>
+                            <th><?= te('Paid Date') ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -410,7 +410,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="6" class="table-empty">No payment records found.</td></tr>
+                            <tr><td colspan="6" class="table-empty"><?= te('No payment records found.') ?></td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -423,19 +423,19 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
             <div class="s360-kpi-row" style="margin-bottom:1rem;">
                 <div class="s360-kpi">
                     <div class="s360-kpi__value" style="color:var(--text);"><?= $attendanceSummary['total'] ?></div>
-                    <div class="s360-kpi__label">Total Records</div>
+                    <div class="s360-kpi__label"><?= te('Total Records') ?></div>
                 </div>
                 <div class="s360-kpi s360-kpi--green">
                     <div class="s360-kpi__value"><?= $attendanceSummary['present'] ?></div>
-                    <div class="s360-kpi__label">Present</div>
+                    <div class="s360-kpi__label"><?= te('Present') ?></div>
                 </div>
                 <div class="s360-kpi s360-kpi--orange">
                     <div class="s360-kpi__value"><?= $attendanceSummary['late'] ?></div>
-                    <div class="s360-kpi__label">Late</div>
+                    <div class="s360-kpi__label"><?= te('Late') ?></div>
                 </div>
                 <div class="s360-kpi s360-kpi--red">
                     <div class="s360-kpi__value"><?= $attendanceSummary['red_flag'] ?></div>
-                    <div class="s360-kpi__label">Red Flags</div>
+                    <div class="s360-kpi__label"><?= te('Red Flags') ?></div>
                 </div>
             </div>
 
@@ -443,12 +443,12 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Class</th>
-                            <th>Check-in</th>
-                            <th>Status</th>
-                            <th>Method</th>
-                            <th>Note</th>
+                            <th><?= te('Date') ?></th>
+                            <th><?= te('Class') ?></th>
+                            <th><?= te('Check-in') ?></th>
+                            <th><?= te('Status') ?></th>
+                            <th><?= te('Method') ?></th>
+                            <th><?= te('Note') ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -469,7 +469,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                                             default    => 'badge--neutral',
                                         };
                                         $attLabel = match ($attStatus) {
-                                            'red_flag' => 'Red Flag',
+                                            'red_flag' => te('Red Flag'),
                                             default    => ucfirst($attStatus),
                                         };
                                         ?>
@@ -480,7 +480,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="6" class="table-empty">No attendance records found.</td></tr>
+                            <tr><td colspan="6" class="table-empty"><?= te('No attendance records found.') ?></td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -494,11 +494,11 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Class</th>
-                                <th>Risk State</th>
-                                <th>Grace Start</th>
-                                <th>Deactivation Date</th>
-                                <th>Temp Access Until</th>
+                                <th><?= te('Class') ?></th>
+                                <th><?= te('Risk State') ?></th>
+                                <th><?= te('Grace Start') ?></th>
+                                <th><?= te('Deactivation Date') ?></th>
+                                <th><?= te('Temp Access Until') ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -522,8 +522,8 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-state__icon" style="font-size:2rem;">&#9989;</div>
-                    <div class="empty-state__title">No Fee Risk Records</div>
-                    <div class="empty-state__text">This student has no fee-risk entries. All clear!</div>
+                    <div class="empty-state__title"><?= te('No Fee Risk Records') ?></div>
+                    <div class="empty-state__text"><?= te('This student has no fee-risk entries. All clear!') ?></div>
                 </div>
             <?php endif; ?>
         </div>
@@ -560,7 +560,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                                     <?= !empty($wf['created_at']) ? date('M d, Y g:i A', strtotime($wf['created_at'])) : '' ?>
                                 </p>
                                 <?php if (!empty($wf['reason'])): ?>
-                                    <p class="text-sm" style="margin:0.5rem 0 0;">Reason: <?= $e($wf['reason']) ?></p>
+                                    <p class="text-sm" style="margin:0.5rem 0 0;"><?= te('Reason:') ?> <?= $e($wf['reason']) ?></p>
                                 <?php endif; ?>
 
                                 <?php if (!empty($wf['steps'])): ?>
@@ -576,7 +576,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                                                 };
                                                 ?>
                                                 <?= $stepIcon ?>
-                                                <span>Step <?= (int) ($step['step_number'] ?? $step['step_order'] ?? 0) ?>: <?= $e($step['approver_name'] ?? ucfirst($step['approver_role'] ?? '')) ?></span>
+                                                <span><?= te('Step') ?> <?= (int) ($step['step_number'] ?? $step['step_order'] ?? 0) ?>: <?= $e($step['approver_name'] ?? ucfirst($step['approver_role'] ?? '')) ?></span>
                                                 <span class="text-muted"><?= $stepAction !== 'pending' && !empty($step['acted_at']) ? date('M d g:i A', strtotime($step['acted_at'])) : '' ?></span>
                                             </div>
                                         <?php endforeach; ?>
@@ -589,8 +589,8 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-state__icon" style="font-size:2rem;">&#128260;</div>
-                    <div class="empty-state__title">No Workflow History</div>
-                    <div class="empty-state__text">Workflow events for this student will appear here.</div>
+                    <div class="empty-state__title"><?= te('No Workflow History') ?></div>
+                    <div class="empty-state__text"><?= te('Workflow events for this student will appear here.') ?></div>
                 </div>
             <?php endif; ?>
         </div>
@@ -602,10 +602,10 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Timestamp</th>
-                                <th>User</th>
-                                <th>Action</th>
-                                <th>Details</th>
+                                <th><?= te('Timestamp') ?></th>
+                                <th><?= te('User') ?></th>
+                                <th><?= te('Action') ?></th>
+                                <th><?= te('Details') ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -619,7 +619,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                                         if ($logUserName === '' && !empty($log['user_id'])) {
                                             $logUserName = 'User #' . $log['user_id'];
                                         }
-                                        echo $e($logUserName ?: 'System');
+                                        echo $e($logUserName) ?: te('System');
                                         ?>
                                     </td>
                                     <td><span class="badge badge--neutral"><?= $e(str_replace('_', ' ', ucfirst($log['action'] ?? ''))) ?></span></td>
@@ -652,8 +652,8 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-state__icon" style="font-size:2rem;">&#128209;</div>
-                    <div class="empty-state__title">No Audit Trail</div>
-                    <div class="empty-state__text">Actions performed on this student will be logged here.</div>
+                    <div class="empty-state__title"><?= te('No Audit Trail') ?></div>
+                    <div class="empty-state__text"><?= te('Actions performed on this student will be logged here.') ?></div>
                 </div>
             <?php endif; ?>
         </div>
@@ -664,22 +664,22 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
 <div class="modal-backdrop" id="deactivateModal" aria-hidden="true">
     <div class="modal">
         <div class="modal__header">
-            <h3 class="modal__title">Deactivate Student</h3>
+            <h3 class="modal__title"><?= te('Deactivate Student') ?></h3>
             <button type="button" class="modal__close" onclick="closeModal('deactivateModal')">&times;</button>
         </div>
         <form method="POST" action="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/deactivate">
             <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
             <div class="modal__body">
-                <p>Are you sure you want to initiate deactivation for <strong><?= $e($student['full_name']) ?></strong>?</p>
-                <p class="text-sm text-muted">This will start an approval workflow. The student will be deactivated once all approvers have approved.</p>
+                <p><?= te('Are you sure you want to initiate deactivation for') ?> <strong><?= $e($student['full_name']) ?></strong>?</p>
+                <p class="text-sm text-muted"><?= te('This will start an approval workflow. The student will be deactivated once all approvers have approved.') ?></p>
                 <div class="form-group">
-                    <label class="form-label" for="deactivate_reason">Reason <span class="required">*</span></label>
-                    <textarea id="deactivate_reason" name="reason" class="form-control" required placeholder="Please provide a reason for deactivation..."></textarea>
+                    <label class="form-label" for="deactivate_reason"><?= te('Reason') ?> <span class="required">*</span></label>
+                    <textarea id="deactivate_reason" name="reason" class="form-control" required placeholder="<?= te('Please provide a reason for deactivation...') ?>"></textarea>
                 </div>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn--ghost" onclick="closeModal('deactivateModal')">Cancel</button>
-                <button type="submit" class="btn btn--primary">Submit for Approval</button>
+                <button type="button" class="btn btn--ghost" onclick="closeModal('deactivateModal')"><?= te('Cancel') ?></button>
+                <button type="submit" class="btn btn--primary"><?= te('Submit for Approval') ?></button>
             </div>
         </form>
     </div>
@@ -689,22 +689,22 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
 <div class="modal-backdrop" id="deleteModal" aria-hidden="true">
     <div class="modal">
         <div class="modal__header">
-            <h3 class="modal__title">Delete Student</h3>
+            <h3 class="modal__title"><?= te('Delete Student') ?></h3>
             <button type="button" class="modal__close" onclick="closeModal('deleteModal')">&times;</button>
         </div>
         <form method="POST" action="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/delete">
             <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
             <div class="modal__body">
-                <p>Are you sure you want to initiate deletion for <strong><?= $e($student['full_name']) ?></strong>?</p>
-                <p class="text-sm text-muted">This will start a multi-step approval workflow. The student's data will be permanently removed once all approvers have approved.</p>
+                <p><?= te('Are you sure you want to initiate deletion for') ?> <strong><?= $e($student['full_name']) ?></strong>?</p>
+                <p class="text-sm text-muted"><?= te('This will start a multi-step approval workflow. The student\'s data will be permanently removed once all approvers have approved.') ?></p>
                 <div class="form-group">
-                    <label class="form-label" for="delete_reason">Reason <span class="required">*</span></label>
-                    <textarea id="delete_reason" name="reason" class="form-control" required placeholder="Please provide a reason for deletion..."></textarea>
+                    <label class="form-label" for="delete_reason"><?= te('Reason') ?> <span class="required">*</span></label>
+                    <textarea id="delete_reason" name="reason" class="form-control" required placeholder="<?= te('Please provide a reason for deletion...') ?>"></textarea>
                 </div>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn--ghost" onclick="closeModal('deleteModal')">Cancel</button>
-                <button type="submit" class="btn btn--danger">Submit for Deletion</button>
+                <button type="button" class="btn btn--ghost" onclick="closeModal('deleteModal')"><?= te('Cancel') ?></button>
+                <button type="submit" class="btn btn--danger"><?= te('Submit for Deletion') ?></button>
             </div>
         </form>
     </div>

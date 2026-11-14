@@ -136,4 +136,37 @@ class Notification extends BaseModel
 
         return $this->sendBulk($recipients, $title, $body, $type);
     }
+
+    /**
+     * Broadcast a notification to every actively-enrolled student of one
+     * class (and, optionally, their parents too), so a branch admin or
+     * the super admin can reach "the students of the relevant class"
+     * directly instead of only every staff account site-wide.
+     */
+    public function broadcastToClass(int $classId, string $title, string $body, string $type = 'system', bool $alsoParents = false): int
+    {
+        $stmt = $this->query(
+            "SELECT DISTINCT s.id, 'student' AS type
+               FROM students s
+               JOIN enrollments e ON e.student_id = s.id
+              WHERE e.class_id = :cid AND e.enrollment_status = 'active' AND s.status = 'active'",
+            [':cid' => $classId]
+        );
+        $recipients = $stmt->fetchAll();
+
+        if ($alsoParents) {
+            $pstmt = $this->query(
+                "SELECT DISTINCT p.id, 'parent' AS type
+                   FROM parents p
+                   JOIN students s ON s.id = p.student_id
+                   JOIN enrollments e ON e.student_id = s.id
+                  WHERE e.class_id = :cid AND e.enrollment_status = 'active'
+                        AND s.status = 'active' AND p.status = 'active'",
+                [':cid' => $classId]
+            );
+            $recipients = array_merge($recipients, $pstmt->fetchAll());
+        }
+
+        return $this->sendBulk($recipients, $title, $body, $type);
+    }
 }

@@ -13,7 +13,7 @@ $baseUrl     = defined('BASE_URL') ? BASE_URL : '';
 ?>
 
 <div class="page-header">
-    <h1 class="page-header__title">Workflow History</h1>
+    <h1 class="page-header__title"><?= te('Workflow History') ?></h1>
 </div>
 
 <!-- Filters -->
@@ -21,20 +21,20 @@ $baseUrl     = defined('BASE_URL') ? BASE_URL : '';
     <div class="table-toolbar">
         <form method="GET" action="<?= $baseUrl ?>/workflows/history" style="display:flex;flex-wrap:wrap;gap:0.75rem;width:100%;align-items:center;">
             <select name="type" class="form-control" style="width:auto;min-width:150px;">
-                <option value="">All Types</option>
-                <option value="deletion" <?= ($filters['type'] ?? '') === 'deletion' ? 'selected' : '' ?>>Deletion</option>
-                <option value="deactivation" <?= ($filters['type'] ?? '') === 'deactivation' ? 'selected' : '' ?>>Deactivation</option>
+                <option value=""><?= te('All Types') ?></option>
+                <option value="deletion" <?= ($filters['type'] ?? '') === 'deletion' ? 'selected' : '' ?>><?= te('Deletion') ?></option>
+                <option value="deactivation" <?= ($filters['type'] ?? '') === 'deactivation' ? 'selected' : '' ?>><?= te('Deactivation') ?></option>
             </select>
             <select name="status" class="form-control" style="width:auto;min-width:140px;">
-                <option value="">All Statuses</option>
-                <option value="completed" <?= ($filters['status'] ?? '') === 'completed' ? 'selected' : '' ?>>Completed</option>
-                <option value="rejected" <?= ($filters['status'] ?? '') === 'rejected' ? 'selected' : '' ?>>Rejected</option>
-                <option value="pending" <?= ($filters['status'] ?? '') === 'pending' ? 'selected' : '' ?>>Pending</option>
+                <option value=""><?= te('All Statuses') ?></option>
+                <option value="completed" <?= ($filters['status'] ?? '') === 'completed' ? 'selected' : '' ?>><?= te('Completed') ?></option>
+                <option value="rejected" <?= ($filters['status'] ?? '') === 'rejected' ? 'selected' : '' ?>><?= te('Rejected') ?></option>
+                <option value="pending" <?= ($filters['status'] ?? '') === 'pending' ? 'selected' : '' ?>><?= te('Pending') ?></option>
             </select>
-            <input type="date" name="date_from" class="form-control" style="width:auto;" placeholder="From" value="<?= htmlspecialchars($filters['date_from'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-            <input type="date" name="date_to" class="form-control" style="width:auto;" placeholder="To" value="<?= htmlspecialchars($filters['date_to'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-            <button type="submit" class="btn btn--primary btn--sm">Filter</button>
-            <a href="<?= $baseUrl ?>/workflows/history" class="btn btn--ghost btn--sm">Clear</a>
+            <input type="date" name="date_from" class="form-control" style="width:auto;" placeholder="<?= te('From') ?>" value="<?= htmlspecialchars($filters['date_from'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <input type="date" name="date_to" class="form-control" style="width:auto;" placeholder="<?= te('To') ?>" value="<?= htmlspecialchars($filters['date_to'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <button type="submit" class="btn btn--primary btn--sm"><?= te('Filter') ?></button>
+            <a href="<?= $baseUrl ?>/workflows/history" class="btn btn--ghost btn--sm"><?= te('Clear') ?></a>
         </form>
     </div>
 
@@ -42,14 +42,14 @@ $baseUrl     = defined('BASE_URL') ? BASE_URL : '';
     <table class="data-table">
         <thead>
             <tr>
-                <th data-sort>ID</th>
-                <th data-sort>Type</th>
-                <th data-sort>Student</th>
-                <th data-sort>Initiated By</th>
-                <th>Status</th>
-                <th>Steps</th>
-                <th data-sort>Created</th>
-                <th data-sort>Completed</th>
+                <th data-sort><?= te('ID') ?></th>
+                <th data-sort><?= te('Type') ?></th>
+                <th data-sort><?= te('Student') ?></th>
+                <th data-sort><?= te('Initiated By') ?></th>
+                <th><?= te('Status') ?></th>
+                <th><?= te('Steps') ?></th>
+                <th data-sort><?= te('Created') ?></th>
+                <th data-sort><?= te('Completed') ?></th>
             </tr>
         </thead>
         <tbody>
@@ -81,7 +81,7 @@ $baseUrl     = defined('BASE_URL') ? BASE_URL : '';
                     <?php if (!empty($wf['steps'])): ?>
                         <tr class="workflow-details" style="display:none;">
                             <td colspan="8" style="background:var(--surface-sunken);padding:1rem;">
-                                <h5 style="margin-bottom:0.5rem;">Approval Steps</h5>
+                                <h5 style="margin-bottom:0.5rem;"><?= te('Approval Steps') ?></h5>
                                 <div style="display:flex;flex-direction:column;gap:0.5rem;">
                                     <?php foreach ($wf['steps'] as $step): ?>
                                         <div class="d-flex items-center gap-1" style="padding:0.5rem;background:var(--surface);border-radius:var(--radius-sm);border:1px solid var(--border);">
@@ -108,7 +108,7 @@ $baseUrl     = defined('BASE_URL') ? BASE_URL : '';
                                 </div>
                                 <?php if (!empty($wf['reason'])): ?>
                                     <p class="text-sm" style="margin-top:0.75rem;margin-bottom:0;">
-                                        <strong>Reason:</strong> <?= htmlspecialchars($wf['reason'], ENT_QUOTES, 'UTF-8') ?>
+                                        <strong><?= te('Reason:') ?></strong> <?= htmlspecialchars($wf['reason'], ENT_QUOTES, 'UTF-8') ?>
                                     </p>
                                 <?php endif; ?>
                             </td>
@@ -120,8 +120,8 @@ $baseUrl     = defined('BASE_URL') ? BASE_URL : '';
                     <td colspan="8">
                         <div class="empty-state">
                             <div class="empty-state__icon">&#128203;</div>
-                            <div class="empty-state__title">No workflow history</div>
-                            <div class="empty-state__text">Completed and rejected workflows will appear here.</div>
+                            <div class="empty-state__title"><?= te('No workflow history') ?></div>
+                            <div class="empty-state__text"><?= te('Completed and rejected workflows will appear here.') ?></div>
                         </div>
                     </td>
                 </tr>

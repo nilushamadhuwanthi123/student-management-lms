@@ -67,10 +67,25 @@ require __DIR__ . '/_site.php';
         <h2><?= te('Our branches') ?></h2>
         <div class="ts-grid" style="margin-top:1rem;">
             <?php foreach ($branches as $b): ?>
-                <a class="ts-card ts-reveal" style="text-decoration:none;" href="<?= BASE_URL ?>/branches/<?= (int) $b['id'] ?>">
-                    <h3><?= $e($b['name']) ?></h3>
-                    <?php if (!empty($b['location'])): ?><div class="ts-muted"><?= $e($b['location']) ?></div><?php endif; ?>
-                    <div class="ts-muted" style="margin-top:.35rem;"><?= te('{n} classes', ['n' => (int) $b['class_count']]) ?> &rarr;</div>
+                <a class="ts-card ts-reveal" style="position:relative; text-decoration:none; padding:0; overflow:hidden;" href="<?= BASE_URL ?>/branches/<?= (int) $b['id'] ?>">
+                    <?php $__aboutVideo = \Institute::videoHref($b['video_url'] ?? null); ?>
+                    <?php if ($__aboutVideo !== ''): ?>
+                        <span style="position:absolute; top:.7rem; right:.7rem; z-index:2; display:flex; align-items:center; gap:.3rem; background:rgba(10,20,50,.6); backdrop-filter:blur(6px); color:#fff; font-size:.72rem; font-weight:600; padding:.3rem .6rem; border-radius:999px;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                            <?= te('Watch video') ?>
+                        </span>
+                    <?php endif; ?>
+                    <?php if (!empty($b['photo'])): ?>
+                        <div style="aspect-ratio:16/9; overflow:hidden; background:#EFF6FF;">
+                            <img src="<?= BASE_URL . $e($b['photo']) ?>" alt="<?= $e(te($b['name'])) ?>" loading="lazy" style="width:100%; height:100%; object-fit:cover; display:block;">
+                        </div>
+                    <?php endif; ?>
+                    <div style="padding:1.15rem 1.2rem;">
+                        <h3><?= $e(te($b['name'])) ?></h3>
+                        <?php if (!empty($b['location'])): ?><div class="ts-muted"><?= $e(te($b['location'])) ?></div><?php endif; ?>
+                        <?php if (!empty($b['public_description'])): ?><p class="ts-muted" style="margin:.4rem 0 0;"><?= $e(te($b['public_description'])) ?></p><?php endif; ?>
+                        <div class="ts-muted" style="margin-top:.35rem;"><?= te('{n} classes', ['n' => (int) $b['class_count']]) ?> &rarr;</div>
+                    </div>
                 </a>
             <?php endforeach; ?>
         </div>

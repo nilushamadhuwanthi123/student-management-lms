@@ -35,8 +35,9 @@ final class PublicSite
                 try {
                     self::$cache['branches'] = $db->query(
                         "SELECT i.id, i.name, i.location, i.map_url, i.phone1, i.phone2,
+                                i.photo, i.public_description, i.video_url,
                                 (SELECT COUNT(*) FROM classes c WHERE c.institute_id = i.id AND c.status = 'active') AS class_count
-                           FROM institutes i WHERE i.status = 'active' AND i.is_public = 1 ORDER BY i.id"
+                           FROM institutes i WHERE i.status = 'active' AND i.is_public = 1 ORDER BY i.sort_order ASC, i.id ASC"
                     )->fetchAll(PDO::FETCH_ASSOC);
                 } catch (\Throwable $e) {
                     error_log('Public branches unavailable: ' . $e->getMessage());
@@ -215,7 +216,7 @@ final class PublicSite
                                  OR (s.target_scope IN ('branch', 'grade') AND i1.is_public = 1 AND i1.status = 'active')
                                  OR (s.target_scope = 'class' AND c.status = 'active' AND i2.is_public = 1 AND i2.status = 'active'))
                        ORDER BY s.event_date ASC, s.start_time IS NULL, s.start_time ASC
-                          LIMIT " . max(1, min(12, $limit))
+                          LIMIT " . max(1, min(60, $limit))
                     );
                     $stmt->execute([':today' => $today]);
                     self::$cache['seminars'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -272,6 +273,36 @@ final class PublicSite
         }
 
         return array_slice($items, 0, max(1, min(12, $limit)));
+    }
+
+    /**
+     * Ads marked to show as a sitewide popup (see SiteAdService::popups()),
+     * reduced to the same shape as a poster: a title, an image if one was
+     * uploaded, and a link if one was given. Shown once per browser
+     * session on every public page (see partials/site-popup.php).
+     *
+     * @return array<int, array{title: string, image: string, href: ?string}>
+     */
+    public static function popupAds(int $limit = 6): array
+    {
+        $out = [];
+        try {
+            foreach ((new \App\Services\SiteAdService())->popups($limit) as $ad) {
+                $image = '';
+                if (!empty($ad['image_path']) && preg_match('#^/uploads/site-ads/[A-Za-z0-9_]+\.(jpg|png|webp)$#', (string) $ad['image_path'])) {
+                    $image = BASE_URL . $ad['image_path'];
+                }
+                $link = trim((string) ($ad['link_url'] ?? ''));
+                $out[] = [
+                    'title' => (string) $ad['title'],
+                    'image' => $image,
+                    'href'  => preg_match('#^https?://#i', $link) === 1 ? $link : null,
+                ];
+            }
+        } catch (\Throwable $e) {
+            $out = [];
+        }
+        return $out;
     }
 
     /**

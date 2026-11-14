@@ -27,8 +27,8 @@ $currentVisibility = $widgetsByRole[$selectedRole] ?? [];
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">Dashboard Items Configuration</h1>
-        <p class="text-sm text-muted">Configure Show/Hide visibility for all 16 dashboard widgets per user role</p>
+        <h1 class="page-header__title"><?= te('Dashboard Items Configuration') ?></h1>
+        <p class="text-sm text-muted"><?= te('Configure Show/Hide visibility for all 16 dashboard widgets per user role') ?></p>
     </div>
 </div>
 
@@ -36,17 +36,17 @@ $currentVisibility = $widgetsByRole[$selectedRole] ?? [];
 <div class="card mb-3">
     <div class="d-flex items-center justify-between flex-wrap gap-2">
         <div style="flex:1;min-width:280px;">
-            <label class="form-label" for="roleSelector"><strong>Select Role to Configure:</strong></label>
+            <label class="form-label" for="roleSelector"><strong><?= te('Select Role to Configure:') ?></strong></label>
             <select id="roleSelector" class="form-control" onchange="window.location.href='<?= BASE_URL ?>/settings/dashboard-items?role=' + this.value;">
                 <?php foreach ($roles as $rKey => $rLabel): ?>
                     <option value="<?= $rKey ?>" <?= $selectedRole === $rKey ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($rLabel, ENT_QUOTES, 'UTF-8') ?>
+                        <?= htmlspecialchars(te($rLabel), ENT_QUOTES, 'UTF-8') ?>
                     </option>
                 <?php endforeach; ?>
             </select>
         </div>
         <div class="text-sm text-muted" style="align-self:flex-end;">
-            Currently editing: <strong class="text-primary"><?= $roles[$selectedRole] ?></strong>
+            <?= te('Currently editing:') ?> <strong class="text-primary"><?= te($roles[$selectedRole]) ?></strong>
         </div>
     </div>
 </div>
@@ -58,10 +58,10 @@ $currentVisibility = $widgetsByRole[$selectedRole] ?? [];
 
     <div class="card mb-3">
         <div class="d-flex items-center justify-between mb-2">
-            <h3>Dashboard Widgets for <?= $roles[$selectedRole] ?></h3>
+            <h3><?= te('Dashboard Widgets for {role}', ['role' => $roles[$selectedRole]]) ?></h3>
             <div class="d-flex gap-1">
-                <button type="button" class="btn btn--ghost btn--sm" onclick="toggleAllWidgets(true)">Show All</button>
-                <button type="button" class="btn btn--ghost btn--sm" onclick="toggleAllWidgets(false)">Hide All</button>
+                <button type="button" class="btn btn--ghost btn--sm" onclick="toggleAllWidgets(true)"><?= te('Show All') ?></button>
+                <button type="button" class="btn btn--ghost btn--sm" onclick="toggleAllWidgets(false)"><?= te('Hide All') ?></button>
             </div>
         </div>
 
@@ -70,9 +70,9 @@ $currentVisibility = $widgetsByRole[$selectedRole] ?? [];
                 <thead>
                     <tr>
                         <th style="width:60px;">#</th>
-                        <th>Dashboard Item / Widget</th>
-                        <th style="width:160px; text-align:center;">Visibility Option</th>
-                        <th style="width:140px; text-align:center;">Status</th>
+                        <th><?= te('Dashboard Item / Widget') ?></th>
+                        <th style="width:160px; text-align:center;"><?= te('Visibility Option') ?></th>
+                        <th style="width:140px; text-align:center;"><?= te('Status') ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,7 +84,7 @@ $currentVisibility = $widgetsByRole[$selectedRole] ?? [];
                         <tr>
                             <td><?= $index++ ?></td>
                             <td>
-                                <strong><?= htmlspecialchars($widgetLabel, ENT_QUOTES, 'UTF-8') ?></strong>
+                                <strong><?= htmlspecialchars(te($widgetLabel), ENT_QUOTES, 'UTF-8') ?></strong>
                                 <div class="text-xs text-muted">widget_key: <code><?= $widgetKey ?></code></div>
                             </td>
                             <td style="text-align:center;">
@@ -93,13 +93,13 @@ $currentVisibility = $widgetsByRole[$selectedRole] ?? [];
                                     class="form-control form-control--sm widget-toggle-select"
                                     onchange="updateStatusBadge(this)"
                                 >
-                                    <option value="1" <?= $isVisible ? 'selected' : '' ?>>Show</option>
-                                    <option value="0" <?= !$isVisible ? 'selected' : '' ?>>Hide</option>
+                                    <option value="1" <?= $isVisible ? 'selected' : '' ?>><?= te('Show') ?></option>
+                                    <option value="0" <?= !$isVisible ? 'selected' : '' ?>><?= te('Hide') ?></option>
                                 </select>
                             </td>
                             <td style="text-align:center;">
                                 <span class="badge <?= $isVisible ? 'badge--success' : 'badge--neutral' ?> status-chip">
-                                    <?= $isVisible ? 'Visible' : 'Hidden' ?>
+                                    <?= $isVisible ? te('Visible') : te('Hidden') ?>
                                 </span>
                             </td>
                         </tr>
@@ -109,15 +109,16 @@ $currentVisibility = $widgetsByRole[$selectedRole] ?? [];
         </div>
 
         <div class="d-flex justify-between items-center mt-3 pt-2" style="border-top:1px solid var(--border);">
-            <span class="text-xs text-muted">Changes take effect immediately upon saving.</span>
+            <span class="text-xs text-muted"><?= te('Changes take effect immediately upon saving.') ?></span>
             <button type="submit" class="btn btn--primary">
-                Save Dashboard Items
+                <?= te('Save Dashboard Items') ?>
             </button>
         </div>
     </div>
 </form>
 
 <script>
+var TL = <?= json_encode(['visible' => t('Visible'), 'hidden' => t('Hidden')], JSON_UNESCAPED_UNICODE) ?>;
 function toggleAllWidgets(show) {
     document.querySelectorAll('.widget-toggle-select').forEach(function(sel) {
         sel.value = show ? '1' : '0';
@@ -130,10 +131,10 @@ function updateStatusBadge(selectEl) {
     var badge = tr.querySelector('.status-chip');
     if (selectEl.value === '1') {
         badge.className = 'badge badge--success status-chip';
-        badge.textContent = 'Visible';
+        badge.textContent = TL.visible;
     } else {
         badge.className = 'badge badge--neutral status-chip';
-        badge.textContent = 'Hidden';
+        badge.textContent = TL.hidden;
     }
 }
 </script>

@@ -5,10 +5,11 @@
  * Variables: $institutes, $classes, $errors, $old
  */
 
-$institutes = $institutes ?? [];
-$classes    = $classes ?? [];
-$errors     = $errors ?? [];
-$old        = $old ?? [];
+$institutes  = $institutes ?? [];
+$classes     = $classes ?? [];
+$errors      = $errors ?? [];
+$old         = $old ?? [];
+$fromInquiry = $fromInquiry ?? null;
 ?>
 
 <?php include __DIR__ . '/../components/breadcrumb.php'; ?>
@@ -16,6 +17,20 @@ $old        = $old ?? [];
 <div class="page-header">
     <h1 class="page-header__title"><?= te('Register New Student') ?></h1>
 </div>
+
+<?php if ($fromInquiry !== null): ?>
+    <div class="flash mb-2" style="background:#EFF6FF; border:1px solid #BFDBFE; color:#1E3A8A; display:flex; gap:.5rem; align-items:flex-start;">
+        <span>&#9432;</span>
+        <div>
+            <strong><?= te('Filled in from an enrolment inquiry.') ?></strong>
+            <?php if (!empty($fromInquiry['grade'])): ?> <?= te('Requested grade:') ?> <strong><?= htmlspecialchars((string) $fromInquiry['grade'], ENT_QUOTES, 'UTF-8') ?></strong> --<?php endif; ?>
+            <?= te('check the class list matches, then set a class and save to actually create the login.') ?>
+            <?php if (!empty($fromInquiry['message'])): ?>
+                <div class="text-sm text-muted" style="margin-top:.3rem; white-space:pre-wrap;"><?= htmlspecialchars((string) $fromInquiry['message'], ENT_QUOTES, 'UTF-8') ?></div>
+            <?php endif; ?>
+        </div>
+    </div>
+<?php endif; ?>
 
 <?php if (!empty($errors)): ?>
     <div class="flash flash--error mb-2">
@@ -157,12 +172,27 @@ $old        = $old ?? [];
 </form>
 
 <script>
-// AJAX load classes when institute changes
+var TL = <?= json_encode([
+    'selectInstitute' => te('Select an institute to see available classes.'),
+    'noClasses'       => te('No classes available for this institute.'),
+    'fullPayment'     => te('Full Payment'),
+    'failedLoad'      => te('Failed to load classes. Please try again.'),
+], JSON_UNESCAPED_UNICODE) ?>;
+</script>
+<script>
+// AJAX load classes when institute changes (and once on load if an inquiry
+// prefilled a branch already, so the right branch's classes show up without
+// the admin having to re-pick the institute).
+<?php if (!empty($old['institute_id'])): ?>
+window.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('institute_id').dispatchEvent(new Event('change'));
+});
+<?php endif; ?>
 document.getElementById('institute_id').addEventListener('change', function () {
     var instituteId = this.value;
     var container = document.getElementById('classCheckboxes');
     if (!instituteId) {
-        container.innerHTML = '<p class="text-muted text-sm">Select an institute first to see available classes.</p>';
+        container.innerHTML = '<p class="text-muted text-sm">' + TL.selectInstitute + '</p>';
         return;
     }
     container.innerHTML = '<div class="spinner-overlay"><div class="spinner spinner--sm"></div></div>';
@@ -173,7 +203,7 @@ document.getElementById('institute_id').addEventListener('change', function () {
     .then(function (res) { return res.json(); })
     .then(function (classes) {
         if (!classes.length) {
-            container.innerHTML = '<p class="text-muted text-sm">No classes available for this institute.</p>';
+            container.innerHTML = '<p class="text-muted text-sm">' + TL.noClasses + '</p>';
             return;
         }
         var html = '';
@@ -186,7 +216,7 @@ document.getElementById('institute_id').addEventListener('change', function () {
                 + cls.name + '<span class="text-muted text-sm">' + fee + '</span>'
                 + '</label>'
                 + '<select name="scholarship_type[' + cls.id + ']" class="form-control" style="width:auto;min-width:160px;">'
-                + '<option value="full_payment">Full Payment</option>'
+                + '<option value="full_payment">' + TL.fullPayment + '</option>'
                 + '<option value="half_payment">Half Payment (50%)</option>'
                 + '<option value="free_card">Free Card (100%)</option>'
                 + '</select>'
@@ -195,7 +225,7 @@ document.getElementById('institute_id').addEventListener('change', function () {
         container.innerHTML = html;
     })
     .catch(function () {
-        container.innerHTML = '<p class="text-muted text-sm">Failed to load classes. Please try again.</p>';
+        container.innerHTML = '<p class="text-muted text-sm">' + TL.failedLoad + '</p>';
     });
 });
 </script>

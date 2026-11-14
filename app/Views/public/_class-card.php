@@ -8,12 +8,15 @@
             <span class="ts-badge"><?= te('Physical class') ?></span>
         <?php endif; ?>
     </div>
-    <h3><?= $e($c['class_name']) ?></h3>
+    <h3><?= $e(te($c['class_name'])) ?></h3>
     <div class="ts-muted">&#128205; <?= $e($c['branch_name']) ?><?= !empty($c['room']) ? ' &middot; ' . $e($c['room']) : '' ?></div>
     <div class="ts-muted">&#128197; <?= $e(site_days($c['schedule_days'])) ?><?= !empty($c['start_time']) ? ' &middot; ' . $e(site_time($c['start_time'])) . (!empty($c['end_time']) ? ' - ' . $e(site_time($c['end_time'])) : '') : '' ?></div>
-    <?php if (!empty($c['teacher_name'])): ?><div class="ts-muted">&#128105;&#8205;&#127979; <?= $e($c['teacher_name']) ?></div><?php endif; ?>
+    <?php if (!empty($c['teacher_name'])): ?><div class="ts-muted">&#128105;&#8205;&#127979; <?= $e(te($c['teacher_name'])) ?></div><?php endif; ?>
     <div style="margin-top:.6rem; display:flex; justify-content:space-between; align-items:center; gap:.5rem; flex-wrap:wrap;">
         <strong style="color:#1D4ED8;"><?= $c['public_fee'] !== null ? te('Rs. {n} a month', ['n' => number_format((float) $c['public_fee'], 0)]) : te('Ask about fees') ?></strong>
-        <a class="ts-btn ts-btn--line" style="padding:.4rem .85rem; font-size:.82rem;" href="<?= BASE_URL ?>/?grade=<?= $e((string) preg_replace('/\D+/', '', (string) $c['grade'])) ?>&branch=<?= (int) $c['institute_id'] ?>#inquiry"><?= te('Enquire') ?></a>
+        <div style="display:flex; gap:.4rem; flex-wrap:wrap;">
+            <a class="ts-btn ts-btn--line" style="padding:.4rem .85rem; font-size:.82rem;" href="<?= BASE_URL ?>/?grade=<?= $e((string) preg_replace('/\D+/', '', (string) $c['grade'])) ?>&branch=<?= (int) $c['institute_id'] ?>#inquiry"><?= te('Enquire') ?></a>
+            <a class="ts-btn ts-btn--blue" style="padding:.4rem .85rem; font-size:.82rem;" href="<?= BASE_URL ?>/enroll?class=<?= (int) $c['id'] ?>"><?= te('Enrol now') ?></a>
+        </div>
     </div>
 </div>
