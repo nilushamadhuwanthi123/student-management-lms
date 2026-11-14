@@ -70,7 +70,7 @@ class ReportController extends BaseController
         // Export to CSV if requested
         if (($_GET['export'] ?? '') === 'csv') {
             $this->exportCsv('attendance_report_' . date('Ymd') . '.csv', [
-                'Date', 'Class Name', 'Subject', 'Institute', 'Present Count', 'Late Count', 'Absent Count', 'Red Flags', 'Total Logged'
+                t('Date'), t('Class Name'), t('Subject'), t('Institute'), t('Present Count'), t('Late Count'), t('Absent Count'), t('Red Flags'), t('Total Logged')
             ], array_map(function($r) {
                 return [
                     $r['date'], $r['class_name'] ?? '-', $r['subject'] ?? '-', $r['institute_name'] ?? '-',
@@ -106,12 +106,12 @@ class ReportController extends BaseController
 
         if (($_GET['export'] ?? '') === 'csv') {
             $this->exportCsv('class_report_' . date('Ymd') . '.csv', [
-                'Class Name', 'Subject', 'Medium', 'Grade', 'Teacher', 'Institute', 'Room', 'Monthly Fee', 'Students Count', 'Status'
+                t('Class Name'), t('Subject'), t('Medium'), t('Grade'), t('Teacher'), t('Institute'), t('Room'), t('Monthly Fee'), t('Students Count'), t('Status')
             ], array_map(function($c) {
                 return [
                     $c['class_name'], $c['subject'], $c['medium'] ?? '-', $c['grade'] ?? '-',
                     $c['teacher_name'] ?? '-', $c['institute_name'] ?? '-', $c['room'] ?? '-',
-                    $c['monthly_fee'], $c['student_count'] ?? 0, ucfirst($c['status'] ?? 'active')
+                    $c['monthly_fee'], $c['student_count'] ?? 0, t(ucfirst($c['status'] ?? 'active'))
                 ];
             }, $classes));
         }
@@ -147,12 +147,12 @@ class ReportController extends BaseController
 
         if (($_GET['export'] ?? '') === 'csv') {
             $this->exportCsv('user_report_' . date('Ymd') . '.csv', [
-                'User ID', 'Role', 'Full Name', 'Email', 'Phone 1', 'WhatsApp', 'Institute', 'Status', 'Joined Date'
+                t('User ID'), t('Role'), t('Full Name'), t('Email'), t('Phone 1'), t('WhatsApp'), t('Institute'), t('Status'), t('Joined Date')
             ], array_map(function($u) {
                 return [
-                    $u['user_id_display'], ucfirst($u['role']), $u['full_name'], $u['email'] ?? '-',
+                    $u['user_id_display'], t(ucfirst($u['role'])), $u['full_name'], $u['email'] ?? '-',
                     $u['phone1'], $u['whatsapp'] ?? '-', $u['coordinated_institute_name'] ?? $u['primary_institute_name'] ?? '-',
-                    ucfirst($u['status']), date('Y-m-d', strtotime($u['created_at']))
+                    t(ucfirst($u['status'])), date('Y-m-d', strtotime($u['created_at']))
                 ];
             }, $users));
         }
@@ -229,7 +229,7 @@ class ReportController extends BaseController
 
         if (($_GET['export'] ?? '') === 'csv') {
             $this->exportCsv('payment_summary_' . $month . '.csv', [
-                'Class Name', 'Subject', 'Institute', 'Teacher', 'Enrolled Students', 'Collected (Rs.)', 'Pending (Rs.)', 'Teacher Share (Rs.)', 'Institute Share (Rs.)'
+                t('Class Name'), t('Subject'), t('Institute'), t('Teacher'), t('Enrolled Students'), t('Collected (Rs.)'), t('Pending (Rs.)'), t('Teacher Share (Rs.)'), t('Institute Share (Rs.)')
             ], array_map(function($r) {
                 $col = (float) $r['total_collected'];
                 $split = (float) ($r['teacher_revenue_split'] ?? 70);
@@ -292,11 +292,11 @@ class ReportController extends BaseController
 
         if (($_GET['export'] ?? '') === 'csv') {
             $this->exportCsv('student_status_report_' . date('Ymd') . '.csv', [
-                'Student ID', 'Full Name', 'Email', 'Phone 1', 'WhatsApp', 'Status', 'Classes Count', 'Joined Date'
+                t('Student ID'), t('Full Name'), t('Email'), t('Phone 1'), t('WhatsApp'), t('Status'), t('Classes Count'), t('Joined Date')
             ], array_map(function($s) {
                 return [
                     $s['student_id_display'], $s['full_name'], $s['email'] ?? '-',
-                    $s['phone1'] ?? '-', $s['whatsapp'] ?? '-', ucfirst($s['status']),
+                    $s['phone1'] ?? '-', $s['whatsapp'] ?? '-', t(ucfirst($s['status'])),
                     $s['enrolled_classes_count'], date('Y-m-d', strtotime($s['created_at']))
                 ];
             }, $students));

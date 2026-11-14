@@ -13,12 +13,12 @@ $classes = $classes ?? [];
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">QR Scan Entrance Terminal</h1>
-        <p class="text-sm text-muted">Automated student gate &amp; classroom attendance scanner</p>
+        <h1 class="page-header__title"><?= te('QR Scan Entrance Terminal') ?></h1>
+        <p class="text-sm text-muted"><?= te('Automated student gate & classroom attendance scanner') ?></p>
     </div>
     <div class="page-header__actions">
         <a href="<?= BASE_URL ?>/attendance" class="btn btn--ghost">
-            &larr; View Attendance Sheet
+            &larr; <?= te('View Attendance Sheet') ?>
         </a>
     </div>
 </div>
@@ -36,22 +36,22 @@ $classes = $classes ?? [];
         <div class="card mb-3" style="background:var(--surface); border:1px solid var(--border);">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
                 <div style="flex:1; min-width:240px;">
-                    <label class="form-label text-xs" for="terminalClassSelector">Active Classroom / Session:</label>
+                    <label class="form-label text-xs" for="terminalClassSelector"><?= te('Active Classroom / Session:') ?></label>
                     <select id="terminalClassSelector" class="form-control form-control--sm">
-                        <option value="">-- All Active Classes / Entrance Gate --</option>
+                        <option value=""><?= te('-- All Active Classes / Entrance Gate --') ?></option>
                         <?php foreach ($classes as $c): ?>
                             <option value="<?= (int) $c['id'] ?>">
-                                <?= htmlspecialchars($c['class_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars(te($c['class_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="d-flex items-center gap-1">
                     <span id="scannerStatusBadge" class="badge badge--success" style="padding:0.4rem 0.8rem; font-size:0.8rem;">
-                        &#9679; Terminal Ready
+                        &#9679; <?= te('Terminal Ready') ?>
                     </span>
-                    <button type="button" class="btn btn--ghost btn--sm" id="testAudioBtn" onclick="testAlertAudio()" title="Test 5s Loud Alert Sound">
-                        &#128266; Test Siren
+                    <button type="button" class="btn btn--ghost btn--sm" id="testAudioBtn" onclick="testAlertAudio()" title="<?= htmlspecialchars(te('Test 5s Loud Alert Sound'), ENT_QUOTES, 'UTF-8') ?>">
+                        &#128266; <?= te('Test Siren') ?>
                     </button>
                 </div>
             </div>
@@ -67,26 +67,26 @@ $classes = $classes ?? [];
                             type="text" 
                             id="scanInput" 
                             class="form-control" 
-                            placeholder="Scan QR Card or Enter Student ID (e.g. STU20260001)..." 
+                            placeholder="<?= htmlspecialchars(te('Scan QR Card or Enter Student ID (e.g. STU20260001)...'), ENT_QUOTES, 'UTF-8') ?>" 
                             autofocus 
                             autocomplete="off"
                             style="font-size:1.1rem; font-family:monospace; padding:0.75rem 1rem;"
                         >
                         <button type="submit" class="btn btn--primary" style="padding:0 1.5rem; font-weight:700;">
-                            Verify
+                            <?= te('Verify') ?>
                         </button>
                     </div>
                 </form>
                 <div class="form-hint text-xs mt-1" style="color:var(--text-muted);">
-                    Scanner hardware will automatically trigger on barcode / QR swipe.
+                    <?= te('Scanner hardware will automatically trigger on barcode / QR swipe.') ?>
                 </div>
             </div>
 
             <!-- Virtual Scanner Target Graphic -->
             <div id="scannerTargetBox" style="width:260px; height:260px; margin:0 auto; border:3px dashed var(--primary); border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--surface-sunken); transition:all 0.3s ease;">
                 <div style="font-size:3rem; margin-bottom:0.5rem;">&#128247;</div>
-                <strong style="color:var(--text); font-size:0.95rem;">Present QR Code</strong>
-                <span class="text-xs text-muted mt-1">Ready for input</span>
+                <strong style="color:var(--text); font-size:0.95rem;"><?= te('Present QR Code') ?></strong>
+                <span class="text-xs text-muted mt-1"><?= te('Ready for input') ?></span>
             </div>
 
             <!-- Last Scanned Result Overlay Card -->
@@ -109,15 +109,15 @@ $classes = $classes ?? [];
     <!-- RIGHT: LIVE SCAN LOGS PANEL -->
     <div class="card" style="display:flex; flex-direction:column; height:fit-content; max-height:650px;">
         <div class="d-flex justify-between items-center mb-2 pb-2" style="border-bottom:1px solid var(--border);">
-            <h3 style="margin:0; font-size:1rem;">Live Terminal Feed</h3>
-            <span class="text-xs text-muted" id="feedCount">0 Scans</span>
+            <h3 style="margin:0; font-size:1rem;"><?= te('Live Terminal Feed') ?></h3>
+            <span class="text-xs text-muted" id="feedCount">0 <?= te('Scans') ?></span>
         </div>
 
         <div id="terminalFeedList" style="overflow-y:auto; display:flex; flex-direction:column; gap:0.6rem; padding-right:0.25rem; flex:1;">
             <div class="empty-state" id="emptyFeedState" style="padding:2rem 1rem;">
                 <div class="empty-state__icon">&#128225;</div>
-                <div class="empty-state__title" style="font-size:0.9rem;">Waiting for scans...</div>
-                <div class="empty-state__text text-xs">Student attendance scans will appear here live.</div>
+                <div class="empty-state__title" style="font-size:0.9rem;"><?= te('Waiting for scans...') ?></div>
+                <div class="empty-state__text text-xs"><?= te('Student attendance scans will appear here live.') ?></div>
             </div>
         </div>
     </div>
@@ -133,28 +133,40 @@ $classes = $classes ?? [];
         </div>
 
         <h2 style="color:#b91c1c; font-size:1.5rem; margin:0 0 0.5rem 0;" id="deactModalHeader">
-            Account Deactivated
+            <?= te('Account Deactivated') ?>
         </h2>
 
         <div id="deactStudentDetails" style="padding:0.75rem; background:#fef2f2; border-radius:8px; border:1px solid #fecaca; margin-bottom:1rem; display:inline-block; font-weight:700; color:#991b1b;">
-            <span id="deactStudentName">Student Name</span> &bull; <code id="deactStudentID">STU20260001</code>
+            <span id="deactStudentName"><?= te('Student Name') ?></span> &bull; <code id="deactStudentID">STU20260001</code>
         </div>
 
         <p style="color:#4b5563; font-size:0.95rem; line-height:1.5; margin:0 0 1.5rem 0;" id="deactModalBody">
-            Your account has been automatically deactivated because the monthly fee was not received within the 21-day grace period. Please make a payment to reactivate your access.
+            <?= te('Your account has been automatically deactivated because the monthly fee was not received within the 21-day grace period. Please make a payment to reactivate your access.') ?>
         </p>
 
         <div style="padding:0.5rem; background:#fee2e2; border-radius:6px; color:#991b1b; font-weight:700; font-size:0.8125rem; margin-bottom:1.5rem;">
-            &#9873; Attendance Marked with RED FLAG in System Logs
+            &#9873; <?= te('Attendance Marked with RED FLAG in System Logs') ?>
         </div>
 
         <button type="button" class="btn btn--danger" style="padding:0.75rem 2rem; font-size:1rem; font-weight:700; width:100%;" onclick="closeDeactivatedModal()">
-            Acknowledge &amp; Silence Siren
+            <?= te('Acknowledge & Silence Siren') ?>
         </button>
     </div>
 </div>
 
 <script>
+// Labels the JS below swaps in dynamically -- translated once here so the
+// terminal reads correctly in Sinhala instead of hard-coded English.
+var TL = <?= json_encode([
+    'present'     => t('Present'),
+    'redFlag'     => t('RED FLAG'),
+    'scans'       => t('Scans'),
+    'student'     => t('Student'),
+    'scanError'   => t('Scan error.'),
+    'sirenTest'   => t('5-Second Siren Test playing!'),
+    'accountDeactivated' => t('Account Deactivated'),
+], JSON_UNESCAPED_UNICODE) ?>;
+
 // Web Audio API 5-Second Loud Siren Alert Generator
 var audioCtx = null;
 var sirenInterval = null;
@@ -225,7 +237,7 @@ function playSuccessChime() {
 
 function testAlertAudio() {
     playLoudDeactivatedAlertSound();
-    alert('5-Second Siren Test playing!');
+    alert(TL.sirenTest);
 }
 
 // Handle Form Submission
@@ -270,7 +282,7 @@ function processScan(code, classId) {
             showScanSuccess(data);
             addFeedItem(data, 'present');
         } else {
-            alert(data.message || 'Scan error.');
+            alert(data.message || TL.scanError);
         }
     })
     .catch(function(err) {
@@ -282,8 +294,8 @@ function processScan(code, classId) {
 function showDeactivatedModal(data) {
     var modal = document.getElementById('deactivatedAlertModal');
     var s = data.student || {};
-    document.getElementById('deactModalHeader').textContent = data.header || 'Account Deactivated';
-    document.getElementById('deactStudentName').textContent = s.full_name || 'Student';
+    document.getElementById('deactModalHeader').textContent = data.header || TL.accountDeactivated;
+    document.getElementById('deactStudentName').textContent = s.full_name || TL.student;
     document.getElementById('deactStudentID').textContent = s.student_id_display || '';
     document.getElementById('deactModalBody').textContent = data.message || '';
     modal.style.display = 'flex';
@@ -302,8 +314,8 @@ function showScanSuccess(data) {
     card.style.border = '1px solid #bbf7d0';
 
     document.getElementById('resStatusBadge').className = 'badge badge--success';
-    document.getElementById('resStatusBadge').textContent = 'Present &bull; ' + (data.check_in_time || '');
-    document.getElementById('resName').textContent = s.full_name || 'Student';
+    document.getElementById('resStatusBadge').textContent = TL.present + ' • ' + (data.check_in_time || '');
+    document.getElementById('resName').textContent = s.full_name || TL.student;
     document.getElementById('resId').textContent = s.student_id_display || '';
     document.getElementById('resMsg').textContent = data.message || '';
 
@@ -323,7 +335,7 @@ function addFeedItem(data, status) {
     var list = document.getElementById('terminalFeedList');
     var s = data.student || {};
     scanCount++;
-    document.getElementById('feedCount').textContent = scanCount + ' Scans';
+    document.getElementById('feedCount').textContent = scanCount + ' ' + TL.scans;
 
     var isRed = (status === 'red_flag');
     var item = document.createElement('div');
@@ -336,9 +348,9 @@ function addFeedItem(data, status) {
 
     item.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>${s.full_name || 'Student'}</strong>
+            <strong>${s.full_name || TL.student}</strong>
             <span class="badge ${isRed ? 'badge--danger' : 'badge--success'}" style="font-size:0.65rem;">
-                ${isRed ? 'RED FLAG' : 'Present'}
+                ${isRed ? TL.redFlag : TL.present}
             </span>
         </div>
         <div class="text-xs text-muted" style="display:flex; justify-content:space-between; margin-top:0.2rem;">

@@ -14,10 +14,9 @@
         </svg>
     </div>
 
-    <h1 class="login-card__title">Set Your New Password</h1>
+    <h1 class="login-card__title"><?= te('Set Your New Password') ?></h1>
     <p class="login-card__subtitle">
-        For security, you must change your password on first login.
-        Choose a strong password that you have not used before.
+        <?= te('For security, you must change your password on first login. Choose a strong password that you have not used before.') ?>
     </p>
 
     <form action="<?= BASE_URL ?>/first-login-password" method="POST" novalidate>
@@ -25,17 +24,17 @@
 
         <div class="form-group">
             <label class="form-label" for="new_password">
-                New Password <span class="required">*</span>
+                <?= te('New Password') ?> <span class="required">*</span>
             </label>
             <div style="position: relative;">
                 <input type="password" id="new_password" name="new_password"
                        class="form-control <?= !empty($errors['new_password']) ? 'is-invalid' : '' ?>"
-                       placeholder="Minimum 8 characters"
+                       placeholder="<?= te('Minimum 8 characters') ?>"
                        autocomplete="new-password" required
                        style="padding-right: 2.75rem;">
                 <button type="button" class="toggle-pw-btn"
                         style="position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem; font-size: 1.1rem;"
-                        aria-label="Show password" tabindex="-1">
+                        aria-label="<?= te('Show password') ?>" tabindex="-1">
                     <span class="pw-icon-show">&#128065;</span>
                     <span class="pw-icon-hide" style="display:none;">&#128064;</span>
                 </button>
@@ -58,17 +57,17 @@
 
         <div class="form-group">
             <label class="form-label" for="confirm_password">
-                Confirm Password <span class="required">*</span>
+                <?= te('Confirm Password') ?> <span class="required">*</span>
             </label>
             <div style="position: relative;">
                 <input type="password" id="confirm_password" name="new_password_confirmation"
                        class="form-control <?= !empty($errors['new_password_confirmation']) ? 'is-invalid' : '' ?>"
-                       placeholder="Re-enter your new password"
+                       placeholder="<?= te('Re-enter your new password') ?>"
                        autocomplete="new-password" required
                        style="padding-right: 2.75rem;">
                 <button type="button" class="toggle-pw-btn"
                         style="position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem; font-size: 1.1rem;"
-                        aria-label="Show password" tabindex="-1">
+                        aria-label="<?= te('Show password') ?>" tabindex="-1">
                     <span class="pw-icon-show">&#128065;</span>
                     <span class="pw-icon-hide" style="display:none;">&#128064;</span>
                 </button>
@@ -79,7 +78,7 @@
         </div>
 
         <button type="submit" class="btn btn--primary btn--block btn--lg" style="margin-top: 0.5rem;">
-            Set Password &amp; Continue
+            <?= te('Set Password & Continue') ?>
         </button>
     </form>
 </div>

@@ -150,7 +150,9 @@ class CalendarController extends BaseController
             $this->flash('success', 'The calendar entry was updated.');
         } else {
             $this->insertEvent($data);
-            $this->flash('success', 'Added to the calendar. Reminders go out a day before and an hour before.');
+            $newId = (int) $this->db->lastInsertId();
+            $this->notifyParentsNow($data, $newId);
+            $this->flash('success', 'Added to the calendar. Parents and students have been notified.');
         }
 
         $this->redirect('/calendar?month=' . substr($data['event_date'], 0, 7));
@@ -468,5 +470,79 @@ class CalendarController extends BaseController
             "SELECT id, name FROM institutes WHERE status = 'active'"
             . \App\Services\BranchScope::current()->instituteSql('id') . " ORDER BY name"
         )->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Send immediate in-app notification to parents and students
+     * of the affected class when the teacher posts a new calendar event.
+     */
+    private function notifyParentsNow(array $data, int $eventId): void
+    {
+        $classId = $data['class_id'] ?? null;
+        $notification = new \App\Models\Notification();
+
+        $typeLabel = match ($data['event_type']) {
+            'test'             => 'Test',
+            'exam'             => 'Exam',
+            'extra_class'      => 'Extra class',
+            'cancelled_class'  => 'Class cancelled',
+            'holiday'          => 'Holiday',
+            'notice'           => 'Notice',
+            default            => 'Event',
+        };
+
+        $title = "New {$typeLabel}: {$data['title']}";
+        $body  = date('l j F', strtotime($data['event_date']));
+        if (!empty($data['start_time'])) {
+            $body .= ' at ' . $data['start_time'];
+        }
+        if (!empty($data['syllabus'])) {
+            $body .= ' — ' . $data['syllabus'];
+        }
+
+        $recipients = [];
+
+        if ($classId !== null) {
+            $stmt = $this->db->prepare(
+                "SELECT s.user_id FROM enrollments e
+                 JOIN students s ON s.id = e.student_id AND s.status = 'active'
+                 WHERE e.class_id = :cid AND e.enrollment_status = 'active'"
+            );
+            $stmt->execute([':cid' => $classId]);
+            $studentUserIds = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+            foreach ($studentUserIds as $uid) {
+                if ($uid) $recipients[] = (int) $uid;
+            }
+
+            // Parents of those students
+            if ($studentUserIds) {
+                $inList = implode(',', array_map('intval', $studentUserIds));
+                $parentIds = $this->db->query(
+                    "SELECT p.user_id FROM parents p
+                     JOIN students s ON s.id = p.student_id
+                     WHERE s.user_id IN ({$inList}) AND p.status = 'active' AND p.user_id IS NOT NULL"
+                )->fetchAll(\PDO::FETCH_COLUMN);
+                foreach ($parentIds as $pid) {
+                    if ($pid) $recipients[] = (int) $pid;
+                }
+            }
+        }
+
+        $recipients = array_unique($recipients);
+
+        foreach ($recipients as $userId) {
+            try {
+                $notification->send(
+                    recipientId:   $userId,
+                    recipientType: 'user',
+                    title:         $title,
+                    body:          $body,
+                    type:          'info'
+                );
+            } catch (\Throwable $e) {
+                error_log("CalendarController::notifyParentsNow failed for user {$userId}: " . $e->getMessage());
+            }
+        }
     }
 }

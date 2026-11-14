@@ -29,14 +29,28 @@ const LANG_COOKIE = 'lms_lang';
 
 /**
  * The language for this request: 'en' or 'si'.
+ *
+ * Once someone has picked a language on this device (the cookie is set),
+ * that choice is respected everywhere, same as always. Before that choice
+ * exists, the DEFAULT differs by who is looking: the public website and
+ * the student/parent portal default to Sinhala (the client's own
+ * instruction -- families come first), but the staff/admin area (any
+ * logged-in 'user' -- super admin, admin, coordinator, teacher, staff)
+ * defaults to English, their own working language. Anyone can still
+ * switch either way with the EN/Si toggle; this only decides what shows
+ * before they have.
  */
 function lang_current(): string
 {
     static $current = null;
 
     if ($current === null) {
-        $choice = $_COOKIE[LANG_COOKIE] ?? 'si';
-        $current = in_array($choice, LANG_SUPPORTED, true) ? $choice : 'si';
+        if (isset($_COOKIE[LANG_COOKIE]) && in_array($_COOKIE[LANG_COOKIE], LANG_SUPPORTED, true)) {
+            $current = $_COOKIE[LANG_COOKIE];
+        } else {
+            $isStaff = function_exists('session_get') && session_get('user_type') === 'user';
+            $current = $isStaff ? 'en' : 'si';
+        }
     }
 
     return $current;
@@ -92,6 +106,45 @@ function lang_translate_to(string $text, string $code): string
 }
 
 /**
+ * Admin-entered overrides for any t()/te() text, keyed by the exact source
+ * text (the English sentence passed to t()/te() in the view) -- the "whole
+ * site editable from the CMS" mechanism. Every fixed piece of wording across
+ * the entire site, every role, already passes through t()/te(), so letting
+ * the super admin override right here (Settings > Translations) covers all
+ * of it from one screen, with no need to touch each view individually.
+ *
+ * Loaded once per request and cached. Any failure (migration not run yet,
+ * DB hiccup) is swallowed and treated as "no overrides" -- a problem here
+ * must never be able to take the whole site's text down with it.
+ *
+ * @return array<string, array<string, string>> [lang => [source_text => value]]
+ */
+function lang_overrides(): array
+{
+    static $overrides = null;
+    if ($overrides !== null) {
+        return $overrides;
+    }
+
+    $overrides = ['en' => [], 'si' => []];
+    try {
+        if (class_exists('Database')) {
+            $rows = Database::connect()
+                ->query('SELECT source_text, lang, value FROM translation_overrides')
+                ->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as $row) {
+                $overrides[$row['lang']][$row['source_text']] = $row['value'];
+            }
+        }
+    } catch (\Throwable $e) {
+        // Table not migrated yet, DB not reachable, etc. -- fall back to the
+        // static dictionary/source text only, exactly as before this existed.
+    }
+
+    return $overrides;
+}
+
+/**
  * Translate a sentence, then fill its {placeholders}.
  *
  * Returns plain text. Use te() when writing straight into HTML.
@@ -100,7 +153,12 @@ function lang_translate_to(string $text, string $code): string
  */
 function t(string $text, array $vars = []): string
 {
-    if (lang_current() === 'si') {
+    $lang = lang_current();
+    $override = lang_overrides()[$lang][$text] ?? null;
+
+    if ($override !== null) {
+        $text = $override;
+    } elseif ($lang === 'si') {
         $text = lang_dictionary()[$text] ?? $text;
     }
 

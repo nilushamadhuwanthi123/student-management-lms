@@ -8,6 +8,8 @@ use App\Middleware\AuthMiddleware;
 use App\Middleware\RateLimiter;
 use App\Services\AccountService;
 use App\Services\BranchScope;
+use App\Services\EmailService;
+use App\Services\SmsService;
 use App\Services\WhatsAppService;
 
 /**
@@ -107,6 +109,67 @@ class AccountController extends BaseController
             'items'     => is_array($items) ? $items : [],
             'backUrl'   => $back,
         ]);
+    }
+
+    /**
+     * POST /accounts/issued/send (AJAX, JSON)
+     *
+     * Sends one already-shown credential item by SMS or email, as an
+     * alternative to the office reading it out by phone or in person.
+     * The secret cannot be re-read from the session (issued() clears it
+     * on load), so the issued.php page posts the item's own fields back
+     * here -- the same values already visible on screen to this admin,
+     * nothing new is exposed.
+     */
+    public function sendIssued(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole(array_merge(self::ISSUER_ROLES, [AuthMiddleware::ROLE_STAFF]));
+        header('Content-Type: application/json');
+        verifyCsrfToken(); // exits with 403 for a script call if the token is stale/missing
+
+        $via = (string) ($_POST['via'] ?? '');
+        $kind = (string) ($_POST['kind'] ?? 'password');
+        $name = trim((string) ($_POST['name'] ?? ''));
+        $loginId = trim((string) ($_POST['login_id'] ?? ''));
+        $secret = (string) ($_POST['secret'] ?? '');
+        $expiresAt = trim((string) ($_POST['expires_at'] ?? ''));
+
+        if (!in_array($via, ['sms', 'email'], true) || $secret === '' || $loginId === '') {
+            echo json_encode(['ok' => false, 'message' => t('Missing details. Reload the page and try again.')]);
+            return;
+        }
+
+        $body = self::credentialMessage($kind, $name, $loginId, $secret);
+
+        if ($via === 'sms') {
+            $phone = trim((string) ($_POST['phone'] ?? ''));
+            if ($phone === '') {
+                echo json_encode(['ok' => false, 'message' => t('No phone number on file for this person.')]);
+                return;
+            }
+            $sent = (new SmsService())->send($phone, $body);
+            $message = $sent
+                ? t('Sent by SMS.')
+                : t('Could not send by SMS. Check the SMS gateway in Settings, or use the manual option instead.');
+        } else {
+            $email = trim((string) ($_POST['email'] ?? ''));
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode(['ok' => false, 'message' => t('No valid email address on file for this person.')]);
+                return;
+            }
+            $sent = (new EmailService())->send($email, t('Your class portal login details'), $body);
+            $message = $sent
+                ? t('Sent by email.')
+                : t('Could not send by email. Email sending may not be set up on this server, or no "From" address is configured. Use the manual option instead.');
+        }
+
+        // The secret itself never goes into the audit log.
+        $this->audit((int) session_get('user_id'), 'user', 'send_issued_credential', 'account', 0, [
+            'via' => $via, 'kind' => $kind, 'sent' => $sent,
+        ]);
+
+        echo json_encode(['ok' => (bool) $sent, 'message' => $message]);
     }
 
     /** GET /forgot-password */
@@ -268,6 +331,25 @@ class AccountController extends BaseController
             return t('That password is not allowed. Choose your own password.');
         }
         return null;
+    }
+
+    /**
+     * The exact wording sent for a credential, shared by every issuer so
+     * a parent sees the same message whether it went out from this
+     * screen's "Send by..." buttons, the enrolment-approval auto-send,
+     * or the WhatsApp click-to-chat link on the issued.php page.
+     */
+    public static function credentialMessage(string $kind, string $name, string $loginId, string $secret): string
+    {
+        return $kind === 'reset_code'
+            ? t(
+                'Hello {name}. Your reset code for the class portal is {code}. Open the login page, choose "Forgot password?", and use login ID {id} with this code within 30 minutes.',
+                ['name' => $name !== '' ? $name : $loginId, 'code' => $secret, 'id' => $loginId]
+            )
+            : t(
+                'Hello {name}. Your class portal login: ID {id}, temporary password {password}. You must choose your own password the first time you log in.',
+                ['name' => $name !== '' ? $name : $loginId, 'id' => $loginId, 'password' => $secret]
+            );
     }
 
     private function issue(string $type, int $id, string $loginId, string $name, string $back): void

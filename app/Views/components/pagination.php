@@ -35,7 +35,7 @@ if ($endPage - $startPage < $maxVisible - 1) {
 ?>
 
 <div class="pagination__info">
-    Page <?= $currentPage ?> of <?= $totalPages ?>
+    <?= te('Page {current} of {total}', ['current' => $currentPage, 'total' => $totalPages]) ?>
 </div>
 
 <nav aria-label="Pagination">
@@ -44,10 +44,10 @@ if ($endPage - $startPage < $maxVisible - 1) {
         <li>
             <?php if ($currentPage > 1): ?>
                 <a href="<?= $pageUrl($currentPage - 1) ?>" class="pagination__item" aria-label="Previous page">
-                    &laquo; Prev
+                    &laquo; <?= te('Prev') ?>
                 </a>
             <?php else: ?>
-                <span class="pagination__item disabled">&laquo; Prev</span>
+                <span class="pagination__item disabled">&laquo; <?= te('Prev') ?></span>
             <?php endif; ?>
         </li>
 
@@ -82,10 +82,10 @@ if ($endPage - $startPage < $maxVisible - 1) {
         <li>
             <?php if ($currentPage < $totalPages): ?>
                 <a href="<?= $pageUrl($currentPage + 1) ?>" class="pagination__item" aria-label="Next page">
-                    Next &raquo;
+                    <?= te('Next') ?> &raquo;
                 </a>
             <?php else: ?>
-                <span class="pagination__item disabled">Next &raquo;</span>
+                <span class="pagination__item disabled"><?= te('Next') ?> &raquo;</span>
             <?php endif; ?>
         </li>
     </ul>

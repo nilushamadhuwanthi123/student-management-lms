@@ -12,7 +12,7 @@ $baseUrl      = defined('BASE_URL') ? BASE_URL : '';
 
 <div class="page-header">
     <h1 class="page-header__title">
-        Pending Approvals
+        <?= te('Pending Approvals') ?>
         <?php if ($pendingCount > 0): ?>
             <span class="badge badge--pending" style="vertical-align:middle;font-size:0.875rem;"><?= (int) $pendingCount ?></span>
         <?php endif; ?>
@@ -24,21 +24,21 @@ $baseUrl      = defined('BASE_URL') ? BASE_URL : '';
         <?php foreach ($workflows as $wf): ?>
             <div class="approval-card animate-slide-up">
                 <div class="approval-card__header">
-                    <span class="approval-card__type"><?= htmlspecialchars($wf['type'] ?? 'Approval', ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="approval-card__type"><?= htmlspecialchars($wf['type'] ?? te('Approval'), ENT_QUOTES, 'UTF-8') ?></span>
                     <span class="approval-card__date"><?= htmlspecialchars($wf['created_at'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
-                <div class="approval-card__title"><?= htmlspecialchars($wf['student_name'] ?? 'Unknown Student', ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="approval-card__title"><?= htmlspecialchars($wf['student_name'] ?? te('Unknown Student'), ENT_QUOTES, 'UTF-8') ?></div>
                 <div class="approval-card__meta">
-                    Initiated by <strong><?= htmlspecialchars($wf['initiated_by_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong>
+                    <?= te('Initiated by') ?> <strong><?= htmlspecialchars($wf['initiated_by_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></strong>
                     <?php if (!empty($wf['reason'])): ?>
                         &mdash; <?= htmlspecialchars($wf['reason'], ENT_QUOTES, 'UTF-8') ?>
                     <?php endif; ?>
                 </div>
                 <?php if (!empty($wf['current_step'])): ?>
                     <div class="text-sm text-muted">
-                        Current step: <strong><?= (int) $wf['current_step'] ?>/<?= (int) ($wf['total_steps'] ?? 1) ?></strong>
+                        <?= te('Current step:') ?> <strong><?= (int) $wf['current_step'] ?>/<?= (int) ($wf['total_steps'] ?? 1) ?></strong>
                         <?php if (!empty($wf['current_approver'])): ?>
-                            (awaiting <?= htmlspecialchars($wf['current_approver'], ENT_QUOTES, 'UTF-8') ?>)
+                            (<?= te('awaiting') ?> <?= htmlspecialchars($wf['current_approver'], ENT_QUOTES, 'UTF-8') ?>)
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>
@@ -46,11 +46,11 @@ $baseUrl      = defined('BASE_URL') ? BASE_URL : '';
                     <form method="POST" action="<?= $baseUrl ?>/workflows/<?= (int) $wf['id'] ?>/approve" style="display:inline;">
                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
                         <button type="submit" class="btn btn--primary btn--sm" data-confirm="<?= te('Approve this workflow?') ?>">
-                            Approve
+                            <?= te('Approve') ?>
                         </button>
                     </form>
                     <button type="button" class="btn btn--danger btn--sm" onclick="openRejectModal(<?= (int) $wf['id'] ?>, '<?= htmlspecialchars($wf['student_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>')">
-                        Reject
+                        <?= te('Reject') ?>
                     </button>
                 </div>
             </div>
@@ -60,8 +60,8 @@ $baseUrl      = defined('BASE_URL') ? BASE_URL : '';
     <div class="card">
         <div class="empty-state">
             <div class="empty-state__icon">&#9989;</div>
-            <div class="empty-state__title">All caught up!</div>
-            <div class="empty-state__text">There are no pending approvals at the moment.</div>
+            <div class="empty-state__title"><?= te('All caught up!') ?></div>
+            <div class="empty-state__text"><?= te('There are no pending approvals at the moment.') ?></div>
         </div>
     </div>
 <?php endif; ?>
@@ -70,21 +70,21 @@ $baseUrl      = defined('BASE_URL') ? BASE_URL : '';
 <div class="modal-backdrop" id="rejectModal" aria-hidden="true">
     <div class="modal">
         <div class="modal__header">
-            <h3 class="modal__title">Reject Workflow</h3>
+            <h3 class="modal__title"><?= te('Reject Workflow') ?></h3>
             <button type="button" class="modal__close" onclick="closeModal('rejectModal')">&times;</button>
         </div>
         <form method="POST" id="rejectForm" action="">
             <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
             <div class="modal__body">
-                <p>Reject the workflow for <strong id="rejectStudentName"></strong>?</p>
+                <p><?= te('Reject the workflow for') ?> <strong id="rejectStudentName"></strong>?</p>
                 <div class="form-group">
-                    <label class="form-label" for="reject_reason">Reason <span class="required">*</span></label>
-                    <textarea id="reject_reason" name="reason" class="form-control" required placeholder="Provide a reason for rejection..."></textarea>
+                    <label class="form-label" for="reject_reason"><?= te('Reason') ?> <span class="required">*</span></label>
+                    <textarea id="reject_reason" name="reason" class="form-control" required placeholder="<?= te('Provide a reason for rejection...') ?>"></textarea>
                 </div>
             </div>
             <div class="modal__footer">
-                <button type="button" class="btn btn--ghost" onclick="closeModal('rejectModal')">Cancel</button>
-                <button type="submit" class="btn btn--danger">Reject</button>
+                <button type="button" class="btn btn--ghost" onclick="closeModal('rejectModal')"><?= te('Cancel') ?></button>
+                <button type="submit" class="btn btn--danger"><?= te('Reject') ?></button>
             </div>
         </form>
     </div>

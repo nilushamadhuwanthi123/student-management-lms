@@ -70,19 +70,19 @@ $quizzes = $quizzes ?? [];
                             <div class="text-sm text-muted">
                                 <?= date('F Y', strtotime($q['month_year'])) ?>
                                 <?php if (!empty($q['time_limit_minutes'])): ?>
-                                    &middot; <?= (int) $q['time_limit_minutes'] ?> min limit
+                                    &middot; <?= (int) $q['time_limit_minutes'] ?> <?= te('min limit') ?>
                                 <?php endif; ?>
                             </div>
                             <?php if ((int) $q['awaiting_marking'] > 0): ?>
                                 <div class="text-sm" style="color:var(--warning); font-weight:600; margin-top:.25rem;">
-                                    <?= (int) $q['awaiting_marking'] ?> paper<?= (int) $q['awaiting_marking'] === 1 ? '' : 's' ?>
+                                    <?= (int) $q['awaiting_marking'] ?> <?= te('paper') ?><?= (int) $q['awaiting_marking'] === 1 ? '' : 's' ?>
                                     <?= te('waiting on you') ?>
                                 </div>
                             <?php endif; ?>
                         </td>
                         <td class="text-sm">
                             <?= date('j M, g:i a', strtotime($q['opens_at'])) ?><br>
-                            <span class="text-muted">to <?= date('j M, g:i a', strtotime($q['closes_at'])) ?></span>
+                            <span class="text-muted"><?= te('to') ?> <?= date('j M, g:i a', strtotime($q['closes_at'])) ?></span>
                         </td>
                         <td class="text-right"><?= (int) $q['question_count'] ?></td>
                         <td class="text-right"><?= rtrim(rtrim(number_format((float) $q['total_marks'], 2), '0'), '.') ?></td>

@@ -53,6 +53,26 @@ final class SiteAdService
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Ads marked to show as a sitewide popup, live right now. Shown once
+     * per browser session (see partials/site-popup.php) on every public
+     * page, not only the home page's rotating banner.
+     */
+    public function popups(int $limit = 6): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT * FROM site_ads
+              WHERE is_active = 1 AND show_as_popup = 1
+                AND (starts_on IS NULL OR starts_on <= CURDATE())
+                AND (ends_on IS NULL OR ends_on >= CURDATE())
+           ORDER BY sort_order ASC, id DESC
+              LIMIT :lim"
+        );
+        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     /** @throws \InvalidArgumentException on bad input */
     public function create(array $in, int $userId): int
     {
@@ -64,14 +84,15 @@ final class SiteAdService
         [$startsOn, $endsOn] = self::validDates($in['starts_on'] ?? null, $in['ends_on'] ?? null);
 
         $this->db->prepare(
-            'INSERT INTO site_ads (title, link_url, starts_on, ends_on, is_active, sort_order, created_by, created_at, updated_at)
-             VALUES (:title, :link, :starts, :ends, :active, :sort, :by, NOW(), NOW())'
+            'INSERT INTO site_ads (title, link_url, starts_on, ends_on, is_active, show_as_popup, sort_order, created_by, created_at, updated_at)
+             VALUES (:title, :link, :starts, :ends, :active, :popup, :sort, :by, NOW(), NOW())'
         )->execute([
             ':title'  => mb_substr($title, 0, 160),
             ':link'   => $linkUrl,
             ':starts' => $startsOn,
             ':ends'   => $endsOn,
             ':active' => !empty($in['is_active']) ? 1 : 0,
+            ':popup'  => !empty($in['show_as_popup']) ? 1 : 0,
             ':sort'   => (int) ($in['sort_order'] ?? 0),
             ':by'     => $userId,
         ]);
@@ -94,7 +115,7 @@ final class SiteAdService
 
         $this->db->prepare(
             'UPDATE site_ads SET title = :title, link_url = :link, starts_on = :starts, ends_on = :ends,
-                    is_active = :active, sort_order = :sort, updated_at = NOW()
+                    is_active = :active, show_as_popup = :popup, sort_order = :sort, updated_at = NOW()
               WHERE id = :id'
         )->execute([
             ':title'  => mb_substr($title, 0, 160),
@@ -102,6 +123,7 @@ final class SiteAdService
             ':starts' => $startsOn,
             ':ends'   => $endsOn,
             ':active' => !empty($in['is_active']) ? 1 : 0,
+            ':popup'  => !empty($in['show_as_popup']) ? 1 : 0,
             ':sort'   => (int) ($in['sort_order'] ?? 0),
             ':id'     => $id,
         ]);

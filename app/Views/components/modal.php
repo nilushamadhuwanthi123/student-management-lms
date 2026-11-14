@@ -14,9 +14,9 @@
  */
 
 $modalId          = $modalId ?? 'modal';
-$modalTitle       = $modalTitle ?? 'Confirm';
+$modalTitle       = $modalTitle ?? te('Confirm');
 $modalBody        = $modalBody ?? '';
-$modalAction      = $modalAction ?? 'Confirm';
+$modalAction      = $modalAction ?? te('Confirm');
 $modalActionClass = $modalActionClass ?? 'btn--primary';
 $modalFormAction  = $modalFormAction ?? '';
 $modalFormMethod  = $modalFormMethod ?? 'POST';
@@ -40,20 +40,20 @@ $showReasonField  = $showReasonField ?? false;
 
                 <?php if ($showReasonField): ?>
                     <div class="form-group" style="margin-top:1rem;">
-                        <label class="form-label" for="<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>_reason">Reason <span class="required">*</span></label>
+                        <label class="form-label" for="<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>_reason"><?= te('Reason') ?> <span class="required">*</span></label>
                         <textarea
                             id="<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>_reason"
                             name="reason"
                             class="form-control"
                             required
-                            placeholder="Please provide a reason..."
+                            placeholder="<?= te('Please provide a reason...') ?>"
                         ></textarea>
                     </div>
                 <?php endif; ?>
             </div>
 
             <div class="modal__footer">
-                <button type="button" class="btn btn--ghost" onclick="closeModal('<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>')">Cancel</button>
+                <button type="button" class="btn btn--ghost" onclick="closeModal('<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>')"><?= te('Cancel') ?></button>
                 <?php if ($modalFormAction): ?>
                     <button type="submit" class="btn <?= htmlspecialchars($modalActionClass, ENT_QUOTES, 'UTF-8') ?>">
                         <?= htmlspecialchars($modalAction, ENT_QUOTES, 'UTF-8') ?>

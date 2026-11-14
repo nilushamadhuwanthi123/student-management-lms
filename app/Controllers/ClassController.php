@@ -168,6 +168,72 @@ class ClassController extends BaseController
     }
 
     /**
+     * Quick inline hall/room reassignment from the Hall Arrangement
+     * board itself -- super admin and every branch's own admin or
+     * coordinator can move a class to a different hall without going
+     * through the full Edit Class form. Blocks a save that would double
+     * -book a hall (same branch, same room, an overlapping day & time).
+     */
+    public function updateRoom(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+            AuthMiddleware::ROLE_COORDINATOR,
+        ]);
+        verifyCsrfToken();
+
+        $classId = (int) $id;
+        $scope = BranchScope::current();
+        if (!$scope->allowsClass($classId)) {
+            http_response_code(403);
+            $this->flash('error', 'You do not have access to that class.');
+            $this->back();
+        }
+
+        $row = $this->classModel->find($classId);
+        if ($row === null) {
+            $this->flash('error', 'Class not found.');
+            $this->back();
+        }
+
+        $newRoom = trim($_POST['room'] ?? '');
+
+        if ($newRoom !== '') {
+            $days = json_decode((string) ($row['schedule_days'] ?? '[]'), true) ?: [];
+            $stmt = $this->classModel->query(
+                "SELECT id, class_name, schedule_days, start_time, end_time
+                   FROM classes
+                  WHERE institute_id = :inst AND room = :room AND status = 'active' AND id != :id",
+                [':inst' => $row['institute_id'], ':room' => $newRoom, ':id' => $classId]
+            );
+            foreach ($stmt->fetchAll() as $other) {
+                if ($row['start_time'] === null || $row['end_time'] === null
+                    || $other['start_time'] === null || $other['end_time'] === null) {
+                    continue;
+                }
+                $otherDays = json_decode((string) ($other['schedule_days'] ?? '[]'), true) ?: [];
+                if (array_intersect($days, is_array($otherDays) ? $otherDays : []) === []) {
+                    continue;
+                }
+                if ($row['start_time'] < $other['end_time'] && $other['start_time'] < $row['end_time']) {
+                    $this->flash('error', 'That hall is already booked for "' . $other['class_name'] . '" at an overlapping time. Choose a different hall or time.');
+                    $this->back();
+                }
+            }
+        }
+
+        $this->classModel->query(
+            "UPDATE classes SET room = :room, updated_at = NOW() WHERE id = :id",
+            [':room' => ($newRoom !== '' ? $newRoom : null), ':id' => $classId]
+        );
+
+        $this->flash('success', 'Hall updated.');
+        $this->back();
+    }
+
+    /**
      * Show Create Class Form
      */
     public function create(): void

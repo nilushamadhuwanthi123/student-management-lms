@@ -99,19 +99,19 @@ $passMark = $quiz['pass_mark'] !== null ? (float) $quiz['pass_mark'] : null;
                     <td>
                         <?php if (!$sat): ?>
                             <span class="badge" style="background:var(--warning-light); color:var(--warning);">
-                                Did not sit
+                                <?= te('Did not sit') ?>
                             </span>
                         <?php elseif ((int) $r['needs_marking'] === 1): ?>
                             <span class="badge" style="background:var(--warning-light); color:var(--warning);">
-                                Waiting on you
+                                <?= te('Waiting on you') ?>
                             </span>
                         <?php elseif ($r['attempt_status'] === 'auto_submitted'): ?>
                             <span class="badge" style="background:var(--surface-sunken); color:var(--text-secondary);">
-                                Time ran out
+                                <?= te('Time ran out') ?>
                             </span>
                         <?php else: ?>
                             <span class="badge" style="background:var(--success-light); color:var(--success);">
-                                Marked
+                                <?= te('Marked') ?>
                             </span>
                         <?php endif; ?>
                     </td>

@@ -116,10 +116,45 @@ class StudentController extends BaseController
             }
         }
 
+        // Came here from Inquiries > "Approve & Register" -- prefill the
+        // parent's details from that enrolment inquiry so nothing has to
+        // be retyped. The inquiry must be an enrolment one for a branch
+        // this user is allowed to manage (same rule as InquiryController).
+        $old = [];
+        $fromInquiry = null;
+        $inquiryId = (int) ($_GET['from_inquiry'] ?? 0);
+        if ($inquiryId > 0 && $this->db) {
+            try {
+                $stmt = $this->db->prepare("SELECT * FROM contact_messages WHERE id = :id AND kind = 'enrollment' LIMIT 1");
+                $stmt->execute([':id' => $inquiryId]);
+                $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+                if ($row !== false && BranchScope::current()->allowsInstitute((int) ($row['institute_id'] ?? 0))) {
+                    $old = [
+                        'full_name'      => $row['student_name'] !== null && $row['student_name'] !== '' ? $row['student_name'] : $row['full_name'],
+                        'phone1'         => $row['phone'] ?? '',
+                        'email'          => (!empty($row['student_name']) && $row['student_name'] !== $row['full_name']) ? '' : ($row['email'] ?? ''),
+                        'guardian_name'  => $row['full_name'] ?? '',
+                        'guardian_phone' => $row['phone'] ?? '',
+                        'guardian_email' => $row['email'] ?? '',
+                        'institute_id'   => (int) ($row['institute_id'] ?? 0),
+                    ];
+                    $fromInquiry = [
+                        'id'      => $inquiryId,
+                        'grade'   => $row['grade'] ?? '',
+                        'message' => $row['message'] ?? '',
+                    ];
+                }
+            } catch (\Throwable $e) {
+                error_log('Failed to load inquiry for prefill: ' . $e->getMessage());
+            }
+        }
+
         $this->view('students/create', [
-            'pageTitle'  => 'Register Student',
-            'institutes' => $institutes,
-            'classes'    => $classes,
+            'pageTitle'   => 'Register Student',
+            'institutes'  => $institutes,
+            'classes'     => $classes,
+            'old'         => $old,
+            'fromInquiry' => $fromInquiry,
         ]);
     }
 
@@ -156,8 +191,10 @@ class StudentController extends BaseController
         // Guardian login (optional): name + a Sri Lankan phone number.
         $guardianName  = trim((string) ($_POST['guardian_name'] ?? ''));
         $guardianPhone = preg_replace('/[\s-]/', '', trim((string) ($_POST['guardian_phone'] ?? ''))) ?? '';
+        $guardianEmail = trim((string) ($_POST['guardian_email'] ?? ''));
         if (($guardianName !== '') !== ($guardianPhone !== '')
-            || ($guardianPhone !== '' && preg_match('/^(\+94|0)\d{9}$/', $guardianPhone) !== 1)) {
+            || ($guardianPhone !== '' && preg_match('/^(\+94|0)\d{9}$/', $guardianPhone) !== 1)
+            || ($guardianEmail !== '' && !filter_var($guardianEmail, FILTER_VALIDATE_EMAIL))) {
             $this->flash('error', t('For a parent login, give both the guardian name and a Sri Lankan phone number (for example 0771234567).'));
             $this->redirect('/students/create');
         }
@@ -172,11 +209,13 @@ class StudentController extends BaseController
             }
         }
 
-        // Generate student ID and create
-        $studentIdDisplay = $this->studentModel->generateStudentId();
+        // Generate student ID and create. createWithGeneratedId() retries on a
+        // student_id_display collision -- two staff adding students at nearly
+        // the same moment (or one of this and an enrolment approval) can
+        // otherwise both compute the same "next" id and the second INSERT
+        // fails (see Student::createWithGeneratedId()'s docblock).
         $studentPassword  = \App\Services\AccountService::temporaryPassword();
         $insertData = [
-            'student_id_display' => $studentIdDisplay,
             'full_name'          => $fullName,
             'email'              => $email !== '' ? $email : null,
             'phone1'             => $phone !== '' ? $phone : null,
@@ -192,23 +231,37 @@ class StudentController extends BaseController
         $issued = [];
         try {
             $this->db->beginTransaction();
-            $id = $this->studentModel->create($insertData);
+            $created = $this->studentModel->createWithGeneratedId($insertData);
+            $id = $created['id'];
+            $studentIdDisplay = $created['student_id_display'];
             $this->db->prepare("UPDATE students SET must_change_password = 1 WHERE id = :id")->execute([':id' => $id]);
-            $issued[] = ['kind' => 'password', 'name' => $fullName, 'login_id' => $studentIdDisplay, 'secret' => $studentPassword, 'expires_at' => null];
+            $issued[] = [
+                'kind' => 'password', 'name' => $fullName, 'login_id' => $studentIdDisplay,
+                'secret' => $studentPassword, 'expires_at' => null,
+                'phone' => $phone !== '' ? $phone : $guardianPhone, 'email' => $email !== '' ? $email : null,
+            ];
 
             if ($guardianPhone !== '') {
                 $existing = $this->db->prepare("SELECT COUNT(*) FROM parents WHERE phone1 = :p");
                 $existing->execute([':p' => $guardianPhone]);
                 $parentPassword = \App\Services\AccountService::temporaryPassword();
                 $this->db->prepare(
-                    "INSERT INTO parents (student_id, parent_name, phone1, password_hash, must_change_password, status)
-                     VALUES (:s, :n, :p, :h, 1, 'active')"
-                )->execute([':s' => $id, ':n' => $guardianName, ':p' => $guardianPhone, ':h' => password_hash($parentPassword, PASSWORD_DEFAULT)]);
+                    "INSERT INTO parents (student_id, parent_name, phone1, email, password_hash, must_change_password, status)
+                     VALUES (:s, :n, :p, :em, :h, 1, 'active')"
+                )->execute([
+                    ':s' => $id, ':n' => $guardianName, ':p' => $guardianPhone,
+                    ':em' => $guardianEmail !== '' ? $guardianEmail : null,
+                    ':h' => password_hash($parentPassword, PASSWORD_DEFAULT),
+                ]);
                 if ((int) $existing->fetchColumn() > 0) {
                     // Known limitation: a phone number logs in to the first child linked to it.
                     $this->flash('warning', t('This phone number is already a parent login for another child. The parent portal shows one child per phone number, so use a different number if the parent needs to see this child too.'));
                 } else {
-                    $issued[] = ['kind' => 'password', 'name' => $guardianName . ' (' . t('parent') . ')', 'login_id' => $guardianPhone, 'secret' => $parentPassword, 'expires_at' => null];
+                    $issued[] = [
+                        'kind' => 'password', 'name' => $guardianName . ' (' . t('parent') . ')', 'login_id' => $guardianPhone,
+                        'secret' => $parentPassword, 'expires_at' => null,
+                        'phone' => $guardianPhone, 'email' => $guardianEmail !== '' ? $guardianEmail : null,
+                    ];
                 }
             }
 

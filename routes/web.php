@@ -153,9 +153,9 @@ class Router
     }
 }
 
-// ──────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Route Definitions
-// ──────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 $router = new Router();
 
@@ -166,9 +166,24 @@ $router->get('/features', ['App\Controllers\HomeController', 'features']);
 $router->get('/contact', ['App\Controllers\HomeController', 'contact']);
 $router->post('/contact', ['App\Controllers\HomeController', 'contactSubmit']);
 // Public tuition pages: timetable, branch pages and the enrolment inquiry.
+// /our-classes is the branch-picker landing page (photo + description +
+// "My Classes" per branch) -- NOT /classes, which is already the
+// logged-in Class Management route below. /timetable is the full,
+// filterable class grid that "My Classes" links into.
+$router->get('/our-classes', ['App\Controllers\HomeController', 'classesLanding']);
 $router->get('/timetable', ['App\Controllers\HomeController', 'classes']);
 $router->get('/branches/{id}', ['App\Controllers\HomeController', 'branch']);
 $router->post('/inquiry', ['App\Controllers\HomeController', 'inquiry']);
+$router->get('/downloads', ['App\Controllers\DownloadController', 'index']);
+$router->get('/events', ['App\Controllers\PublicController', 'events']);
+$router->get('/enroll', ['App\Controllers\EnrollmentController', 'form']);
+$router->post('/enroll', ['App\Controllers\EnrollmentController', 'store']);
+$router->get('/enroll/classes/{id}', ['App\Controllers\EnrollmentController', 'classesByInstitute']);
+
+$router->get('/seminar/{id}', ['App\Controllers\PublicController', 'seminar']);
+
+// The free FAQ bot widget. Guest-facing, answers only from public data.
+$router->post('/chatbot/ask', ['App\Controllers\ChatBotController', 'ask']);
 
 // Authentication routes
 $router->get('/login', ['App\Controllers\AuthController', 'showLogin']);
@@ -220,6 +235,7 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/parents/{id}/deactivate', ['App\Controllers\ParentController', 'deactivate']);
     $router->post('/parents/{id}/reactivate', ['App\Controllers\ParentController', 'reactivate']);
     $router->get('/accounts/issued', ['App\Controllers\AccountController', 'issued']);
+    $router->post('/accounts/issued/send', ['App\Controllers\AccountController', 'sendIssued']);
     $router->get('/users/{id}/id-card', ['App\Controllers\UserController', 'idCard']);
 
     // Institutes Management
@@ -239,6 +255,7 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->get('/classes/{id}/edit', ['App\Controllers\ClassController', 'edit']);
     $router->post('/classes/{id}/edit', ['App\Controllers\ClassController', 'update']);
     $router->post('/classes/{id}/toggle-status', ['App\Controllers\ClassController', 'toggleStatus']);
+$router->post('/classes/{id}/update-room', ['App\Controllers\ClassController', 'updateRoom']);
     $router->post('/classes/{id}/delete', ['App\Controllers\ClassController', 'delete']);
 
     // The teaching hub: material and quizzes both hang off a class, so
@@ -425,9 +442,23 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/family/seminars/{id}/register', ['App\Controllers\SeminarController', 'register']);
     $router->post('/family/seminars/{id}/unregister', ['App\Controllers\SeminarController', 'unregister']);
 
+    // ---- Downloads (past papers etc.): super admin or a teacher ----
+    $router->get('/downloads/manage', ['App\Controllers\DownloadController', 'manage']);
+    $router->post('/downloads/manage', ['App\Controllers\DownloadController', 'store']);
+    $router->post('/downloads/{id}/update', ['App\Controllers\DownloadController', 'update']);
+    $router->post('/downloads/{id}/toggle', ['App\Controllers\DownloadController', 'toggle']);
+    $router->post('/downloads/{id}/delete', ['App\Controllers\DownloadController', 'delete']);
+
     // ---- Inquiries from the public website ----
     $router->get('/inquiries', ['App\Controllers\InquiryController', 'index']);
     $router->post('/inquiries/{id}/status', ['App\Controllers\InquiryController', 'status']);
+    $router->post('/inquiries/{id}/approve', ['App\Controllers\InquiryController', 'approve']);
+
+    // ---- Enrolment requests (self-service enrol + bank slip from the public site) ----
+    $router->get('/enrollment-requests', ['App\Controllers\EnrollmentController', 'queue']);
+    $router->post('/enrollment-requests/{id}/approve', ['App\Controllers\EnrollmentController', 'approve']);
+    $router->post('/enrollment-requests/{id}/reject', ['App\Controllers\EnrollmentController', 'reject']);
+    $router->get('/enrollment-requests/{id}/slip', ['App\Controllers\EnrollmentController', 'slipFile']);
 
     // Students
     $router->get('/students', ['App\Controllers\StudentController', 'index']);
@@ -493,6 +524,7 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     // Audit & History
     $router->get('/audit', ['App\Controllers\AuditController', 'index']);
     $router->get('/audit-log', ['App\Controllers\AuditController', 'index']);
+    $router->get('/audit/export', ['App\Controllers\AuditController', 'export']);
     $router->get('/audit/user/{id}', ['App\Controllers\AuditController', 'userHistory']);
     $router->get('/workflow-history', ['App\Controllers\AuditController', 'workflowHistory']);
 
@@ -509,9 +541,15 @@ $router->group(['middleware' => ['auth']], function (Router $router) {
     $router->post('/settings/feature-visibility', ['App\Controllers\SettingsController', 'updateFeatureVisibility']);
     $router->get('/settings/site-content', ['App\Controllers\SettingsController', 'siteContent']);
     $router->post('/settings/site-content', ['App\Controllers\SettingsController', 'updateSiteContent']);
+    $router->post('/settings/branch-box-size', ['App\Controllers\SettingsController', 'updateBranchBoxSize']);
     $router->get('/settings/sms', ['App\Controllers\SettingsController', 'sms']);
     $router->post('/settings/sms', ['App\Controllers\SettingsController', 'updateSms']);
     $router->post('/settings/sms/test', ['App\Controllers\SettingsController', 'testSms']);
+    $router->get('/settings/email', ['App\Controllers\SettingsController', 'email']);
+    $router->post('/settings/email', ['App\Controllers\SettingsController', 'updateEmail']);
+    $router->post('/settings/email/test', ['App\Controllers\SettingsController', 'testEmail']);
+    $router->get('/settings/translations', ['App\Controllers\TranslationController', 'index']);
+    $router->post('/settings/translations/update', ['App\Controllers\TranslationController', 'update']);
     $router->get('/settings/ads', ['App\Controllers\SettingsController', 'ads']);
     $router->post('/settings/ads', ['App\Controllers\SettingsController', 'storeAd']);
     $router->post('/settings/ads/{id}/update', ['App\Controllers\SettingsController', 'updateAd']);

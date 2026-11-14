@@ -23,15 +23,15 @@ $totalOwed   = $totalOwed ?? 0.0;
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title">WhatsApp reminders</h1>
+        <h1 class="page-header__title"><?= te('WhatsApp reminders') ?></h1>
         <p class="text-sm text-muted">
-            <?= count($recipients) ?> to send
-            &middot; Rs. <?= number_format((float) $totalOwed, 2) ?> outstanding
+            <?= count($recipients) ?> <?= te('to send') ?>
+            &middot; Rs. <?= number_format((float) $totalOwed, 2) ?> <?= te('outstanding') ?>
             &middot; <?= date('F Y', strtotime($month)) ?>
         </p>
     </div>
     <div class="page-header__actions">
-        <a href="<?= BASE_URL ?>/whatsapp/log" class="btn btn--ghost">Message log</a>
+        <a href="<?= BASE_URL ?>/whatsapp/log" class="btn btn--ghost"><?= te('Message log') ?></a>
     </div>
 </div>
 
@@ -39,7 +39,7 @@ $totalOwed   = $totalOwed ?? 0.0;
     <form method="GET" action="<?= BASE_URL ?>/whatsapp/reminders" class="card__body"
           style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1rem; align-items:end;">
         <div class="form-group" style="margin:0;">
-            <label class="form-label" for="month">Month</label>
+            <label class="form-label" for="month"><?= te('Month') ?></label>
             <select id="month" name="month" class="form-control">
                 <?php foreach ($months as $value => $label): ?>
                     <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $value === $month ? 'selected' : '' ?>>
@@ -50,9 +50,9 @@ $totalOwed   = $totalOwed ?? 0.0;
         </div>
 
         <div class="form-group" style="margin:0;">
-            <label class="form-label" for="institute_id">Branch</label>
+            <label class="form-label" for="institute_id"><?= te('Branch') ?></label>
             <select id="institute_id" name="institute_id" class="form-control">
-                <option value="">All branches</option>
+                <option value=""><?= te('All branches') ?></option>
                 <?php foreach ($institutes as $i): ?>
                     <option value="<?= (int) $i['id'] ?>" <?= (int) ($filters['institute_id'] ?? 0) === (int) $i['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($i['name'], ENT_QUOTES, 'UTF-8') ?>
@@ -62,9 +62,9 @@ $totalOwed   = $totalOwed ?? 0.0;
         </div>
 
         <div class="form-group" style="margin:0;">
-            <label class="form-label" for="class_id">Class</label>
+            <label class="form-label" for="class_id"><?= te('Class') ?></label>
             <select id="class_id" name="class_id" class="form-control">
-                <option value="">All classes</option>
+                <option value=""><?= te('All classes') ?></option>
                 <?php foreach ($classes as $c): ?>
                     <option value="<?= (int) $c['id'] ?>" <?= (int) ($filters['class_id'] ?? 0) === (int) $c['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($c['class_name'], ENT_QUOTES, 'UTF-8') ?>
@@ -74,7 +74,7 @@ $totalOwed   = $totalOwed ?? 0.0;
         </div>
 
         <div class="form-group" style="margin:0;">
-            <label class="form-label" for="template">Wording</label>
+            <label class="form-label" for="template"><?= te('Wording') ?></label>
             <select id="template" name="template" class="form-control">
                 <?php foreach ($templates as $t): ?>
                     <option value="<?= htmlspecialchars($t['template_key'], ENT_QUOTES, 'UTF-8') ?>"
@@ -85,44 +85,42 @@ $totalOwed   = $totalOwed ?? 0.0;
             </select>
         </div>
 
-        <button type="submit" class="btn btn--primary">Apply</button>
+        <button type="submit" class="btn btn--primary"><?= te('Apply') ?></button>
     </form>
 </div>
 
 <div class="alert" style="background:var(--info-light); border-left:3px solid var(--primary);
      padding:.875rem 1rem; border-radius:var(--radius-sm); margin-bottom:1.5rem;">
-    <strong>How this sends.</strong>
+    <strong><?= te('How this sends.') ?></strong>
     <span class="text-sm">
-        Each button opens WhatsApp with the message already written &mdash; you press send there.
-        Nothing leaves this system on its own, so the log records what you confirmed sending,
-        not a delivery receipt.
+        <?= te('Each button opens WhatsApp with the message already written — you press send there. Nothing leaves this system on its own, so the log records what you confirmed sending, not a delivery receipt.') ?>
     </span>
 </div>
 
 <?php if ($recipients === [] && $noNumber === []): ?>
     <div class="card" style="padding:3rem 1.5rem; text-align:center;">
         <div style="font-size:2.5rem;">&#9989;</div>
-        <h4 style="margin:.75rem 0 .35rem;">Everyone has paid for <?= date('F', strtotime($month)) ?></h4>
-        <p class="text-sm text-muted" style="margin:0;">Nothing to chase.</p>
+        <h4 style="margin:.75rem 0 .35rem;"><?= te('Everyone has paid for {month}', ['month' => date('F', strtotime($month))]) ?></h4>
+        <p class="text-sm text-muted" style="margin:0;"><?= te('Nothing to chase.') ?></p>
     </div>
 <?php else: ?>
 
 <?php if ($recipients !== []): ?>
     <div class="card" style="margin-bottom:1.5rem;">
         <div class="card__header" style="display:flex; justify-content:space-between; align-items:center; gap:1rem;">
-            <h3 style="margin:0;">Ready to send</h3>
-            <span class="text-sm text-muted"><?= count($recipients) ?> message<?= count($recipients) === 1 ? '' : 's' ?></span>
+            <h3 style="margin:0;"><?= te('Ready to send') ?></h3>
+            <span class="text-sm text-muted"><?= count($recipients) ?> <?= te('message') ?><?= count($recipients) === 1 ? '' : 's' ?></span>
         </div>
 
         <div class="table-wrap">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Student</th>
-                        <th>Goes to</th>
-                        <th class="text-right">Owing</th>
-                        <th>Message</th>
-                        <th class="text-right">Send</th>
+                        <th><?= te('Student') ?></th>
+                        <th><?= te('Goes to') ?></th>
+                        <th class="text-right"><?= te('Owing') ?></th>
+                        <th><?= te('Message') ?></th>
+                        <th class="text-right"><?= te('Send') ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -140,11 +138,11 @@ $totalOwed   = $totalOwed ?? 0.0;
                                 <?php endif; ?>
                             </div>
                             <?php if ($overdue): ?>
-                                <span class="badge" style="background:var(--danger-light); color:var(--danger);">Overdue</span>
+                                <span class="badge" style="background:var(--danger-light); color:var(--danger);"><?= te('Overdue') ?></span>
                             <?php endif; ?>
                             <?php if ((int) $row['reminders_sent'] > 0): ?>
                                 <span class="badge" style="background:var(--surface-sunken); color:var(--text-muted);">
-                                    <?= (int) $row['reminders_sent'] ?> sent before
+                                    <?= (int) $row['reminders_sent'] ?> <?= te('sent before') ?>
                                 </span>
                             <?php endif; ?>
                         </td>
@@ -152,7 +150,7 @@ $totalOwed   = $totalOwed ?? 0.0;
                             <?= htmlspecialchars($r['to']['name'], ENT_QUOTES, 'UTF-8') ?>
                             <div class="text-muted">
                                 +<?= htmlspecialchars($r['to']['phone'], ENT_QUOTES, 'UTF-8') ?>
-                                <?= $r['to']['type'] === 'student' ? ' (student)' : '' ?>
+                                <?= $r['to']['type'] === 'student' ? ' (' . te('student') . ')' : '' ?>
                             </div>
                         </td>
                         <td class="text-right" style="font-weight:600; color:<?= $overdue ? 'var(--danger)' : 'var(--warning)' ?>;">
@@ -172,7 +170,7 @@ $totalOwed   = $totalOwed ?? 0.0;
                                     data-payment="<?= (int) $row['payment_id'] ?>"
                                     data-template="<?= htmlspecialchars($templateKey, ENT_QUOTES, 'UTF-8') ?>"
                                     data-body="<?= htmlspecialchars($r['body'], ENT_QUOTES, 'UTF-8') ?>">
-                                WhatsApp
+                                <?= te('WhatsApp') ?>
                             </button>
                             <span class="text-sm" data-state style="display:none;"></span>
                         </td>
@@ -187,21 +185,21 @@ $totalOwed   = $totalOwed ?? 0.0;
 <?php if ($noNumber !== []): ?>
     <div class="card" style="border-color:var(--warning);">
         <div class="card__header">
-            <h3 style="margin:0;">No usable number &mdash; <?= count($noNumber) ?></h3>
+            <h3 style="margin:0;"><?= te('No usable number') ?> &mdash; <?= count($noNumber) ?></h3>
             <p class="text-sm text-muted" style="margin:.25rem 0 0;">
-                These owe money too, but there is no mobile on record to message.
+                <?= te('These owe money too, but there is no mobile on record to message.') ?>
             </p>
         </div>
         <div class="table-wrap">
             <table class="table">
-                <thead><tr><th>Student</th><th>Class</th><th>On record</th><th class="text-right">Owing</th></tr></thead>
+                <thead><tr><th><?= te('Student') ?></th><th><?= te('Class') ?></th><th><?= te('On record') ?></th><th class="text-right"><?= te('Owing') ?></th></tr></thead>
                 <tbody>
                 <?php foreach ($noNumber as $row): ?>
                     <tr>
                         <td style="font-weight:600;"><?= htmlspecialchars($row['student_name'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-sm text-muted"><?= htmlspecialchars($row['class_name'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-sm text-muted">
-                            <?= htmlspecialchars((string) ($row['parent_phone'] ?: $row['student_phone'] ?: 'nothing'), ENT_QUOTES, 'UTF-8') ?>
+                            <?= htmlspecialchars((string) ($row['parent_phone'] ?: $row['student_phone'] ?: te('nothing')), ENT_QUOTES, 'UTF-8') ?>
                         </td>
                         <td class="text-right">
                             Rs. <?= number_format((float) $row['amount_due'] - (float) $row['amount_paid'], 2) ?>

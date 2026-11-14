@@ -441,7 +441,7 @@
     </script>
 
     <!-- Liquid-Glass Navbar -->
-    <nav class="navbar navbar--liquid-glass<?= in_array($activePage ?? '', ['home', 'about', 'contact', 'branch'], true) ? ' navbar--on-dark' : '' ?>" id="mainNav">
+    <nav class="navbar navbar--liquid-glass<?= in_array($activePage ?? '', ['home', 'about', 'contact', 'branch', 'classes', 'downloads', 'events', 'enroll'], true) ? ' navbar--on-dark' : '' ?>" id="mainNav">
         <div class="nav-shimmer"></div>
         <a href="<?= BASE_URL ?>/" class="navbar__brand font-body">
             <span style="width:36px;height:36px;border-radius:11px;background:#FACC15;display:grid;place-items:center;color:#0B1B3F;flex:0 0 36px;">
@@ -456,10 +456,18 @@
 
         <ul class="navbar__links" id="navLinks">
             <li><a href="<?= BASE_URL ?>/" class="<?= ($activePage ?? '') === 'home' ? 'active' : '' ?>"><?= te('Home') ?></a></li>
-            <li><a href="<?= BASE_URL ?>/timetable" class="<?= ($activePage ?? '') === 'classes' ? 'active' : '' ?>"><?= te('Timetable') ?></a></li>
             <li><a href="<?= BASE_URL ?>/about" class="<?= ($activePage ?? '') === 'about' ? 'active' : '' ?>"><?= te('About') ?></a></li>
+            <li><a href="<?= BASE_URL ?>/our-classes" class="<?= ($activePage ?? '') === 'classes' ? 'active' : '' ?>"><?= te('Classes') ?></a></li>
+            <li><a href="<?= BASE_URL ?>/events" class="<?= ($activePage ?? '') === 'events' ? 'active' : '' ?>"><?= te('Events') ?></a></li>
+            <li><a href="<?= BASE_URL ?>/downloads" class="<?= ($activePage ?? '') === 'downloads' ? 'active' : '' ?>"><?= te('Downloads') ?></a></li>
             <li><a href="<?= BASE_URL ?>/contact" class="<?= ($activePage ?? '') === 'contact' ? 'active' : '' ?>"><?= te('Contact') ?></a></li>
             <li><a href="<?= BASE_URL ?>/lang/<?= (function_exists('lang_current') && lang_current() === 'si') ? 'en' : 'si' ?>" class="nav-lang" hreflang="<?= (function_exists('lang_current') && lang_current() === 'si') ? 'en' : 'si' ?>"><?= (function_exists('lang_current') && lang_current() === 'si') ? 'English' : 'සිංහල' ?></a></li>
+            <li>
+                <a href="<?= BASE_URL ?>/enroll" class="inline-flex items-center px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300"
+                   style="text-transform:none; background:#1D4ED8; color:#fff;">
+                    <?= te('Enrol now') ?>
+                </a>
+            </li>
             <li>
                 <a href="<?= BASE_URL ?>/login" class="nav-login inline-flex items-center px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300"
                    style="text-transform:none; background:#FACC15; color:#0B1B3F;">
@@ -503,8 +511,11 @@
                     <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4"><?= te('Pages') ?></h4>
                     <ul class="space-y-2 text-sm">
                         <li><a href="<?= BASE_URL ?>/" class="hover:text-white" style="color:#94A3B8;"><?= te('Home') ?></a></li>
-                        <li><a href="<?= BASE_URL ?>/timetable" class="hover:text-white" style="color:#94A3B8;"><?= te('Timetable') ?></a></li>
                         <li><a href="<?= BASE_URL ?>/about" class="hover:text-white" style="color:#94A3B8;"><?= te('About') ?></a></li>
+                        <li><a href="<?= BASE_URL ?>/our-classes" class="hover:text-white" style="color:#94A3B8;"><?= te('Classes') ?></a></li>
+                        <li><a href="<?= BASE_URL ?>/events" class="hover:text-white" style="color:#94A3B8;"><?= te('Events') ?></a></li>
+                        <li><a href="<?= BASE_URL ?>/downloads" class="hover:text-white" style="color:#94A3B8;"><?= te('Downloads') ?></a></li>
+                        <li><a href="<?= BASE_URL ?>/enroll" class="hover:text-white" style="color:#94A3B8;"><?= te('Enrol now') ?></a></li>
                         <li><a href="<?= BASE_URL ?>/contact" class="hover:text-white" style="color:#94A3B8;"><?= te('Contact') ?></a></li>
                     </ul>
                 </div>
@@ -534,7 +545,7 @@
     <script src="<?= BASE_URL ?>/assets/js/app.js?v=<?= @filemtime(BASE_PATH . '/public/assets/js/app.js') ?: 1 ?>"></script>
     <script>
     (function () {
-        // ── Mobile nav toggle ──
+        // â”€â”€ Mobile nav toggle â”€â”€
         var toggle = document.getElementById('navToggle');
         var links = document.getElementById('navLinks');
         if (toggle && links) {
@@ -544,7 +555,7 @@
             });
         }
 
-        // ── Theme toggle ──
+        // â”€â”€ Theme toggle â”€â”€
         var themeBtn = document.getElementById('themeToggle');
         var html = document.documentElement;
         try {
@@ -569,7 +580,7 @@
             document.querySelectorAll('.theme-icon-dark').forEach(function (el) { el.style.display = isDark ? 'inline' : 'none'; });
         }
 
-        // ── Navbar scroll effect ──
+        // â”€â”€ Navbar scroll effect â”€â”€
         var nav = document.getElementById('mainNav');
         if (nav) {
             var ticking = false;
@@ -588,7 +599,7 @@
             });
         }
 
-        // ── Scroll reveal (IntersectionObserver) ──
+        // â”€â”€ Scroll reveal (IntersectionObserver) â”€â”€
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('visible'); });
         } else {
@@ -606,7 +617,7 @@
             });
         }
 
-        // ── Counter animation ──
+        // â”€â”€ Counter animation â”€â”€
         var counterObserver = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
                 if (entry.isIntersecting) {
@@ -640,5 +651,7 @@
         });
     })();
     </script>
+    <?php require BASE_PATH . '/app/Views/partials/chatbot.php'; ?>
+    <?php require BASE_PATH . '/app/Views/partials/site-popup.php'; ?>
 </body>
 </html>

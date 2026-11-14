@@ -93,7 +93,13 @@ class InstituteController extends BaseController
         $mapUrl        = \App\Services\PublicSite::isGoogleMapsUrl(trim($_POST['map_url'] ?? ''))
             ? trim($_POST['map_url'])
             : null;
+        $publicDesc    = trim($_POST['public_description'] ?? '');
+        $videoUrl      = \Institute::videoHref($_POST['video_url'] ?? '');
         $status        = in_array($_POST['status'] ?? '', ['active', 'inactive'], true) ? $_POST['status'] : 'active';
+        // How this branch orders against the others on the public site
+        // (Classes page, home page, footer). Lower shows first.
+        $sortOrder     = (int) ($_POST['sort_order'] ?? 0);
+        $bannerSize    = in_array($_POST['banner_size'] ?? '', ['small', 'medium', 'large'], true) ? $_POST['banner_size'] : 'medium';
 
         $errors = [];
         if (empty($name)) {
@@ -110,17 +116,38 @@ class InstituteController extends BaseController
 
         try {
             $id = $this->instituteModel->create([
-                'name'           => $name,
-                'coordinator_id' => $coordinatorId,
-                'location'       => $location,
-                'map_url'        => $mapUrl,
-                'phone1'         => $phone1,
-                'phone2'         => $phone2,
-                'notes'          => $notes,
-                'status'         => $status,
-                'created_at'     => date('Y-m-d H:i:s'),
-                'updated_at'     => date('Y-m-d H:i:s'),
+                'name'               => $name,
+                'coordinator_id'     => $coordinatorId,
+                'location'           => $location,
+                'map_url'            => $mapUrl,
+                'phone1'             => $phone1,
+                'phone2'             => $phone2,
+                'notes'              => $notes,
+                'public_description' => $publicDesc !== '' ? $publicDesc : null,
+                'video_url'          => $videoUrl !== '' ? $videoUrl : null,
+                'status'             => $status,
+                'sort_order'         => $sortOrder,
+                'banner_size'        => $bannerSize,
+                'created_at'         => date('Y-m-d H:i:s'),
+                'updated_at'         => date('Y-m-d H:i:s'),
             ]);
+
+            if (!empty($_FILES['photo']['tmp_name']) && is_uploaded_file($_FILES['photo']['tmp_name'])) {
+                try {
+                    $this->instituteModel->setPhoto((int) $id, $_FILES['photo']);
+                } catch (\InvalidArgumentException $e) {
+                    $this->flash('error', $e->getMessage());
+                }
+            }
+            // A pasted video link (handled above, via $videoUrl) always wins over an
+            // uploaded file if both are submitted in the same save.
+            if ($videoUrl === '' && !empty($_FILES['video']['tmp_name']) && is_uploaded_file($_FILES['video']['tmp_name'])) {
+                try {
+                    $this->instituteModel->setVideo((int) $id, $_FILES['video']);
+                } catch (\InvalidArgumentException $e) {
+                    $this->flash('error', $e->getMessage());
+                }
+            }
 
             $this->logAudit('create_institute', 'institute', $id, ['name' => $name]);
             $this->flash('success', "Institute '{$name}' registered successfully.");
@@ -197,24 +224,53 @@ class InstituteController extends BaseController
         $mapUrl        = \App\Services\PublicSite::isGoogleMapsUrl(trim($_POST['map_url'] ?? ''))
             ? trim($_POST['map_url'])
             : null;
+        $publicDesc    = trim($_POST['public_description'] ?? '');
+        $videoUrl      = \Institute::videoHref($_POST['video_url'] ?? '');
         $status        = in_array($_POST['status'] ?? '', ['active', 'inactive'], true) ? $_POST['status'] : $institute['status'];
+        $sortOrder     = (int) ($_POST['sort_order'] ?? $institute['sort_order'] ?? 0);
+        $bannerSize    = in_array($_POST['banner_size'] ?? '', ['small', 'medium', 'large'], true) ? $_POST['banner_size'] : ($institute['banner_size'] ?? 'medium');
 
         try {
             $this->instituteModel->update((int) $id, [
-                'name'           => $name,
-                'coordinator_id' => $coordinatorId,
-                'location'       => $location,
-                'map_url'        => $mapUrl,
-                'phone1'         => $phone1,
-                'phone2'         => $phone2,
-                'notes'          => $notes,
-                'status'         => $status,
-                'updated_at'     => date('Y-m-d H:i:s'),
+                'name'               => $name,
+                'coordinator_id'     => $coordinatorId,
+                'location'           => $location,
+                'map_url'            => $mapUrl,
+                'phone1'             => $phone1,
+                'phone2'             => $phone2,
+                'notes'              => $notes,
+                'public_description' => $publicDesc !== '' ? $publicDesc : null,
+                // A typed link always wins; otherwise keep whatever is already saved
+                // (which may be a previously uploaded video file) rather than wiping
+                // it just because the link box was left blank -- setVideo() below
+                // updates this column directly when a new file is uploaded instead.
+                'video_url'          => $videoUrl !== '' ? $videoUrl : ($institute['video_url'] ?? null),
+                'status'             => $status,
+                'sort_order'         => $sortOrder,
+                'banner_size'        => $bannerSize,
+                'updated_at'         => date('Y-m-d H:i:s'),
             ] + (\App\Services\BranchScope::current()->isGlobal() ? [
                 // What the public website shows is the super admin's call.
                 'is_public'        => isset($_POST['is_public']) ? 1 : 0,
                 'public_show_fees' => isset($_POST['public_show_fees']) ? 1 : 0,
             ] : []));
+
+            if (!empty($_FILES['photo']['tmp_name']) && is_uploaded_file($_FILES['photo']['tmp_name'])) {
+                try {
+                    $this->instituteModel->setPhoto((int) $id, $_FILES['photo']);
+                } catch (\InvalidArgumentException $e) {
+                    $this->flash('error', $e->getMessage());
+                }
+            }
+            // A pasted video link (handled above, via $videoUrl) always wins over an
+            // uploaded file if both are submitted in the same save.
+            if ($videoUrl === '' && !empty($_FILES['video']['tmp_name']) && is_uploaded_file($_FILES['video']['tmp_name'])) {
+                try {
+                    $this->instituteModel->setVideo((int) $id, $_FILES['video']);
+                } catch (\InvalidArgumentException $e) {
+                    $this->flash('error', $e->getMessage());
+                }
+            }
 
             $this->logAudit('update_institute', 'institute', (int) $id, ['name' => $name]);
             $this->flash('success', "Institute '{$name}' updated successfully.");

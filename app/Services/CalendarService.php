@@ -496,16 +496,28 @@ class CalendarService
                          WHERE s.status = 'published' AND s.event_date BETWEEN :from AND :to";
                 $params = [':from' => $fromDate, ':to' => $toDate];
                 if ($classIds !== null) {
-                    $p = [];
-                    foreach (array_values($classIds) as $index => $id) {
-                        $p[] = ":sem{$index}";
-                        $params[":sem{$index}"] = $id;
-                    }
-                    $in = implode(', ', $p);
+                    // Each IN(...) below needs its own set of placeholder
+                    // names -- PDO's native prepares reject the same named
+                    // parameter appearing more than once in a query, so the
+                    // same class id list is bound three times under three
+                    // distinct prefixes rather than reusing one.
+                    $values = array_values($classIds);
+                    $buildIn = static function (array $values, string $prefix) use (&$params): string {
+                        $p = [];
+                        foreach ($values as $index => $id) {
+                            $name = ":{$prefix}{$index}";
+                            $p[] = $name;
+                            $params[$name] = $id;
+                        }
+                        return implode(', ', $p);
+                    };
+                    $inA = $buildIn($values, 'semA');
+                    $inB = $buildIn($values, 'semB');
+                    $inC = $buildIn($values, 'semC');
                     $sql .= " AND ((s.target_scope = 'all' AND s.for_staff = 1)
-                               OR (s.target_scope = 'class' AND s.class_id IN ({$in}))
-                               OR (s.target_scope IN ('branch', 'grade') AND s.institute_id IN (SELECT cs.institute_id FROM classes cs WHERE cs.id IN ({$in})))
-                               OR (s.target_scope = 'grade' AND s.institute_id IS NULL AND s.grade IN (SELECT cg.grade FROM classes cg WHERE cg.id IN ({$in}))))";
+                               OR (s.target_scope = 'class' AND s.class_id IN ({$inA}))
+                               OR (s.target_scope IN ('branch', 'grade') AND s.institute_id IN (SELECT cs.institute_id FROM classes cs WHERE cs.id IN ({$inB})))
+                               OR (s.target_scope = 'grade' AND s.institute_id IS NULL AND s.grade IN (SELECT cg.grade FROM classes cg WHERE cg.id IN ({$inC}))))";
                 }
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute($params);

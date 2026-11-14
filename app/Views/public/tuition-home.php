@@ -120,11 +120,11 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
             <h1>
                 <?php if ($teacher): ?>
                     <?php if ($isSi): ?>
-                        <span class="ts-name"><?= $e($teacherFirst) ?> <span class="ts-honor"><?= te('Miss') ?></span></span>
+                        <span class="ts-name"><?= $e($teacher) ?> <span class="ts-honor"><?= te('Miss') ?></span></span>
                         <span><?= te('with Science') ?></span>
                     <?php else: ?>
                         <span><?= te('Learn Science with') ?></span>
-                        <span class="ts-name"><?= $e($teacherFirst) ?> <span class="ts-honor"><?= te('Miss') ?></span></span>
+                        <span class="ts-name"><?= $e($teacher) ?> <span class="ts-honor"><?= te('Miss') ?></span></span>
                     <?php endif; ?>
                 <?php else: ?>
                     <?= te('Science classes for') ?> <span class="ts-name"><?= te('Grades 6 to 11') ?></span>
@@ -150,21 +150,10 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
             <div class="ts-photo__badge"><?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
             <div class="ts-photo__tag">
                 <div class="ts-photo__dot"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5z"/><path d="M6 12v5c3 2.5 9 2.5 12 0v-5"/></svg></div>
-                <div><strong><?= $e($teacherFirst) ?> <span class="ts-honor ts-honor--dark"><?= te('Miss') ?></span></strong><span><?= te('Science teacher') ?></span></div>
+                <div><strong><?= $e($teacher) ?> <span class="ts-honor ts-honor--dark"><?= te('Miss') ?></span></strong><span><?= te('Science teacher') ?></span></div>
             </div>
         </div>
         <?php endif; ?>
-    </div>
-</section>
-
-<section class="ts-stats">
-    <div class="ts-wrap">
-        <div class="ts-stats__grid">
-            <?php if ($facts['branches'] > 0): ?><div class="ts-stat"><div class="ts-stat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.3-7-12a7 7 0 0 1 14 0c0 5.7-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg></div><div><div class="ts-stat__value"><?= (int) $facts['branches'] ?></div><div class="ts-stat__label"><?= te('branches') ?></div></div></div><?php endif; ?>
-            <div class="ts-stat"><div class="ts-stat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5z"/><path d="M6 12v5c3 2.5 9 2.5 12 0v-5"/></svg></div><div><div class="ts-stat__value"><?= $e(\App\Services\PublicSite::gradeRange()) ?></div><div class="ts-stat__label"><?= te('grades') ?></div></div></div>
-            <?php if ($facts['classes'] > 0): ?><div class="ts-stat"><div class="ts-stat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div><div class="ts-stat__value"><?= (int) $facts['classes'] ?></div><div class="ts-stat__label"><?= te('weekly classes') ?></div></div></div><?php endif; ?>
-            <?php if ($mediumLabel !== ''): ?><div class="ts-stat"><div class="ts-stat__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M8 7h8M8 11h6"/></svg></div><div><div class="ts-stat__value" style="font-size:1.05rem;"><?= $e($mediumLabel) ?></div><div class="ts-stat__label"><?= te('medium') ?></div></div></div><?php endif; ?>
-        </div>
     </div>
 </section>
 
@@ -307,9 +296,9 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
         <div class="ts-grid">
             <?php foreach ($branches as $b): ?>
                 <div class="ts-card ts-branch ts-reveal">
-                    <div class="ts-branch__top"><span>&#128205; <?= te('Branch') ?></span><h3><?= $e($b['name']) ?></h3></div>
+                    <div class="ts-branch__top"><span>&#128205; <?= te('Branch') ?></span><h3><?= $e(te($b['name'])) ?></h3></div>
                     <div class="ts-branch__body">
-                        <?php if (!empty($b['location'])): ?><div class="ts-muted"><?= $e($b['location']) ?></div><?php endif; ?>
+                        <?php if (!empty($b['location'])): ?><div class="ts-muted"><?= $e(te($b['location'])) ?></div><?php endif; ?>
                         <div class="ts-muted"><?= te('{n} classes', ['n' => (int) $b['class_count']]) ?></div>
                         <div class="ts-branch__actions">
                             <?php if (!empty($b['phone1'])): ?><a href="<?= $e(\App\Services\PublicSite::telHref($b['phone1'])) ?>" class="ts-btn ts-btn--blue" style="padding:.5rem 1rem; font-size:.85rem;">&#128222; <?= te('Call') ?></a><?php endif; ?>
@@ -323,42 +312,69 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
 </section>
 <?php endif; ?>
 
+<?php
+// A short teaser only -- the full grade-by-grade timetable with tabs now
+// lives on its own page (PublicController::classesLanding(), /our-classes)
+// so it isn't shown twice. This counts real published classes/grades so
+// the numbers are never invented.
+$__classCount = count($classes);
+$__gradeCount = count($byGrade);
+?>
 <section class="ts-section ts-section--alt" id="classes">
     <div class="ts-wrap">
-        <h2><?= $sc('home_classes_title') ?></h2><div class="ts-title-bar"></div>
-        <p class="ts-lead"><?= $sc('home_classes_text') ?> <a href="<?= BASE_URL ?>/timetable"><?= te('Full timetable') ?> &rarr;</a></p>
-        <?php if ($byGrade === []): ?>
-            <p class="ts-muted"><?= te('The timetable will appear here soon. Please send an inquiry below.') ?></p>
-        <?php endif; ?>
-        <?php if (count($byGrade) > 1): ?>
-        <div class="ts-tabs" role="tablist" aria-label="<?= te('Grade') ?>">
-            <?php $first = true; foreach ($byGrade as $g => $list): ?>
-                <button type="button" class="ts-tab ts-g<?= (int) $g ?>" role="tab" id="tab-g<?= (int) $g ?>" aria-controls="panel-g<?= (int) $g ?>" aria-selected="<?= $first ? 'true' : 'false' ?>"><?= te('Grade {n}', ['n' => $g]) ?></button>
-            <?php $first = false; endforeach; ?>
-        </div>
-        <?php endif; ?>
-        <?php $first = true; foreach ($byGrade as $g => $list): ?>
-            <div class="ts-grade-panel ts-g<?= (int) $g ?>" role="tabpanel" id="panel-g<?= (int) $g ?>" aria-labelledby="tab-g<?= (int) $g ?>" data-first="<?= $first ? '1' : '0' ?>">
-                <h3 style="margin:1rem 0 .7rem;" class="ts-panel-title"><?= te('Grade {n}', ['n' => $g]) ?></h3>
-                <div class="ts-grid"><?php foreach ($list as $c) { require __DIR__ . '/_class-card.php'; } ?></div>
+        <div class="ts-cta">
+            <div>
+                <h2><?= $sc('home_classes_title') ?></h2>
+                <p>
+                    <?= $sc('home_classes_text') ?>
+                    <?php if ($__classCount > 0): ?>
+                        <br><span style="opacity:.85; font-size:.9rem;">
+                            <?= te('{classes} classes across {grades} grades, {branches} branches.', [
+                                'classes'  => $__classCount,
+                                'grades'   => $__gradeCount,
+                                'branches' => count($branches),
+                            ]) ?>
+                        </span>
+                    <?php endif; ?>
+                </p>
             </div>
-        <?php $first = false; endforeach; ?>
-        <script>
-        (function () {
-            var tabs = document.querySelectorAll('.ts-tab');
-            if (!tabs.length) { return; }
-            var panels = document.querySelectorAll('.ts-grade-panel');
-            panels.forEach(function (p) { p.hidden = p.getAttribute('data-first') !== '1'; var t = p.querySelector('.ts-panel-title'); if (t) { t.hidden = true; } });
-            tabs.forEach(function (t) {
-                t.addEventListener('click', function () {
-                    tabs.forEach(function (x) { x.setAttribute('aria-selected', x === t ? 'true' : 'false'); });
-                    panels.forEach(function (p) { p.hidden = p.id !== t.getAttribute('aria-controls'); });
-                });
-            });
-        })();
-        </script>
+            <a href="<?= BASE_URL ?>/our-classes" class="ts-btn ts-btn--yellow"><?= te('View all classes') ?> &rarr;</a>
+        </div>
     </div>
 </section>
+
+<?php if (!empty($seminars)): ?>
+<section class="ts-section" id="seminars">
+    <div class="ts-wrap">
+        <h2><?= te('Upcoming Seminars') ?></h2><div class="ts-title-bar"></div>
+        <p class="ts-lead"><?= te('Special seminars and workshops for students and parents') ?></p>
+        <div class="ts-grid">
+            <?php foreach ($seminars as $sem): ?>
+                <?php $cover = \App\Services\SeminarService::coverSrc($sem['cover_image_url'] ?? null); ?>
+                <a href="<?= BASE_URL ?>/seminar/<?= (int) $sem['id'] ?>" class="ts-card ts-reveal" style="text-decoration:none; color:inherit; display:flex; flex-direction:column;">
+                    <?php if ($cover): ?>
+                        <img src="<?= htmlspecialchars($cover, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($sem['title'] ?? '', ENT_QUOTES, 'UTF-8') ?>" style="width:100%; border-radius:12px 12px 0 0; aspect-ratio:16/9; object-fit:cover;">
+                    <?php else: ?>
+                        <div style="width:100%; aspect-ratio:16/9; background:linear-gradient(135deg,#1D4ED8,#172554); border-radius:12px 12px 0 0; display:grid; place-items:center; color:#fff; font-size:2.5rem;">&#127891;</div>
+                    <?php endif; ?>
+                    <div style="padding:1rem; flex:1; display:flex; flex-direction:column;">
+                        <h3 style="margin:0 0 .4rem; font-size:1.05rem; color:#1E293B;"><?= htmlspecialchars($sem['title'] ?? '', ENT_QUOTES, 'UTF-8') ?></h3>
+                        <?php if (!empty($sem['event_date'])): ?>
+                            <div style="font-size:.85rem; color:#64748B; margin-bottom:.3rem;">&#128197; <?= date('l, j M Y', strtotime($sem['event_date'])) ?></div>
+                        <?php endif; ?>
+                        <?php if (!empty($sem['venue'])): ?>
+                            <div style="font-size:.85rem; color:#64748B;">&#128205; <?= htmlspecialchars($sem['venue'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <?php endif; ?>
+                        <div style="margin-top:auto; padding-top:.8rem;">
+                            <span style="color:#1D4ED8; font-weight:600; font-size:.9rem;"><?= te('View details') ?> &rarr;</span>
+                        </div>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
 
 <section class="ts-section">
     <div class="ts-wrap ts-faq">
@@ -390,7 +406,7 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
                     <?php endforeach; ?>
                 </ul>
                 <?php foreach ($branches as $b): if (!empty($b['phone1'])): ?>
-                    <div style="font-size:.9rem; margin-top:.3rem;"><strong><?= $e($b['name']) ?></strong> &middot; <a href="<?= $e(\App\Services\PublicSite::telHref($b['phone1'])) ?>"><?= $e($b['phone1']) ?></a></div>
+                    <div style="font-size:.9rem; margin-top:.3rem;"><strong><?= $e(te($b['name'])) ?></strong> &middot; <a href="<?= $e(\App\Services\PublicSite::telHref($b['phone1'])) ?>"><?= $e($b['phone1']) ?></a></div>
                 <?php endif; endforeach; ?>
             </div>
             <div class="ts-join__form">
@@ -412,7 +428,7 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
                     </select></div>
                 <div><label for="iq-branch"><?= te('Branch') ?> *</label>
                     <select id="iq-branch" name="branch_id" required><option value=""><?= te('Choose') ?></option>
-                        <?php foreach ($branches as $b): ?><option value="<?= (int) $b['id'] ?>" <?= $pickBranch === (int) $b['id'] ? 'selected' : '' ?>><?= $e($b['name']) ?></option><?php endforeach; ?>
+                        <?php foreach ($branches as $b): ?><option value="<?= (int) $b['id'] ?>" <?= $pickBranch === (int) $b['id'] ? 'selected' : '' ?>><?= $e(te($b['name'])) ?></option><?php endforeach; ?>
                     </select></div>
                 <div style="grid-column:1/-1;"><label for="iq-msg"><?= te('Anything we should know? (optional)') ?></label><textarea id="iq-msg" name="message" rows="3" maxlength="2000"></textarea></div>
             </div>

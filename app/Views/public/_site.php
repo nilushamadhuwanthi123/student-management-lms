@@ -123,6 +123,35 @@ a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-
 .ts-icon svg { width: 22px; height: 22px; }
 .ts-teacher { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 2.5rem; align-items: center; }
 @media (max-width: 880px) { .ts-teacher { grid-template-columns: 1fr; } }
+/* ---- Classes landing page: branch photo + "My Classes" row -------- */
+/* Desktop: photo (left, large) and info (right) side by side. Tablet/phone
+   (<=880px): stacks to one column so the photo never gets squeezed. */
+.ts-branch-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(190px, 1fr); gap: 2.2rem; align-items: center; }
+@media (max-width: 880px) { .ts-branch-row { grid-template-columns: 1fr; gap: 1.1rem; } }
+.ts-branch-photo { position: relative; padding: 0; overflow: hidden; }
+/* Kept short on purpose: a tall banner can fill the whole first screen
+   and hide the branches listed below it. A wider, shorter strip lets
+   more than one branch show at once without scrolling. */
+/* width:100% is pinned on purpose: with only aspect-ratio + max-height
+   set, a browser derives width from the ratio too once max-height
+   clamps the height, which left a blank gap down one side of the card
+   instead of the photo/placeholder filling it. Pinning width keeps the
+   box always full-width and lets height be the only dimension the
+   ratio and the clamp are allowed to adjust. */
+.ts-branch-media { width: 100%; aspect-ratio: 16 / 7; max-height: 230px; overflow: hidden; background: #EFF6FF; }
+.ts-branch-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 880px) { .ts-branch-media { aspect-ratio: 16 / 8; max-height: 200px; } }
+@media (max-width: 480px) { .ts-branch-media { aspect-ratio: 16 / 9; max-height: 180px; } }
+/* CMS-controlled override (Institutes > Edit > "Photo/video banner
+   size"): small/large tweak the same short-banner idea up or down a
+   little, without ever going back to the old full-screen-tall photo. */
+.ts-branch-media--small { max-height: 160px; }
+.ts-branch-media--large { max-height: 320px; }
+@media (max-width: 880px) { .ts-branch-media--small { max-height: 150px; } .ts-branch-media--large { max-height: 260px; } }
+@media (max-width: 480px) { .ts-branch-media--small { max-height: 130px; } .ts-branch-media--large { max-height: 220px; } }
+.ts-branch-num { position: absolute; top: .8rem; left: .8rem; z-index: 2; width: 1.9rem; height: 1.9rem; border-radius: 999px; background: rgba(255,255,255,.92); color: #0A2A6B; font-weight: 800; font-size: .85rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(2,6,23,.18); }
+.ts-branch-video { position: absolute; top: .8rem; right: .8rem; z-index: 2; display: flex; align-items: center; gap: .3rem; background: rgba(10,20,50,.6); backdrop-filter: blur(6px); color: #fff !important; font-size: .72rem; font-weight: 600; padding: .3rem .6rem; border-radius: 999px; text-decoration: none; }
+@media (max-width: 880px) { .ts-branch-row .ts-branch-photo { min-width: 0; } }
 .ts-teacher__img { border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px -28px rgba(15,23,42,.5); aspect-ratio: 3 / 2; position: relative; }
 .ts-teacher__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .ts-teacher__badge { position: absolute; left: 18px; bottom: 18px; background: #fff; color: #0B1B3F !important; border-radius: 14px; padding: .55rem .9rem; box-shadow: 0 16px 34px -16px rgba(2,6,23,.5); display: flex; align-items: center; gap: .55rem; font-weight: 800; font-size: .85rem; }
@@ -211,7 +240,16 @@ a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-
 /* sticky mobile bar */
 .ts-mbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; display: none; gap: .5rem; padding: .6rem .8rem calc(.6rem + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96); backdrop-filter: blur(10px); border-top: 1px solid #E2E8F0; box-shadow: 0 -10px 24px -18px rgba(15,23,42,.5); }
 .ts-mbar a { flex: 1; justify-content: center; }
-@media (max-width: 700px) { .ts-mbar { display: flex; } body.public-layout { padding-bottom: 72px; } .ts-float { display: none; } }
+/* The 72px bottom reserve is only correct on the page that actually has
+   a .ts-mbar bar (the home page) -- every other public page that merely
+   includes this shared stylesheet was getting the same blank 72px gap
+   with nothing in it, which pushed the real footer content up into the
+   chat bubble's own reserved space and caused the two to overlap. */
+@media (max-width: 700px) {
+  .ts-mbar { display: flex; }
+  body.public-layout:has(.ts-mbar) { padding-bottom: 72px; }
+  .ts-float { display: none; }
+}
 .ts-mbar a { white-space: nowrap; font-size: .9rem; }
 @media (prefers-reduced-motion: reduce) { .ts-float svg, .ts-photo__ring { animation: none; } .ts-btn:hover { transform: none; } }
 

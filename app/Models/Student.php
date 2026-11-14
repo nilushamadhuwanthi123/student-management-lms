@@ -69,15 +69,66 @@ class Student extends BaseModel
         $year = date('Y');
         $pattern = "STU{$year}%";
 
-        $sql = "SELECT student_id_display FROM {$this->table}
-                WHERE student_id_display LIKE :pattern
-                ORDER BY student_id_display DESC LIMIT 1";
+        // Sorting student_id_display as a STRING breaks the moment two
+        // different digit-widths exist side by side (e.g. an older
+        // 4-digit id like STU20260229 next to a 5-digit one like
+        // STU202600230) -- "0229" sorts above "00230" as text, so the
+        // real highest sequence number is missed and a freshly computed
+        // "next" id can collide with one that already exists. Casting
+        // the numeric tail and taking MAX() is immune to the padding
+        // width, so this keeps working even on data seeded inconsistently.
+        $sql = "SELECT MAX(CAST(SUBSTRING(student_id_display, 8) AS UNSIGNED)) AS max_seq
+                FROM {$this->table}
+                WHERE student_id_display LIKE :pattern";
         $stmt = $this->query($sql, [':pattern' => $pattern]);
-        $last = $stmt->fetch();
+        $row = $stmt->fetch();
 
-        $seq = $last ? (int) substr($last['student_id_display'], 7) + 1 : 1;
+        $seq = ((int) ($row['max_seq'] ?? 0)) + 1;
 
         return 'STU' . $year . str_pad((string) $seq, 5, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Create a student with a freshly generated student_id_display,
+     * retrying with the next id if a concurrent request already took the
+     * one just generated.
+     *
+     * generateStudentId() reads MAX(sequence) and adds one, with no lock
+     * held in between -- two enrolment approvals (or a manual add)
+     * running at nearly the same moment can both read the same MAX and
+     * both compute the same "next" id, so the second INSERT hits the
+     * uk_student_id_display unique key and fails (seen in production as
+     * "Enrolment approval failed: ... Duplicate entry 'STU...' for key
+     * 'uk_student_id_display'", the same id every retry since nothing
+     * had advanced MAX() in between). Catching exactly that duplicate
+     * and generating again -- MAX() now reflects the row that just won
+     * the race -- clears it without needing a table lock around every
+     * student insert.
+     *
+     * @param array $data attributes for create(), WITHOUT student_id_display (this sets it)
+     * @return array{id: int, student_id_display: string}
+     * @throws \PDOException any insert failure other than a student_id_display collision,
+     *                        or a collision that still hasn't cleared after $maxAttempts
+     */
+    public function createWithGeneratedId(array $data, int $maxAttempts = 5): array
+    {
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            $studentIdDisplay = $this->generateStudentId();
+            $data['student_id_display'] = $studentIdDisplay;
+            try {
+                $id = $this->create($data);
+                return ['id' => $id, 'student_id_display' => $studentIdDisplay];
+            } catch (\PDOException $e) {
+                $isIdCollision = $e->getCode() === '23000' && stripos($e->getMessage(), 'uk_student_id_display') !== false;
+                if (!$isIdCollision || $attempt === $maxAttempts) {
+                    throw $e;
+                }
+                // Another request just took this id -- loop and generate the next one.
+            }
+        }
+
+        // Unreachable (the loop always returns or throws), kept for static analysis.
+        throw new \RuntimeException('Could not generate a unique student id.');
     }
 
     // ─── Authentication ──────────────────────────────────────────────

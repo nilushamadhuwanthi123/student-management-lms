@@ -124,7 +124,7 @@ $typeIcon = [
                         </td>
                         <td class="text-right">
                             <strong><?= (int) ($m['view_count'] ?? 0) ?></strong>
-                            <span class="text-sm text-muted">student<?= (int) ($m['view_count'] ?? 0) === 1 ? '' : 's' ?></span>
+                            <span class="text-sm text-muted"><?= te('student') ?><?= (int) ($m['view_count'] ?? 0) === 1 ? '' : 's' ?></span>
                         </td>
                         <td>
                             <span class="badge" style="background:<?= $m['status'] === 'published' ? 'var(--success-light); color:var(--success)' : 'var(--warning-light); color:var(--warning)' ?>;">

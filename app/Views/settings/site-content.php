@@ -54,6 +54,14 @@ $stored = static function (array $values, string $key, string $lang): string {
         <section class="card sc-group">
             <h2 class="sc-group__title"><?= te($groupLabel) ?></h2>
 
+            <?php if ($groupKey === 'classes'): ?>
+                <div class="sc-addbranch">
+                    <span><?= te('This section only edits the heading text above the branch list. Each box on the Classes page is one branch.') ?></span>
+                    <a href="<?= BASE_URL ?>/institutes/create" class="btn btn--sm btn--primary">+ <?= te('Add a new branch') ?></a>
+                    <a href="<?= BASE_URL ?>/institutes" class="btn btn--sm btn--ghost"><?= te('Manage branches (photo, video, description)') ?></a>
+                </div>
+            <?php endif; ?>
+
             <?php foreach ($groupFields as $key => $field): ?>
                 <?php $type = $field['type'] ?? SiteContentService::TYPE_TEXT; ?>
                 <div class="form-group sc-field">
@@ -146,6 +154,9 @@ $stored = static function (array $values, string $key, string $lang): string {
 .sc-image__input { flex: 1; min-width: 220px; }
 .sc-image__remove { display: flex; align-items: center; gap: .4rem; margin-top: .5rem; font-size: .85rem; }
 .sc-save { position: sticky; bottom: 0; padding: .9rem 0; background: var(--surface, #fff); border-top: 1px solid var(--border-color, #e5e7eb); }
+.sc-addbranch { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: .6rem; padding: .7rem .9rem; margin: -.25rem 0 1.25rem; }
+.sc-addbranch span { font-size: .85rem; color: var(--text-muted, #475569); flex: 1 1 260px; }
+.sc-addbranch .btn--sm { padding: .35rem .75rem; font-size: .82rem; }
 .rte__toolbar { display: flex; gap: .25rem; margin-bottom: .35rem; flex-wrap: wrap; }
 .rte__toolbar button { border: 1px solid var(--border-color, #ddd); background: #fff; border-radius: .35rem; padding: .3rem .6rem; font-size: .85rem; cursor: pointer; line-height: 1; }
 .rte__toolbar button:hover { background: #f2f2f2; }

@@ -17,7 +17,10 @@ use PDO;
  */
 class InquiryController extends BaseController
 {
-    private const ROLES = ['super_admin', 'admin', 'coordinator', 'staff'];
+    // Staff deliberately left out: enrolment inquiries go to the branch's
+    // admin/coordinator, not the front-office staff. Super admin keeps
+    // oversight of every branch's inquiries.
+    private const ROLES = ['super_admin', 'admin', 'coordinator'];
 
     public function index(): void
     {
@@ -60,6 +63,38 @@ class InquiryController extends BaseController
         }
 
         $this->redirect('/inquiries');
+    }
+
+    /**
+     * "Approve" an enrolment inquiry: marks it responded and sends the
+     * admin/coordinator straight to the student registration form with
+     * the parent's details already filled in, so nothing from the
+     * inquiry has to be retyped. Registering the student is still a
+     * separate, deliberate step -- approving an inquiry never creates a
+     * login on its own.
+     */
+    public function approve(string $id): void
+    {
+        $this->guard();
+        verifyCsrfToken();
+
+        $id = (int) $id;
+        $stmt = $this->db->prepare("SELECT m.* FROM contact_messages m WHERE m.id = :id AND m.kind = 'enrollment' AND " . $this->scopeSql());
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row === false) {
+            $this->flash('error', 'That inquiry was not found, or is not an enrolment inquiry for your branch.');
+            $this->redirect('/inquiries');
+        }
+
+        $this->db->prepare("UPDATE contact_messages SET status = 'responded' WHERE id = :id")->execute([':id' => $id]);
+        try {
+            (new \AuditLog())->log((int) session_get('user_id'), 'user', (string) session_get('user_role'), 'inquiry_approve', 'contact_message', $id, ['student_name' => $row['student_name'] ?? '']);
+        } catch (\Throwable $e) {
+            error_log('Inquiry audit failed: ' . $e->getMessage());
+        }
+
+        $this->redirect('/students/create?from_inquiry=' . $id);
     }
 
     private function guard(): void
