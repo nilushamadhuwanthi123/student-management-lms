@@ -21,7 +21,7 @@ class SecurityHeaders
             . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; "
             . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             . "font-src 'self' https://fonts.gstatic.com; "
-            . "img-src 'self' data:; "
+            . "img-src 'self' data: https://img.youtube.com; "
             . "connect-src 'self'; "
             // The contact page embeds a Google map per branch. Without
             // this, frame-src falls back to default-src 'self' and every
