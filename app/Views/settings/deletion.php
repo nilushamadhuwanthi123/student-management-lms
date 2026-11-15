@@ -51,8 +51,8 @@ if (empty($paths)) {
             <div style="padding:1rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-sunken);">
                 <div class="d-flex items-center justify-between flex-wrap gap-1">
                     <div>
-                        <h4 style="margin-bottom:0.15rem;"><?= htmlspecialchars(te($path['label']), ENT_QUOTES, 'UTF-8') ?></h4>
-                        <p class="text-sm text-muted" style="margin-bottom:0.5rem;"><?= htmlspecialchars(te($path['description']), ENT_QUOTES, 'UTF-8') ?></p>
+                        <h4 style="margin-bottom:0.15rem;"><?= te($path['label']) ?></h4>
+                        <p class="text-sm text-muted" style="margin-bottom:0.5rem;"><?= te($path['description']) ?></p>
                     </div>
                     <span class="badge badge--neutral"><?= te('Path {n}', ['n' => (int) $num]) ?></span>
                 </div>
@@ -64,7 +64,7 @@ if (empty($paths)) {
                     foreach ($chain as $j => $step):
                     ?>
                         <?php if ($j > 0): ?><span class="text-muted">&rarr;</span><?php endif; ?>
-                        <span class="badge badge--info"><?= htmlspecialchars(te($step), ENT_QUOTES, 'UTF-8') ?></span>
+                        <span class="badge badge--info"><?= te($step) ?></span>
                     <?php endforeach; ?>
                 </div>
             </div>

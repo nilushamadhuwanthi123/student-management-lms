@@ -50,7 +50,7 @@ $totalPages  = $totalPages ?? 1;
                     <option value=""><?= te('All Actions') ?></option>
                     <?php foreach ($actionTypes as $at): ?>
                         <option value="<?= htmlspecialchars($at, ENT_QUOTES, 'UTF-8') ?>" <?= ($filters['action_type'] ?? '') === $at ? 'selected' : '' ?>>
-                            <?= htmlspecialchars(te(ucwords(str_replace('_', ' ', $at))), ENT_QUOTES, 'UTF-8') ?>
+                            <?= te(ucwords(str_replace('_', ' ', $at))) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -61,7 +61,7 @@ $totalPages  = $totalPages ?? 1;
                     <option value=""><?= te('All Entities') ?></option>
                     <?php foreach ($entityTypes as $et): ?>
                         <option value="<?= htmlspecialchars($et, ENT_QUOTES, 'UTF-8') ?>" <?= ($filters['entity_type'] ?? '') === $et ? 'selected' : '' ?>>
-                            <?= htmlspecialchars(te(ucfirst($et)), ENT_QUOTES, 'UTF-8') ?>
+                            <?= te(ucfirst($et)) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -104,12 +104,12 @@ $totalPages  = $totalPages ?? 1;
                         <td class="text-sm" style="white-space:nowrap;"><?= htmlspecialchars($log['created_at'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="font-medium"><?= htmlspecialchars($log['user_name'] ?? te('System'), ENT_QUOTES, 'UTF-8') ?></td>
                         <td>
-                            <span class="badge badge--neutral"><?= htmlspecialchars(te(ucwords(str_replace('_', ' ', $log['user_role'] ?? ''))), ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="badge badge--neutral"><?= te(ucwords(str_replace('_', ' ', $log['user_role'] ?? ''))) ?></span>
                         </td>
                         <td>
-                            <span class="badge badge--info"><?= htmlspecialchars(te(ucwords(str_replace('_', ' ', $log['action'] ?? ''))), ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="badge badge--info"><?= te(ucwords(str_replace('_', ' ', $log['action'] ?? ''))) ?></span>
                         </td>
-                        <td class="text-sm"><?= htmlspecialchars(te(ucfirst($log['entity_type'] ?? '')), ENT_QUOTES, 'UTF-8') ?> #<?= (int) ($log['entity_id'] ?? 0) ?></td>
+                        <td class="text-sm"><?= te(ucfirst($log['entity_type'] ?? '')) ?> #<?= (int) ($log['entity_id'] ?? 0) ?></td>
                         <td class="text-sm truncate" style="max-width:200px;" title="<?= htmlspecialchars($log['details'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                             <?= htmlspecialchars($log['details'] ?? '-', ENT_QUOTES, 'UTF-8') ?>
                         </td>

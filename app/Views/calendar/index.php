@@ -35,7 +35,7 @@ $q = $instituteId !== null ? '&institute_id=' . $instituteId : '';
                 <option value=""><?= te('All branches') ?></option>
                 <?php foreach ($institutes as $institute): ?>
                     <option value="<?= (int) $institute['id'] ?>" <?= $instituteId === (int) $institute['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars(te($institute['name']), ENT_QUOTES, 'UTF-8') ?>
+                        <?= te($institute['name']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -69,10 +69,10 @@ $q = $instituteId !== null ? '&institute_id=' . $instituteId : '';
                 <?php foreach ($upcoming as $item): ?>
                     <div style="padding:.5rem 0; border-top:1px solid var(--border);">
                         <div class="text-sm" style="font-weight:600;">
-                            <?= htmlspecialchars(te($item['title']), ENT_QUOTES, 'UTF-8') ?>
+                            <?= te($item['title']) ?>
                         </div>
                         <div class="text-sm text-muted">
-                            <?= htmlspecialchars(te($item['detail']), ENT_QUOTES, 'UTF-8') ?>
+                            <?= te($item['detail']) ?>
                             &middot; <?= date('D j M', strtotime($item['date'])) ?>
                             <?= $item['start_time'] !== null ? ' ' . te('at {time}', ['time' => $item['start_time']]) : '' ?>
                         </div>
@@ -127,7 +127,7 @@ $q = $instituteId !== null ? '&institute_id=' . $instituteId : '';
                 <option value=""><?= te('Everyone (holiday or school-wide notice)') ?></option>
                 <?php foreach ($classes as $class): ?>
                     <option value="<?= (int) $class['id'] ?>">
-                        <?= htmlspecialchars(te($class['class_name']), ENT_QUOTES, 'UTF-8') ?>
+                        <?= te($class['class_name']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>

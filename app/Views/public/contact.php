@@ -25,9 +25,9 @@ require __DIR__ . '/_site.php';
         <div class="ts-grid">
             <?php foreach ($branches as $b): ?>
                 <div class="ts-card ts-reveal">
-                    <h3><?= $e(te($b['name'])) ?></h3>
+                    <h3><?= te($b['name']) ?></h3>
                     <?php if (!empty($b['location'])): ?>
-                        <div class="ts-muted"><?= $e(te($b['location'])) ?></div>
+                        <div class="ts-muted"><?= te($b['location']) ?></div>
                         <a class="ts-muted" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query=<?= rawurlencode($b['name'] . ' ' . $b['location']) ?>"><?= te('Open in Maps') ?></a>
                         <iframe
                             src="<?= $e(PublicSite::mapEmbedUrl($b)) ?>"

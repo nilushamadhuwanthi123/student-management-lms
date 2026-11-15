@@ -51,14 +51,14 @@ $userType = $userType ?? 'user';
                     <tr>
                         <td class="text-sm" style="white-space:nowrap;"><?= htmlspecialchars($log['created_at'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                         <td>
-                            <span class="badge badge--info"><?= htmlspecialchars(te(ucwords(str_replace('_', ' ', $log['action'] ?? ''))), ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="badge badge--info"><?= te(ucwords(str_replace('_', ' ', $log['action'] ?? ''))) ?></span>
                         </td>
                         <td>
-                            <span class="badge badge--neutral"><?= htmlspecialchars(te(ucwords(str_replace('_', ' ', $log['user_role'] ?? 'user'))), ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="badge badge--neutral"><?= te(ucwords(str_replace('_', ' ', $log['user_role'] ?? 'user'))) ?></span>
                         </td>
                         <td class="text-sm">
                             <?php if (!empty($log['entity_type'])): ?>
-                                <?= htmlspecialchars(te(ucfirst($log['entity_type'])), ENT_QUOTES, 'UTF-8') ?>
+                                <?= te(ucfirst($log['entity_type'])) ?>
                                 <?php if (!empty($log['entity_id'])): ?>
                                     <span class="font-medium">#<?= (int) $log['entity_id'] ?></span>
                                 <?php endif; ?>
