@@ -47,24 +47,39 @@ final class PublicSite
         return self::$cache['branches'];
     }
 
-    /** The teacher of most public classes, or null. Name shown in the visitor's language when a translation exists. */
+    /**
+     * The teacher's name to show publicly, or null if there is none yet.
+     *
+     * A super admin can set Settings > Website Content > "Teacher's name"
+     * to force this -- useful before any class has a teacher assigned, so
+     * the teacher photo and "Your teacher" section can go live on day one
+     * instead of waiting on branches/classes/teacher-assignment to exist.
+     * Without that override, it is worked out from the teacher who teaches
+     * the most active classes at a public, active branch, same as before.
+     */
     public static function teacherName(): ?string
     {
         if (!array_key_exists('teacher', self::$cache)) {
             self::$cache['teacher'] = null;
-            $db = self::db();
-            if ($db) {
-                try {
-                    $name = $db->query(
-                        "SELECT u.full_name FROM classes c
-                           JOIN institutes i ON i.id = c.institute_id AND i.is_public = 1 AND i.status = 'active'
-                           JOIN users u ON u.id = c.teacher_id
-                          WHERE c.status = 'active'
-                       GROUP BY u.id ORDER BY COUNT(*) DESC LIMIT 1"
-                    )->fetchColumn();
-                    self::$cache['teacher'] = $name !== false ? (string) $name : null;
-                } catch (\Throwable $e) {
-                    error_log('Public teacher unavailable: ' . $e->getMessage());
+
+            $override = trim((new SiteContentService())->get('teacher_name_override'));
+            if ($override !== '') {
+                self::$cache['teacher'] = $override;
+            } else {
+                $db = self::db();
+                if ($db) {
+                    try {
+                        $name = $db->query(
+                            "SELECT u.full_name FROM classes c
+                               JOIN institutes i ON i.id = c.institute_id AND i.is_public = 1 AND i.status = 'active'
+                               JOIN users u ON u.id = c.teacher_id
+                              WHERE c.status = 'active'
+                           GROUP BY u.id ORDER BY COUNT(*) DESC LIMIT 1"
+                        )->fetchColumn();
+                        self::$cache['teacher'] = $name !== false ? (string) $name : null;
+                    } catch (\Throwable $e) {
+                        error_log('Public teacher unavailable: ' . $e->getMessage());
+                    }
                 }
             }
         }
