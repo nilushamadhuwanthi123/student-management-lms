@@ -28,45 +28,169 @@ class WhatsAppService
     /** Sri Lankan numbers, which is every number in this system. */
     private const COUNTRY_CODE = '94';
 
+    /** Client and sending modes */
+    public const MODE_WA_ME       = 'wa_me';
+    public const MODE_WEB_DIRECT  = 'wa_web';
+    public const MODE_DESKTOP_APP = 'wa_app';
+    public const MODE_GATEWAY     = 'wa_gateway';
+
+    public const MODES = [
+        self::MODE_WA_ME       => 'Standard Click-to-Chat (wa.me link)',
+        self::MODE_WEB_DIRECT  => 'WhatsApp Web (web.whatsapp.com)',
+        self::MODE_DESKTOP_APP => 'WhatsApp Desktop App (whatsapp:// protocol)',
+        self::MODE_GATEWAY     => 'WA Client / HTTP API Gateway (Automatic sending)',
+    ];
+
+    /** Setting keys in system_settings */
+    public const KEY_CLIENT_MODE      = 'wa_client_mode';
+    public const KEY_GATEWAY_URL      = 'wa_gateway_url';
+    public const KEY_GATEWAY_KEY      = 'wa_gateway_key';
+    public const KEY_GATEWAY_INSTANCE = 'wa_gateway_instance';
+    public const KEY_METHOD           = 'wa_method';
+    public const KEY_PAYLOAD_FORMAT   = 'wa_payload_format'; // 'json', 'form'
+    public const KEY_PHONE_PARAM      = 'wa_phone_param';
+    public const KEY_MESSAGE_PARAM    = 'wa_message_param';
+
     public function __construct()
     {
         $this->db = \Database::connect();
     }
 
     /**
-     * Turn a local number into the form wa.me needs.
-     *
-     * Accepts 0771234567, 771234567, +94771234567, 94771234567 and the
-     * same with spaces or dashes. Returns null for anything that does
-     * not look like a mobile number, so a bad row is skipped rather
-     * than producing a link to nowhere.
+     * Get all WA Client configuration settings.
+     * @return array<string, string>
      */
-    public static function normalisePhone(?string $raw): ?string
+    public function config(): array
     {
-        if ($raw === null) {
-            return null;
+        $keys = [
+            self::KEY_CLIENT_MODE,
+            self::KEY_GATEWAY_URL,
+            self::KEY_GATEWAY_KEY,
+            self::KEY_GATEWAY_INSTANCE,
+            self::KEY_METHOD,
+            self::KEY_PAYLOAD_FORMAT,
+            self::KEY_PHONE_PARAM,
+            self::KEY_MESSAGE_PARAM,
+        ];
+        $defaults = [
+            self::KEY_CLIENT_MODE      => self::MODE_WA_ME,
+            self::KEY_GATEWAY_URL      => '',
+            self::KEY_GATEWAY_KEY      => '',
+            self::KEY_GATEWAY_INSTANCE => '',
+            self::KEY_METHOD           => 'POST',
+            self::KEY_PAYLOAD_FORMAT   => 'json',
+            self::KEY_PHONE_PARAM      => 'number',
+            self::KEY_MESSAGE_PARAM    => 'message',
+        ];
+        $settings = new \Setting();
+        $out = [];
+        foreach ($keys as $k) {
+            $out[$k] = (string) ($settings->get($k, $defaults[$k] ?? '') ?? $defaults[$k] ?? '');
+        }
+        return $out;
+    }
+
+    /**
+     * Whether a WA Client REST gateway is configured.
+     */
+    public function isGatewayConfigured(): bool
+    {
+        $cfg = $this->config();
+        return ($cfg[self::KEY_CLIENT_MODE] === self::MODE_GATEWAY)
+            && filter_var($cfg[self::KEY_GATEWAY_URL], FILTER_VALIDATE_URL) !== false;
+    }
+
+    /**
+     * Dispatch a message via the configured WA Client REST API Gateway.
+     * @return array{ok: bool, message: string, response?: mixed}
+     */
+    public function sendViaGateway(string $phone, string $body): array
+    {
+        $cfg = $this->config();
+        $url = trim($cfg[self::KEY_GATEWAY_URL]);
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return ['ok' => false, 'message' => 'Invalid WA Client Gateway URL.'];
         }
 
-        $digits = preg_replace('/\D+/', '', $raw) ?? '';
-
-        if ($digits === '') {
-            return null;
+        $normalised = self::normalisePhone($phone);
+        if ($normalised === null) {
+            return ['ok' => false, 'message' => 'Invalid phone number format.'];
         }
 
-        // 0771234567 -> 94771234567
-        if (str_starts_with($digits, '0')) {
-            $digits = self::COUNTRY_CODE . substr($digits, 1);
-        } elseif (str_starts_with($digits, '7') && strlen($digits) === 9) {
-            // 771234567, written without the leading zero
-            $digits = self::COUNTRY_CODE . $digits;
+        $method = strtoupper($cfg[self::KEY_METHOD] ?: 'POST');
+        $format = $cfg[self::KEY_PAYLOAD_FORMAT] ?: 'json';
+        $phoneKey = $cfg[self::KEY_PHONE_PARAM] ?: 'number';
+        $msgKey = $cfg[self::KEY_MESSAGE_PARAM] ?: 'message';
+        $instance = $cfg[self::KEY_GATEWAY_INSTANCE] ?: '';
+        $apiKey = $cfg[self::KEY_GATEWAY_KEY] ?: '';
+
+        $params = [
+            $phoneKey => $normalised,
+            $msgKey   => $body,
+        ];
+        if ($instance !== '') {
+            $params['instance_id'] = $instance;
+            $params['session'] = $instance;
         }
 
-        // A Sri Lankan mobile is 94 then nine digits beginning with 7.
-        if (!preg_match('/^947\d{8}$/', $digits)) {
-            return null;
+        $ch = curl_init();
+        $headers = ['User-Agent: Student-LMS-WA-Client/1.0'];
+        if ($apiKey !== '') {
+            $headers[] = 'Authorization: Bearer ' . $apiKey;
+            $headers[] = 'X-API-Key: ' . $apiKey;
         }
 
-        return $digits;
+        if ($method === 'GET') {
+            $query = http_build_query($params);
+            $fullUrl = str_contains($url, '?') ? ($url . '&' . $query) : ($url . '?' . $query);
+            curl_setopt($ch, CURLOPT_URL, $fullUrl);
+        } else {
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            if ($format === 'json') {
+                $headers[] = 'Content-Type: application/json';
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+            } else {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+            }
+        }
+
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_TIMEOUT        => 12,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_SSL_VERIFYPEER => false,
+        ]);
+
+        $response = curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err = curl_error($ch);
+        curl_close($ch);
+
+        if ($response === false || $err) {
+            return ['ok' => false, 'message' => 'Connection to WA Client failed: ' . $err];
+        }
+
+        if ($status >= 200 && $status < 300) {
+            return ['ok' => true, 'response' => $response, 'message' => 'Message successfully dispatched to WA Client.'];
+        }
+
+        return ['ok' => false, 'status' => $status, 'message' => 'WA Client returned HTTP ' . $status . ': ' . mb_substr((string) $response, 0, 150)];
+    }
+
+    /**
+     * Get the configured click-to-chat link.
+     */
+    public function getChatLink(string $phone, string $body): string
+    {
+        $cfg = $this->config();
+        $mode = $cfg[self::KEY_CLIENT_MODE] ?? self::MODE_WA_ME;
+        return match ($mode) {
+            self::MODE_WEB_DIRECT  => 'https://web.whatsapp.com/send?phone=' . $phone . '&text=' . rawurlencode($body),
+            self::MODE_DESKTOP_APP => 'whatsapp://send?phone=' . $phone . '&text=' . rawurlencode($body),
+            default                => 'https://wa.me/' . $phone . '?text=' . rawurlencode($body),
+        };
     }
 
     /**
@@ -74,7 +198,11 @@ class WhatsAppService
      */
     public static function chatLink(string $phone, string $body): string
     {
-        return 'https://wa.me/' . $phone . '?text=' . rawurlencode($body);
+        try {
+            return (new self())->getChatLink($phone, $body);
+        } catch (\Throwable $e) {
+            return 'https://wa.me/' . $phone . '?text=' . rawurlencode($body);
+        }
     }
 
     /**

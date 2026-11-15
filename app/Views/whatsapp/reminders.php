@@ -256,6 +256,14 @@ $totalOwed   = $totalOwed ?? 0.0;
                     return;
                 }
 
+                if (res.gateway && res.sent) {
+                    btn.style.display = 'none';
+                    state.style.display = '';
+                    state.style.color = '#16a34a';
+                    state.innerHTML = '<strong style="color:#16a34a;">&#10003; ' + (window.__te ? window.__te('Sent via WA Client') : 'Sent via WA Client') + '</strong>';
+                    return;
+                }
+
                 window.open(btn.dataset.link, '_blank', 'noopener');
 
                 // The teacher is the only one who knows whether it

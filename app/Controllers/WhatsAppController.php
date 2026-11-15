@@ -147,6 +147,15 @@ class WhatsAppController extends BaseController
             'body'           => $body,
         ]);
 
+        if ($this->wa->isGatewayConfigured()) {
+            $gwRes = $this->wa->sendViaGateway($phone, $body);
+            if ($gwRes['ok']) {
+                $this->wa->markSent($id, (int) session_get('user_id'));
+                $this->json(['ok' => true, 'id' => $id, 'gateway' => true, 'sent' => true]);
+                return;
+            }
+        }
+
         $this->json(['ok' => true, 'id' => $id]);
     }
 

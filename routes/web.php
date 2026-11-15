@@ -548,6 +548,9 @@ $router->post('/classes/{id}/update-room', ['App\Controllers\ClassController', '
     $router->get('/settings/email', ['App\Controllers\SettingsController', 'email']);
     $router->post('/settings/email', ['App\Controllers\SettingsController', 'updateEmail']);
     $router->post('/settings/email/test', ['App\Controllers\SettingsController', 'testEmail']);
+    $router->get('/settings/whatsapp', ['App\Controllers\SettingsController', 'whatsapp']);
+    $router->post('/settings/whatsapp', ['App\Controllers\SettingsController', 'updateWhatsapp']);
+    $router->post('/settings/whatsapp/test', ['App\Controllers\SettingsController', 'testWhatsapp']);
     $router->get('/settings/translations', ['App\Controllers\TranslationController', 'index']);
     $router->post('/settings/translations/update', ['App\Controllers\TranslationController', 'update']);
     $router->get('/settings/ads', ['App\Controllers\SettingsController', 'ads']);
