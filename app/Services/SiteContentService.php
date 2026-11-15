@@ -89,6 +89,12 @@ final class SiteContentService
         ],
 
         // -- Home page: your teacher -----------------------------------------
+        'teacher_name_override' => [
+            'label'   => 'Teacher\'s name (overrides the name worked out from classes/branches below -- set this so the teacher photo and "Your teacher" section show even before any class has a teacher assigned)',
+            'default' => '',
+            'type'    => self::TYPE_TEXT,
+            'group'   => 'teacher',
+        ],
         'home_teacher_kicker' => [
             'label'   => 'Small label above the teacher\'s name',
             'default' => 'Your teacher',
