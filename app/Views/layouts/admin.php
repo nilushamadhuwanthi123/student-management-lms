@@ -58,10 +58,18 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=<?= @filemtime(BASE_PATH . '/public/assets/css/style.css') ?: 1 ?>">
     <style>
         .navbar-admin {
-            padding-left: calc(var(--sidebar-width) + 1.5rem);
+            padding-left: 1rem;
+            padding-right: 1.5rem;
         }
-        @media (max-width: 1024px) {
-            .navbar-admin { padding-left: 1rem; }
+        html[data-sidebar="collapsed"] .sidebar__header {
+            justify-content: center !important;
+            padding: 0.75rem 0 !important;
+        }
+        html[data-sidebar="collapsed"] .sidebar__brand-logo {
+            margin: 0 auto !important;
+        }
+        html[data-sidebar="collapsed"] .sidebar-collapse-btn {
+            display: none !important;
         }
         .navbar__right {
             display: flex;
@@ -186,16 +194,25 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             padding-top: 64px;
         }
         .sidebar-toggle-mobile {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text);
-            font-size: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 1.25rem;
             cursor: pointer;
-            padding: 0.25rem;
+            margin-right: 0.75rem;
+            flex: 0 0 38px;
+            transition: all var(--transition);
         }
-        @media (max-width: 1024px) {
-            .sidebar-toggle-mobile { display: block; }
+        .sidebar-toggle-mobile:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
         }
     </style>
 </head>
@@ -277,8 +294,8 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar__header">
-            <span aria-hidden="true" style="width:30px;height:30px;flex:0 0 30px;border-radius:9px;background:#FACC15;display:grid;place-items:center;color:#0B1B3F;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg>
+            <span class="sidebar__brand-logo" aria-hidden="true" style="width:32px;height:32px;flex:0 0 32px;border-radius:9px;background:#FACC15;display:grid;place-items:center;color:#0B1B3F;cursor:pointer;" title="<?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?>">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg>
             </span>
             <span class="sidebar__brand-text" title="<?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?>" style="min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2;font-size:.95rem;white-space:normal;"><?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?></span>
 
@@ -546,6 +563,9 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <div class="sidebar__sub-links <?= $activePage === 'whatsapp' ? 'open' : '' ?>" id="whatsapp-sub">
                     <a href="<?= BASE_URL ?>/whatsapp/reminders" class="sidebar__sub-link"><?= te('Fee Reminders') ?></a>
                     <a href="<?= BASE_URL ?>/whatsapp/log" class="sidebar__sub-link"><?= te('Message Log') ?></a>
+                    <?php if ($userRole === 'super_admin'): ?>
+                    <a href="<?= BASE_URL ?>/settings/whatsapp" class="sidebar__sub-link <?= ($activePage === 'settings' && ($activeSubPage ?? '') === 'whatsapp') ? 'active' : '' ?>"><?= te('WA Client Config') ?></a>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endif; ?>
@@ -699,6 +719,7 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                     <a href="<?= BASE_URL ?>/settings/ads" class="sidebar__sub-link <?= $activeSubPage === 'ads' ? 'active' : '' ?>"><?= te('Website Ads') ?></a>
                     <a href="<?= BASE_URL ?>/settings/hero-media" class="sidebar__sub-link <?= $activeSubPage === 'hero-media' ? 'active' : '' ?>"><?= te('Homepage Background') ?></a>
                     <a href="<?= BASE_URL ?>/settings/sms" class="sidebar__sub-link <?= $activeSubPage === 'sms' ? 'active' : '' ?>"><?= te('Text messages') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/whatsapp" class="sidebar__sub-link <?= $activeSubPage === 'whatsapp' ? 'active' : '' ?>"><?= te('WhatsApp Client') ?></a>
                     <a href="<?= BASE_URL ?>/settings/email" class="sidebar__sub-link <?= $activeSubPage === 'email' ? 'active' : '' ?>"><?= te('Email') ?></a>
                     <a href="<?= BASE_URL ?>/settings/translations" class="sidebar__sub-link <?= $activeSubPage === 'translations' ? 'active' : '' ?>"><?= te('Translations') ?></a>
                 </div>
@@ -706,18 +727,18 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             <?php endif; ?>
         </nav>
 
-        <div class="sidebar__footer">
-            <div>&copy; <?= date('Y') ?> <?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?></div>
-            <div style="margin-top: 4px; font-size: 0.75rem;">Developed by <a href="https://www.facebook.com/chandilagroups/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Chandila</a></div>
-        </div>
     </aside>
 
     <!-- Main Content -->
-    <div class="admin-layout">
-        <main class="admin-main admin-content-wrapper">
+    <div class="admin-layout" style="min-height: 100vh; display: flex; flex-direction: column;">
+        <main class="admin-main admin-content-wrapper" style="flex: 1 0 auto;">
             <?php include __DIR__ . '/../components/flash-messages.php'; ?>
             <?= $content ?>
         </main>
+        <footer class="admin-dashboard-footer" style="padding: 1.25rem 2rem; border-top: 1px solid var(--border); margin-top: auto; color: var(--text-muted); font-size: 0.8125rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; background: var(--surface);">
+            <div>&copy; <?= date('Y') ?> <?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?></div>
+            <div>Developed by <a href="https://www.facebook.com/chandilagroups/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline; font-weight: 500;">Chandila</a></div>
+        </footer>
     </div>
 
     <script src="<?= BASE_URL ?>/assets/js/app.js?v=<?= @filemtime(BASE_PATH . '/public/assets/js/app.js') ?: 1 ?>"></script>
@@ -815,7 +836,49 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 } catch (e) { /* private browsing: the choice just will not stick */ }
             });
 
+            // Clicking brand logo when collapsed also expands it
+            var brandLogo = document.querySelector('.sidebar__brand-logo');
+            if (brandLogo) {
+                brandLogo.addEventListener('click', function () {
+                    if (root.getAttribute('data-sidebar') === 'collapsed') {
+                        collapseBtn.click();
+                    }
+                });
+            }
+
             apply(root.getAttribute('data-sidebar') === 'collapsed');
+        })();
+
+        // ── Preserve Sidebar Scroll Position on Navigation ──
+        (function () {
+            var sidebarEl = document.getElementById('sidebar');
+            if (!sidebarEl) return;
+
+            try {
+                var savedSidebarScroll = sessionStorage.getItem('admin_sidebar_scroll');
+                if (savedSidebarScroll !== null) {
+                    sidebarEl.scrollTop = parseInt(savedSidebarScroll, 10);
+                } else {
+                    var curActive = sidebarEl.querySelector('.sidebar__link.active, .sidebar__sub-link.active');
+                    if (curActive) {
+                        curActive.scrollIntoView({ block: 'nearest' });
+                    }
+                }
+            } catch (e) {}
+
+            sidebarEl.addEventListener('scroll', function () {
+                try {
+                    sessionStorage.setItem('admin_sidebar_scroll', String(sidebarEl.scrollTop));
+                } catch (e) {}
+            }, { passive: true });
+
+            sidebarEl.querySelectorAll('a').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    try {
+                        sessionStorage.setItem('admin_sidebar_scroll', String(sidebarEl.scrollTop));
+                    } catch (e) {}
+                });
+            });
         })();
 
         // Sidebar sub-nav toggling

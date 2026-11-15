@@ -546,6 +546,89 @@ class SettingsController extends BaseController
     }
 
     /**
+     * WhatsApp Sending & WA Client Configuration for Super Admin.
+     */
+    public function whatsapp(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+
+        $waService = new \App\Services\WhatsAppService();
+        $config = $waService->config();
+
+        $this->view('settings/whatsapp', [
+            'pageTitle'     => t('WhatsApp & WA Client Configuration'),
+            'activePage'    => 'settings',
+            'activeSubPage' => 'whatsapp',
+            'config'        => $config,
+            'modes'         => \App\Services\WhatsAppService::MODES,
+            'isConfigured'  => $waService->isGatewayConfigured(),
+            'hasApiKey'     => !empty($config[\App\Services\WhatsAppService::KEY_GATEWAY_KEY]),
+        ]);
+    }
+
+    public function updateWhatsapp(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        verifyCsrfToken();
+
+        $userId = (int) session_get('user_id');
+        $wa = \App\Services\WhatsAppService::class;
+
+        try {
+            $mode = trim((string) ($_POST['wa_client_mode'] ?? 'wa_me'));
+            if (!isset($wa::MODES[$mode])) {
+                $mode = $wa::MODE_WA_ME;
+            }
+            $this->settingModel->set($wa::KEY_CLIENT_MODE, $mode, $userId);
+            $this->settingModel->set($wa::KEY_GATEWAY_URL, trim((string) ($_POST['wa_gateway_url'] ?? '')), $userId);
+            $this->settingModel->set($wa::KEY_GATEWAY_INSTANCE, trim((string) ($_POST['wa_gateway_instance'] ?? '')), $userId);
+            $this->settingModel->set($wa::KEY_METHOD, in_array($_POST['wa_method'] ?? '', ['POST', 'GET'], true) ? $_POST['wa_method'] : 'POST', $userId);
+            $this->settingModel->set($wa::KEY_PAYLOAD_FORMAT, in_array($_POST['wa_payload_format'] ?? '', ['json', 'form'], true) ? $_POST['wa_payload_format'] : 'json', $userId);
+            $this->settingModel->set($wa::KEY_PHONE_PARAM, trim((string) ($_POST['wa_phone_param'] ?? 'number')) ?: 'number', $userId);
+            $this->settingModel->set($wa::KEY_MESSAGE_PARAM, trim((string) ($_POST['wa_message_param'] ?? 'message')) ?: 'message', $userId);
+
+            if (!empty($_POST['wa_gateway_key'])) {
+                $this->settingModel->set($wa::KEY_GATEWAY_KEY, trim((string) $_POST['wa_gateway_key']), $userId);
+            }
+
+            $this->logAudit('update_whatsapp_settings', 'system_settings', 0);
+            $this->flash('success', t('WhatsApp settings saved successfully.'));
+        } catch (\Throwable $e) {
+            $this->flash('error', $e->getMessage());
+        }
+
+        $this->redirect(BASE_URL . '/settings/whatsapp');
+    }
+
+    public function testWhatsapp(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        verifyCsrfToken();
+
+        $phone = trim((string) ($_POST['test_phone'] ?? ''));
+        $msg = trim((string) ($_POST['test_message'] ?? '')) ?: t('Hello from LMS! Test message from WhatsApp Client.');
+        $wa = new \App\Services\WhatsAppService();
+
+        if ($wa->isGatewayConfigured()) {
+            $res = $wa->sendViaGateway($phone, $msg);
+            $this->logAudit('test_whatsapp_gateway', 'system_settings', 0);
+            if ($res['ok']) {
+                $this->flash('success', t('Test message sent via WA Client! Check the recipient phone.'));
+            } else {
+                $this->flash('error', t('WA Client error: {err}', ['err' => $res['message'] ?? 'Failed to send.']));
+            }
+        } else {
+            $link = $wa->getChatLink(\App\Services\WhatsAppService::normalisePhone($phone) ?: $phone, $msg);
+            $this->flash('info', t('WA Gateway is not enabled. Link generated: {link}', ['link' => $link]));
+        }
+
+        $this->redirect(BASE_URL . '/settings/whatsapp');
+    }
+
+    /**
      * Send one real email to an address the Super Admin types, so
      * mail() on this server can be proven before anyone depends on it.
      */
