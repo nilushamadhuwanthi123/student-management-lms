@@ -57,6 +57,42 @@ class WhatsAppService
     }
 
     /**
+     * Normalise a Sri Lankan mobile number to the 94XXXXXXXXX form that
+     * wa.me links and the gateway both expect. Accepts 0771234567,
+     * +94771234567, 94771234567, or 771234567, with or without spaces
+     * or dashes. Returns null for anything that does not look like a
+     * mobile number, so a bad row is skipped rather than producing a
+     * link to nowhere.
+     */
+    public static function normalisePhone(?string $raw): ?string
+    {
+        if ($raw === null) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D+/', '', $raw) ?? '';
+
+        if ($digits === '') {
+            return null;
+        }
+
+        // 0771234567 -> 94771234567
+        if (str_starts_with($digits, '0')) {
+            $digits = self::COUNTRY_CODE . substr($digits, 1);
+        } elseif (str_starts_with($digits, '7') && strlen($digits) === 9) {
+            // 771234567, written without the leading zero
+            $digits = self::COUNTRY_CODE . $digits;
+        }
+
+        // A Sri Lankan mobile is 94 then nine digits beginning with 7.
+        if (!preg_match('/^947\d{8}$/', $digits)) {
+            return null;
+        }
+
+        return $digits;
+    }
+
+    /**
      * Get all WA Client configuration settings.
      * @return array<string, string>
      */
