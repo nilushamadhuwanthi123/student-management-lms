@@ -33,7 +33,7 @@ class AuthController extends BaseController
         AuthMiddleware::requireGuest();
 
         $this->view('auth/login', [
-            'pageTitle' => 'Login',
+            'pageTitle' => t('Login'),
         ], 'layouts/auth');
     }
 
@@ -177,7 +177,7 @@ class AuthController extends BaseController
         }
 
         $this->view('auth/first-login-password', [
-            'pageTitle' => 'Change Your Password',
+            'pageTitle' => t('Change Your Password'),
         ], 'layouts/auth');
     }
 
@@ -258,7 +258,7 @@ class AuthController extends BaseController
         };
 
         $this->view('auth/change-password', [
-            'pageTitle' => 'Change Password',
+            'pageTitle' => t('Change Password'),
         ], $layout);
     }
 
