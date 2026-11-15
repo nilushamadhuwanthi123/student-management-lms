@@ -293,11 +293,10 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
 
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar__header">
-            <span class="sidebar__brand-logo" aria-hidden="true" style="width:32px;height:32px;flex:0 0 32px;border-radius:9px;background:#FACC15;display:grid;place-items:center;color:#0B1B3F;cursor:pointer;" title="<?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?>">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg>
-            </span>
-            <span class="sidebar__brand-text" title="<?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?>" style="min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2;font-size:.95rem;white-space:normal;"><?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?></span>
+        <div class="sidebar__header" style="display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1rem;">
+            <a href="<?= BASE_URL ?>/dashboard" class="sidebar__brand-logo" aria-label="<?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?>" style="width:34px;height:34px;flex:0 0 34px;border-radius:10px;background:#FACC15;display:grid;place-items:center;color:#0B1B3F;cursor:pointer;text-decoration:none;" title="<?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg>
+            </a>
 
             <button type="button" class="sidebar-collapse-btn" id="sidebarCollapse"
                     aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar"
