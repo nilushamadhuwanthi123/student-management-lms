@@ -707,7 +707,8 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
         </nav>
 
         <div class="sidebar__footer">
-            &copy; <?= date('Y') ?> <?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?>
+            <div>&copy; <?= date('Y') ?> <?= htmlspecialchars($__brand, ENT_QUOTES, 'UTF-8') ?></div>
+            <div style="margin-top: 4px; font-size: 0.75rem;">Developed by <a href="https://www.facebook.com/chandilagroups/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Chandila</a></div>
         </div>
     </aside>
 

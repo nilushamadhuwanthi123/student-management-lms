@@ -535,7 +535,7 @@
                 </div>
             </div>
             <div class="border-t pt-6 text-center" style="border-color:#1E293B;">
-                <p class="text-xs" style="color:#64748B;">&copy; <?= date('Y') ?> <?= htmlspecialchars($__ft ?? t('Science classes'), ENT_QUOTES, 'UTF-8') ?> &middot; <?= te('Science classes') ?></p>
+                <p class="text-xs" style="color:#64748B;">&copy; <?= date('Y') ?> <?= htmlspecialchars($__ft ?? t('Science classes'), ENT_QUOTES, 'UTF-8') ?> &middot; <?= te('Science classes') ?> &middot; Developed by <a href="https://www.facebook.com/chandilagroups/" target="_blank" rel="noopener noreferrer" class="hover:underline" style="color:#94A3B8;">Chandila</a></p>
             </div>
         </div>
     </footer>
