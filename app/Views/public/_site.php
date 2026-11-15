@@ -178,7 +178,7 @@ a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-
 .ts-float svg:nth-child(4) { right: 3%; bottom: 10%; width: 46px; animation-delay: -6s; color: rgba(250,204,21,.22); }
 .ts-float svg:nth-child(5) { left: 12%; bottom: 8%; width: 36px; animation-delay: -3s; }
 @keyframes tsFloat { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-16px) rotate(8deg); } }
-.ts-wave { position: absolute; left: 0; right: 0; bottom: -1px; height: 70px; z-index: 0; }
+.ts-wave { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 70px; z-index: 0; }
 .ts-wave path { fill: var(--bg, #F5F7FB); }
 .ts-hero { padding-bottom: 6rem; }
 .ts-stats { margin-top: -4.2rem; }
