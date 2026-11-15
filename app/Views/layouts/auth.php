@@ -6,10 +6,14 @@
     <meta name="robots" content="noindex, nofollow">
     <title><?= htmlspecialchars(($pageTitle ?? t('Login')) . ' | ' . (\App\Services\PublicSite::teacherName() ?? t('Science classes')), ENT_QUOTES, 'UTF-8') ?></title>
     <?= csrfMeta() ?>
+    <?php include __DIR__ . '/../components/favicon.php'; ?>
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts & Resource Hints -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS CDN -->

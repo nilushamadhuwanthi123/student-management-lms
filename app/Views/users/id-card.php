@@ -16,6 +16,7 @@ $cfg = $roleColors[$role] ?? [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= te('ID Card') ?> - <?= htmlspecialchars($user['full_name'] ?? te('User'), ENT_QUOTES, 'UTF-8') ?></title>
+    <?php if (is_file(__DIR__ . '/../components/favicon.php')) { include __DIR__ . '/../components/favicon.php'; } ?>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;

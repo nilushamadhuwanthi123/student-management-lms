@@ -14,6 +14,7 @@ $back = session_get('user_type') === 'parent' ? BASE_URL . '/family/fees' : BASE
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= te('Receipt') ?> <?= $e($r['receipt_number']) ?></title>
+<?php if (is_file(__DIR__ . '/../components/favicon.php')) { include __DIR__ . '/../components/favicon.php'; } ?>
 <style>
   :root { --blue:#1D4ED8; --deep:#0F2464; --yellow:#F5B301; --ink:#0F172A; --muted:#64748B; --line:#D8E2F2; }
   * { box-sizing:border-box; }

@@ -20,6 +20,7 @@ $statusText = ['present' => 'Present', 'late' => 'Late', 'absent' => 'Absent', '
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= te('Student report') ?> – <?= $e($student['full_name'] ?? '') ?></title>
+<?php if (is_file(__DIR__ . '/../components/favicon.php')) { include __DIR__ . '/../components/favicon.php'; } ?>
 <style>
   :root { --blue:#1D4ED8; --deep:#0F2464; --yellow:#F5B301; --ink:#0F172A; --muted:#64748B; --line:#D8E2F2; --green:#15803D; --red:#B42318; }
   * { box-sizing:border-box; }
