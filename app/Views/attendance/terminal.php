@@ -41,7 +41,7 @@ $classes = $classes ?? [];
                         <option value=""><?= te('-- All Active Classes / Entrance Gate --') ?></option>
                         <?php foreach ($classes as $c): ?>
                             <option value="<?= (int) $c['id'] ?>">
-                                <?= htmlspecialchars(te($c['class_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                <?= te($c['class_name'] ?? '') ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -50,7 +50,7 @@ $classes = $classes ?? [];
                     <span id="scannerStatusBadge" class="badge badge--success" style="padding:0.4rem 0.8rem; font-size:0.8rem;">
                         &#9679; <?= te('Terminal Ready') ?>
                     </span>
-                    <button type="button" class="btn btn--ghost btn--sm" id="testAudioBtn" onclick="testAlertAudio()" title="<?= htmlspecialchars(te('Test 5s Loud Alert Sound'), ENT_QUOTES, 'UTF-8') ?>">
+                    <button type="button" class="btn btn--ghost btn--sm" id="testAudioBtn" onclick="testAlertAudio()" title="<?= te('Test 5s Loud Alert Sound') ?>">
                         &#128266; <?= te('Test Siren') ?>
                     </button>
                 </div>
@@ -67,7 +67,7 @@ $classes = $classes ?? [];
                             type="text" 
                             id="scanInput" 
                             class="form-control" 
-                            placeholder="<?= htmlspecialchars(te('Scan QR Card or Enter Student ID (e.g. STU20260001)...'), ENT_QUOTES, 'UTF-8') ?>" 
+                            placeholder="<?= te('Scan QR Card or Enter Student ID (e.g. STU20260001)...') ?>" 
                             autofocus 
                             autocomplete="off"
                             style="font-size:1.1rem; font-family:monospace; padding:0.75rem 1rem;"

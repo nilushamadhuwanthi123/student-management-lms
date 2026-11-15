@@ -86,13 +86,13 @@ require __DIR__ . '/_site.php';
                     <?php endif; ?>
                     <?php if (!empty($b['photo'])): ?>
                         <div style="aspect-ratio:16/9; overflow:hidden; background:#EFF6FF;">
-                            <img src="<?= BASE_URL . $e($b['photo']) ?>" alt="<?= $e(te($b['name'])) ?>" loading="lazy" style="width:100%; height:100%; object-fit:cover; display:block;">
+                            <img src="<?= BASE_URL . $e($b['photo']) ?>" alt="<?= te($b['name']) ?>" loading="lazy" style="width:100%; height:100%; object-fit:cover; display:block;">
                         </div>
                     <?php endif; ?>
                     <div style="padding:1.15rem 1.2rem;">
-                        <h3><?= $e(te($b['name'])) ?></h3>
-                        <?php if (!empty($b['location'])): ?><div class="ts-muted"><?= $e(te($b['location'])) ?></div><?php endif; ?>
-                        <?php if (!empty($b['public_description'])): ?><p class="ts-muted" style="margin:.4rem 0 0;"><?= $e(te($b['public_description'])) ?></p><?php endif; ?>
+                        <h3><?= te($b['name']) ?></h3>
+                        <?php if (!empty($b['location'])): ?><div class="ts-muted"><?= te($b['location']) ?></div><?php endif; ?>
+                        <?php if (!empty($b['public_description'])): ?><p class="ts-muted" style="margin:.4rem 0 0;"><?= te($b['public_description']) ?></p><?php endif; ?>
                         <div class="ts-muted" style="margin-top:.35rem;"><?= te('{n} classes', ['n' => (int) $b['class_count']]) ?> &rarr;</div>
                     </div>
                 </a>

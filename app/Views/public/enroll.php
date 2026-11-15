@@ -40,7 +40,7 @@ require __DIR__ . '/_site.php';
                     <select id="en-branch" name="institute_id" required>
                         <option value=""><?= te('Choose') ?></option>
                         <?php foreach ($branches as $b): ?>
-                            <option value="<?= (int) $b['id'] ?>" <?= $presetInstituteId === (int) $b['id'] ? 'selected' : '' ?>><?= $e(te($b['name'])) ?></option>
+                            <option value="<?= (int) $b['id'] ?>" <?= $presetInstituteId === (int) $b['id'] ? 'selected' : '' ?>><?= te($b['name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>

@@ -40,7 +40,7 @@ $currentVisibility = $widgetsByRole[$selectedRole] ?? [];
             <select id="roleSelector" class="form-control" onchange="window.location.href='<?= BASE_URL ?>/settings/dashboard-items?role=' + this.value;">
                 <?php foreach ($roles as $rKey => $rLabel): ?>
                     <option value="<?= $rKey ?>" <?= $selectedRole === $rKey ? 'selected' : '' ?>>
-                        <?= htmlspecialchars(te($rLabel), ENT_QUOTES, 'UTF-8') ?>
+                        <?= te($rLabel) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -84,7 +84,7 @@ $currentVisibility = $widgetsByRole[$selectedRole] ?? [];
                         <tr>
                             <td><?= $index++ ?></td>
                             <td>
-                                <strong><?= htmlspecialchars(te($widgetLabel), ENT_QUOTES, 'UTF-8') ?></strong>
+                                <strong><?= te($widgetLabel) ?></strong>
                                 <div class="text-xs text-muted">widget_key: <code><?= $widgetKey ?></code></div>
                             </td>
                             <td style="text-align:center;">

@@ -325,9 +325,9 @@ if ($heroMediaRows !== []) {
         <div class="ts-grid">
             <?php foreach ($branches as $b): ?>
                 <div class="ts-card ts-branch ts-reveal">
-                    <div class="ts-branch__top"><span>&#128205; <?= te('Branch') ?></span><h3><?= $e(te($b['name'])) ?></h3></div>
+                    <div class="ts-branch__top"><span>&#128205; <?= te('Branch') ?></span><h3><?= te($b['name']) ?></h3></div>
                     <div class="ts-branch__body">
-                        <?php if (!empty($b['location'])): ?><div class="ts-muted"><?= $e(te($b['location'])) ?></div><?php endif; ?>
+                        <?php if (!empty($b['location'])): ?><div class="ts-muted"><?= te($b['location']) ?></div><?php endif; ?>
                         <div class="ts-muted"><?= te('{n} classes', ['n' => (int) $b['class_count']]) ?></div>
                         <div class="ts-branch__actions">
                             <?php if (!empty($b['phone1'])): ?><a href="<?= $e(\App\Services\PublicSite::telHref($b['phone1'])) ?>" class="ts-btn ts-btn--blue" style="padding:.5rem 1rem; font-size:.85rem;">&#128222; <?= te('Call') ?></a><?php endif; ?>
@@ -435,7 +435,7 @@ $__gradeCount = count($byGrade);
                     <?php endforeach; ?>
                 </ul>
                 <?php foreach ($branches as $b): if (!empty($b['phone1'])): ?>
-                    <div style="font-size:.9rem; margin-top:.3rem;"><strong><?= $e(te($b['name'])) ?></strong> &middot; <a href="<?= $e(\App\Services\PublicSite::telHref($b['phone1'])) ?>"><?= $e($b['phone1']) ?></a></div>
+                    <div style="font-size:.9rem; margin-top:.3rem;"><strong><?= te($b['name']) ?></strong> &middot; <a href="<?= $e(\App\Services\PublicSite::telHref($b['phone1'])) ?>"><?= $e($b['phone1']) ?></a></div>
                 <?php endif; endforeach; ?>
             </div>
             <div class="ts-join__form">
@@ -457,7 +457,7 @@ $__gradeCount = count($byGrade);
                     </select></div>
                 <div><label for="iq-branch"><?= te('Branch') ?> *</label>
                     <select id="iq-branch" name="branch_id" required><option value=""><?= te('Choose') ?></option>
-                        <?php foreach ($branches as $b): ?><option value="<?= (int) $b['id'] ?>" <?= $pickBranch === (int) $b['id'] ? 'selected' : '' ?>><?= $e(te($b['name'])) ?></option><?php endforeach; ?>
+                        <?php foreach ($branches as $b): ?><option value="<?= (int) $b['id'] ?>" <?= $pickBranch === (int) $b['id'] ? 'selected' : '' ?>><?= te($b['name']) ?></option><?php endforeach; ?>
                     </select></div>
                 <div style="grid-column:1/-1;"><label for="iq-msg"><?= te('Anything we should know? (optional)') ?></label><textarea id="iq-msg" name="message" rows="3" maxlength="2000"></textarea></div>
             </div>

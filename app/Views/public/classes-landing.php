@@ -54,20 +54,20 @@ require __DIR__ . '/_site.php';
                         ?>
                         <?php if (!empty($b['photo'])): ?>
                             <div class="ts-branch-media ts-branch-media--<?= $e($__bs) ?>">
-                                <img src="<?= BASE_URL . $e($b['photo']) ?>" alt="<?= $e(te($b['name'])) ?>" loading="lazy">
+                                <img src="<?= BASE_URL . $e($b['photo']) ?>" alt="<?= te($b['name']) ?>" loading="lazy">
                             </div>
                         <?php else: ?>
                             <div class="ts-branch-media ts-branch-media--<?= $e($__bs) ?>" style="background:linear-gradient(135deg,#0A2A6B,#1D4ED8); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:1.3rem; text-align:center; padding:0 1rem;">
-                                <?= $e(te($b['name'])) ?>
+                                <?= te($b['name']) ?>
                             </div>
                         <?php endif; ?>
                     </div>
                     <!-- Branch info + button -->
                     <div>
-                        <div style="font-weight:700; font-size:1.05rem; margin-bottom:.15rem;"><?= (int) $i + 1 ?>. <?= $e(te($b['name'])) ?></div>
-                        <?php if (!empty($b['location'])): ?><div class="ts-muted" style="margin-bottom:.65rem; font-size:.85rem;">&#128205; <?= $e(te($b['location'])) ?></div><?php endif; ?>
+                        <div style="font-weight:700; font-size:1.05rem; margin-bottom:.15rem;"><?= (int) $i + 1 ?>. <?= te($b['name']) ?></div>
+                        <?php if (!empty($b['location'])): ?><div class="ts-muted" style="margin-bottom:.65rem; font-size:.85rem;">&#128205; <?= te($b['location']) ?></div><?php endif; ?>
                         <p class="ts-muted" style="margin:0 0 .85rem;">
-                            <?= !empty($b['public_description']) ? $e(te($b['public_description'])) : te('{n} classes at this branch, physical and online.', ['n' => (int) $b['class_count']]) ?>
+                            <?= !empty($b['public_description']) ? te($b['public_description']) : te('{n} classes at this branch, physical and online.', ['n' => (int) $b['class_count']]) ?>
                         </p>
                         <a class="ts-btn ts-btn--blue" href="<?= BASE_URL ?>/branches/<?= (int) $b['id'] ?>"><?= te('My Classes') ?> &rarr;</a>
                     </div>

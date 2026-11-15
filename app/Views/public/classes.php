@@ -15,7 +15,7 @@ require __DIR__ . '/_site.php';
             <div><label for="f-grade"><?= te('Grade') ?></label><select id="f-grade" name="grade" onchange="this.form.submit()"><option value=""><?= te('All grades') ?></option>
                 <?php foreach (range(6, 11) as $g): ?><option value="<?= $g ?>" <?= $grade === (string) $g ? 'selected' : '' ?>><?= te('Grade {n}', ['n' => $g]) ?></option><?php endforeach; ?></select></div>
             <div><label for="f-branch"><?= te('Branch') ?></label><select id="f-branch" name="branch" onchange="this.form.submit()"><option value=""><?= te('All branches') ?></option>
-                <?php foreach ($branches as $b): ?><option value="<?= (int) $b['id'] ?>" <?= $branch === (int) $b['id'] ? 'selected' : '' ?>><?= $e(te($b['name'])) ?></option><?php endforeach; ?></select></div>
+                <?php foreach ($branches as $b): ?><option value="<?= (int) $b['id'] ?>" <?= $branch === (int) $b['id'] ? 'selected' : '' ?>><?= te($b['name']) ?></option><?php endforeach; ?></select></div>
             <noscript><button type="submit" class="ts-btn ts-btn--blue"><?= te('Show') ?></button></noscript>
         </form>
         <?php if ($classes === []): ?>

@@ -52,7 +52,7 @@ $applicable = array_filter(
             <select id="roleSelector" class="form-control" onchange="window.location.href='<?= BASE_URL ?>/settings/feature-visibility?role=' + this.value;">
                 <?php foreach ($roleLabels as $rKey => $rLabel): ?>
                     <option value="<?= $rKey ?>" <?= $selectedRole === $rKey ? 'selected' : '' ?>>
-                        <?= htmlspecialchars(te($rLabel), ENT_QUOTES, 'UTF-8') ?>
+                        <?= te($rLabel) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -98,7 +98,7 @@ $applicable = array_filter(
                         <tr>
                             <td><?= $index++ ?></td>
                             <td>
-                                <strong><?= htmlspecialchars(te($featureLabel), ENT_QUOTES, 'UTF-8') ?></strong>
+                                <strong><?= te($featureLabel) ?></strong>
                                 <div class="text-xs text-muted">feature_key: <code><?= $featureKey ?></code></div>
                             </td>
                             <td style="text-align:center;">
