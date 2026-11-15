@@ -67,21 +67,33 @@ $stored = static function (array $values, string $key, string $lang): string {
                 <div class="form-group sc-field">
                     <label class="form-label" for="field_<?= $e($key) ?>_<?= $e($baseLang) ?>"><?= te($field['label']) ?></label>
 
-                    <?php if ($type === SiteContentService::TYPE_IMAGE): ?>
-                        <?php $current = $stored($values, $key, $baseLang); ?>
+                    <?php if ($type === SiteContentService::TYPE_IMAGE || $type === SiteContentService::TYPE_MEDIA): ?>
+                        <?php
+                        $current = $stored($values, $key, $baseLang);
+                        $isMedia = $type === SiteContentService::TYPE_MEDIA;
+                        $currentIsVideo = $current !== '' && SiteContentService::isVideoPath($current);
+                        $accept = $isMedia
+                            ? 'image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime,video/ogg'
+                            : 'image/jpeg,image/png,image/webp';
+                        $hint = $isMedia
+                            ? te('JPG/PNG/WEBP photo (up to 3MB) or MP4/WEBM/MOV/OGG video (up to 35MB). The same one is used in both languages.')
+                            : te('JPG, PNG or WEBP, up to 3MB. The same photo is used in both languages.');
+                        ?>
                         <div class="sc-image">
-                            <?php if ($current !== ''): ?>
+                            <?php if ($current !== '' && $currentIsVideo): ?>
+                                <video src="<?= BASE_URL ?><?= $e($current) ?>" style="width:140px; height:100px; object-fit:cover; border-radius:.5rem; border:1px solid var(--border-color, #ddd);" muted autoplay loop playsinline></video>
+                            <?php elseif ($current !== ''): ?>
                                 <img src="<?= BASE_URL ?><?= $e($current) ?>" alt="">
                             <?php else: ?>
                                 <div class="sc-image__none"><?= te('Using the original photo') ?></div>
                             <?php endif; ?>
                             <div class="sc-image__input">
-                                <input type="file" id="field_<?= $e($key) ?>_<?= $e($baseLang) ?>" name="images[<?= $e($key) ?>]" class="form-control" accept="image/jpeg,image/png,image/webp">
-                                <div class="form-hint"><?= te('JPG, PNG or WEBP, up to 3MB. The same photo is used in both languages.') ?></div>
+                                <input type="file" id="field_<?= $e($key) ?>_<?= $e($baseLang) ?>" name="images[<?= $e($key) ?>]" class="form-control" accept="<?= $e($accept) ?>">
+                                <div class="form-hint"><?= $hint ?></div>
                                 <?php if ($current !== ''): ?>
                                     <label class="sc-image__remove">
                                         <input type="checkbox" name="remove_images[<?= $e($key) ?>]" value="1">
-                                        <?= te('Remove this photo and use the original instead') ?>
+                                        <?= te('Remove this and use the original instead') ?>
                                     </label>
                                 <?php endif; ?>
                             </div>
