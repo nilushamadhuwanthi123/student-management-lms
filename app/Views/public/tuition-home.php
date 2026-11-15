@@ -35,19 +35,41 @@ $isSi = function_exists('lang_current') && lang_current() === 'si';
 $mediumLabel = $facts['media'] !== [] ? implode(' / ', array_map(static fn ($m) => t($m), $facts['media'])) : '';
 ?>
 <?php
-$bgSlides = [
-    ['teacher-board.jpg', '70% 35%'],
-    ['students-experiment.jpg', '50% 35%'],
-    ['science-lab.jpg', '60% 45%'],
-    ['students-exam.jpg', '50% 45%'],
-];
-$bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE_PATH . '/public/assets/img/' . $sl[0])));
+// Background slides: photos/videos uploaded from Settings > Homepage
+// Background (hero_media, migration 035) if the super admin has added
+// any, otherwise the four original fixed photos -- so an untouched
+// install looks exactly as it always did.
+$heroMediaRows = (new \App\Services\HeroMediaService())->active();
+if ($heroMediaRows !== []) {
+    $bgSlides = array_map(static fn (array $m): array => [
+        'type' => $m['media_type'],
+        'src'  => BASE_URL . $e($m['file_path']),
+        'pos'  => $e($m['object_position']),
+    ], $heroMediaRows);
+} else {
+    $defaultSlides = [
+        ['teacher-board.jpg', '70% 35%'],
+        ['students-experiment.jpg', '50% 35%'],
+        ['science-lab.jpg', '60% 45%'],
+        ['students-exam.jpg', '50% 45%'],
+    ];
+    $defaultSlides = array_values(array_filter($defaultSlides, static fn ($sl) => is_file(BASE_PATH . '/public/assets/img/' . $sl[0])));
+    $bgSlides = array_map(static fn (array $sl): array => [
+        'type' => 'image',
+        'src'  => BASE_URL . '/assets/img/' . $e($sl[0]),
+        'pos'  => $e($sl[1]),
+    ], $defaultSlides);
+}
 ?>
 <section class="ts-hero">
     <?php if ($bgSlides !== []): ?>
     <div class="ts-hero-bg" id="ts-hero-bg" aria-hidden="true">
-        <?php foreach ($bgSlides as $i => [$file, $pos]): ?>
-            <img class="ts-bg-slide<?= $i === 0 ? ' is-on' : '' ?>" src="<?= BASE_URL ?>/assets/img/<?= $e($file) ?>" style="object-position:<?= $e($pos) ?>;" alt="" decoding="async"<?= $i === 0 ? ' fetchpriority="high"' : '' ?>>
+        <?php foreach ($bgSlides as $i => $slide): ?>
+            <?php if ($slide['type'] === 'video'): ?>
+                <video class="ts-bg-slide<?= $i === 0 ? ' is-on' : '' ?>" src="<?= $slide['src'] ?>" style="object-position:<?= $slide['pos'] ?>;" autoplay muted loop playsinline></video>
+            <?php else: ?>
+                <img class="ts-bg-slide<?= $i === 0 ? ' is-on' : '' ?>" src="<?= $slide['src'] ?>" style="object-position:<?= $slide['pos'] ?>;" alt="" decoding="async"<?= $i === 0 ? ' fetchpriority="high"' : '' ?>>
+            <?php endif; ?>
         <?php endforeach; ?>
     </div>
     <?php endif; ?>
@@ -143,9 +165,16 @@ $bgSlides = array_values(array_filter($bgSlides, static fn ($sl) => is_file(BASE
         <?php if ($teacher): ?>
         <div class="ts-photo">
             <svg class="ts-photo__ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 6" stroke-linecap="round"/></svg>
-            <?php $teacherPhoto = \App\Services\PublicSite::content('teacher_photo_image'); ?>
+            <?php
+            $teacherPhoto = \App\Services\PublicSite::content('teacher_photo_image');
+            $teacherIsVideo = $teacherPhoto !== '' && \App\Services\SiteContentService::isVideoPath($teacherPhoto);
+            ?>
             <div class="ts-photo__frame">
-                <img src="<?= $teacherPhoto !== '' ? BASE_URL . $e($teacherPhoto) : BASE_URL . '/assets/img/teacher-smartboard.jpg' ?>" width="1600" height="2000" alt="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>" fetchpriority="high">
+                <?php if ($teacherIsVideo): ?>
+                    <video src="<?= BASE_URL . $e($teacherPhoto) ?>" width="1600" height="2000" autoplay muted loop playsinline aria-label="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>"></video>
+                <?php else: ?>
+                    <img src="<?= $teacherPhoto !== '' ? BASE_URL . $e($teacherPhoto) : BASE_URL . '/assets/img/teacher-smartboard.jpg' ?>" width="1600" height="2000" alt="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>" fetchpriority="high">
+                <?php endif; ?>
             </div>
             <div class="ts-photo__badge"><?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
             <div class="ts-photo__tag">

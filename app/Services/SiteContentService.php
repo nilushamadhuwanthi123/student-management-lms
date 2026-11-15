@@ -16,7 +16,7 @@ use PDO;
  * names, class counts, the teacher's name -- is ever sourced from here.
  * Those still come only from real records, via PublicSite.
  *
- * Three field types:
+ * Four field types:
  *  - 'text'     a single plain line, stored and shown escaped.
  *  - 'richtext' a short formatted passage (bold/italic/lists/links only),
  *               sanitised to that whitelist on save and safe to echo
@@ -25,12 +25,17 @@ use PDO;
  *               the stored value is a public-relative path such as
  *               '/uploads/site-content/teacher_photo_image_xxx.jpg',
  *               or '' to keep using the original fixed photo.
+ *  - 'media'    the same as 'image', but a short video upload is also
+ *               accepted; isVideoPath() tells a view which one the
+ *               stored path is, so it can render <video> instead of
+ *               <img>.
  */
 final class SiteContentService
 {
     public const TYPE_TEXT = 'text';
     public const TYPE_RICHTEXT = 'richtext';
     public const TYPE_IMAGE = 'image';
+    public const TYPE_MEDIA = 'media';
 
     /**
      * The language whose wording is stored under the plain key, and the
@@ -457,9 +462,9 @@ final class SiteContentService
 
         // -- Photos ------------------------------------------------------------
         'teacher_photo_image' => [
-            'label'   => 'Teacher photo (home page hero and "Your teacher" section on the About page)',
+            'label'   => 'Teacher photo or short video (home page hero and "Your teacher" section on the About page)',
             'default' => '',
-            'type'    => self::TYPE_IMAGE,
+            'type'    => self::TYPE_MEDIA,
             'group'   => 'photos',
         ],
         'about_class_image' => [
@@ -490,7 +495,7 @@ final class SiteContentService
      * field nobody has edited reads in the language of the page rather
      * than in English. $params are then substituted the same way as
      * te()'s placeholders -- {r}, {n}, etc. Neither applies to an
-     * 'image' field, whose value is a path shared by every language.
+     * 'image'/'media' field, whose value is a path shared by every language.
      */
     public function get(string $key, array $params = []): string
     {
@@ -511,7 +516,7 @@ final class SiteContentService
             }
         }
 
-        if ($type === self::TYPE_IMAGE) {
+        if ($type === self::TYPE_IMAGE || $type === self::TYPE_MEDIA) {
             return $stored ?? $default;
         }
 
@@ -646,11 +651,17 @@ final class SiteContentService
      */
     public function setImage(string $key, array $file, int $updatedBy): void
     {
-        if (!array_key_exists($key, self::FIELDS) || self::FIELDS[$key]['type'] !== self::TYPE_IMAGE) {
+        if (!array_key_exists($key, self::FIELDS)) {
+            throw new \InvalidArgumentException("Unknown site content image key: {$key}");
+        }
+        $fieldType = self::FIELDS[$key]['type'];
+        if ($fieldType !== self::TYPE_IMAGE && $fieldType !== self::TYPE_MEDIA) {
             throw new \InvalidArgumentException("Unknown site content image key: {$key}");
         }
 
-        $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+        $imageAllowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+        $videoAllowed = ['video/mp4' => 'mp4', 'video/webm' => 'webm', 'video/quicktime' => 'mov', 'video/ogg' => 'ogv'];
+
         $mime = $file['type'] ?? '';
         if (function_exists('finfo_open')) {
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -660,11 +671,21 @@ final class SiteContentService
                 $mime = $detected;
             }
         }
-        if (!isset($allowed[$mime])) {
+
+        if (isset($imageAllowed[$mime])) {
+            $ext = $imageAllowed[$mime];
+            if ((int) ($file['size'] ?? 0) > 3 * 1024 * 1024) {
+                throw new \InvalidArgumentException('Photo must be 3MB or smaller.');
+            }
+        } elseif ($fieldType === self::TYPE_MEDIA && isset($videoAllowed[$mime])) {
+            $ext = $videoAllowed[$mime];
+            if ((int) ($file['size'] ?? 0) > 35 * 1024 * 1024) {
+                throw new \InvalidArgumentException('Video must be 35MB or smaller -- trim it or compress it first.');
+            }
+        } elseif ($fieldType === self::TYPE_MEDIA) {
+            throw new \InvalidArgumentException('File must be a JPG/PNG/WEBP photo or an MP4/WEBM/MOV/OGG video.');
+        } else {
             throw new \InvalidArgumentException('Photo must be a JPG, PNG or WEBP image.');
-        }
-        if ((int) ($file['size'] ?? 0) > 3 * 1024 * 1024) {
-            throw new \InvalidArgumentException('Photo must be 3MB or smaller.');
         }
 
         $targetDir = BASE_PATH . '/public/uploads/site-content';
@@ -672,10 +693,10 @@ final class SiteContentService
             mkdir($targetDir, 0755, true);
         }
 
-        $filename = preg_replace('/[^a-z0-9_]/', '', strtolower($key)) . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $allowed[$mime];
+        $filename = preg_replace('/[^a-z0-9_]/', '', strtolower($key)) . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
         $targetPath = $targetDir . '/' . $filename;
         if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
-            throw new \InvalidArgumentException('Could not save the uploaded photo.');
+            throw new \InvalidArgumentException('Could not save the uploaded file.');
         }
 
         $oldPath = $this->get($key);
@@ -689,10 +710,20 @@ final class SiteContentService
         }
     }
 
-    /** Clear an 'image' field back to the original fixed photo. */
+    /** True if a stored site-content media path is a video file rather than a photo. */
+    public static function isVideoPath(string $path): bool
+    {
+        return (bool) preg_match('/\.(mp4|webm|mov|ogv)$/i', $path);
+    }
+
+    /** Clear an 'image'/'media' field back to the original fixed photo. */
     public function clearImage(string $key, int $updatedBy): void
     {
-        if (!array_key_exists($key, self::FIELDS) || self::FIELDS[$key]['type'] !== self::TYPE_IMAGE) {
+        if (!array_key_exists($key, self::FIELDS)) {
+            throw new \InvalidArgumentException("Unknown site content image key: {$key}");
+        }
+        $fieldType = self::FIELDS[$key]['type'];
+        if ($fieldType !== self::TYPE_IMAGE && $fieldType !== self::TYPE_MEDIA) {
             throw new \InvalidArgumentException("Unknown site content image key: {$key}");
         }
         $oldPath = $this->get($key);

@@ -22,8 +22,17 @@ require __DIR__ . '/_site.php';
 <?php if ($teacher): ?>
 <section class="ts-section">
     <div class="ts-wrap ts-teacher ts-reveal">
-        <?php $teacherPhoto = PublicSite::content('teacher_photo_image'); ?>
-        <div class="ts-teacher__img" style="aspect-ratio:4/5;"><img src="<?= $teacherPhoto !== '' ? BASE_URL . $e($teacherPhoto) : BASE_URL . '/assets/img/teacher-smartboard.jpg' ?>" width="1600" height="2000" loading="lazy" style="object-position:50% 18%;" alt="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>"></div>
+        <?php
+        $teacherPhoto = PublicSite::content('teacher_photo_image');
+        $teacherIsVideo = $teacherPhoto !== '' && \App\Services\SiteContentService::isVideoPath($teacherPhoto);
+        ?>
+        <div class="ts-teacher__img" style="aspect-ratio:4/5;">
+            <?php if ($teacherIsVideo): ?>
+                <video src="<?= BASE_URL . $e($teacherPhoto) ?>" width="1600" height="2000" style="width:100%; height:100%; object-fit:cover; object-position:50% 18%;" autoplay muted loop playsinline aria-label="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>"></video>
+            <?php else: ?>
+                <img src="<?= $teacherPhoto !== '' ? BASE_URL . $e($teacherPhoto) : BASE_URL . '/assets/img/teacher-smartboard.jpg' ?>" width="1600" height="2000" loading="lazy" style="object-position:50% 18%;" alt="<?= $e(t('{name} teaching a Science lesson', ['name' => $teacher])) ?>">
+            <?php endif; ?>
+        </div>
         <div>
             <div class="ts-kicker"><?= $e(PublicSite::content('home_teacher_kicker')) ?></div>
             <h2><?= $e($teacher) ?></h2>

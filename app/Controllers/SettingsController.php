@@ -756,6 +756,118 @@ class SettingsController extends BaseController
         $this->redirect(BASE_URL . '/settings/ads');
     }
 
+    /**
+     * CMS-managed photos/videos for the home page hero background
+     * slideshow (see HeroMediaService / migration 035). If no slide is
+     * added here, the page falls back to the four original fixed photos.
+     */
+    public function heroMedia(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+
+        $service = new \App\Services\HeroMediaService();
+        $this->view('settings/hero-media', [
+            'pageTitle'     => 'Homepage Background',
+            'activeSubPage' => 'hero-media',
+            'slides'        => $service->all(),
+        ]);
+    }
+
+    public function storeHeroMedia(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+        verifyCsrfToken();
+
+        $service = new \App\Services\HeroMediaService();
+        $userId = (int) session_get('user_id');
+
+        try {
+            if (empty($_FILES['media']['name']) || $_FILES['media']['error'] !== UPLOAD_ERR_OK) {
+                throw new \InvalidArgumentException('Choose a photo or video to upload.');
+            }
+            $service->create($_FILES['media'], [
+                'object_position' => $_POST['object_position'] ?? '',
+                'is_active'       => $_POST['is_active'] ?? '',
+                'sort_order'      => $_POST['sort_order'] ?? 0,
+            ], $userId);
+
+            $this->logAudit('create_hero_media', 'hero_media', 0);
+            $this->flash('success', 'Slide added.');
+        } catch (\InvalidArgumentException $e) {
+            $this->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            error_log('Hero media create error: ' . $e->getMessage());
+            $this->flash('error', 'Failed to add the slide.');
+        }
+
+        $this->redirect(BASE_URL . '/settings/hero-media');
+    }
+
+    public function updateHeroMedia(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+        verifyCsrfToken();
+
+        $service = new \App\Services\HeroMediaService();
+        $file = (!empty($_FILES['media']['name']) && $_FILES['media']['error'] === UPLOAD_ERR_OK) ? $_FILES['media'] : null;
+
+        try {
+            $service->update((int) $id, [
+                'object_position' => $_POST['object_position'] ?? '',
+                'is_active'       => $_POST['is_active'] ?? '',
+                'sort_order'      => $_POST['sort_order'] ?? 0,
+            ], $file);
+
+            $this->logAudit('update_hero_media', 'hero_media', (int) $id);
+            $this->flash('success', 'Slide updated.');
+        } catch (\InvalidArgumentException $e) {
+            $this->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            error_log('Hero media update error: ' . $e->getMessage());
+            $this->flash('error', 'Failed to update the slide.');
+        }
+
+        $this->redirect(BASE_URL . '/settings/hero-media');
+    }
+
+    public function toggleHeroMedia(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        verifyCsrfToken();
+
+        (new \App\Services\HeroMediaService())->toggle((int) $id);
+        $this->logAudit('toggle_hero_media', 'hero_media', (int) $id);
+        $this->redirect(BASE_URL . '/settings/hero-media');
+    }
+
+    public function deleteHeroMedia(string $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        verifyCsrfToken();
+
+        (new \App\Services\HeroMediaService())->delete((int) $id);
+        $this->logAudit('delete_hero_media', 'hero_media', (int) $id);
+        $this->flash('success', 'Slide deleted.');
+        $this->redirect(BASE_URL . '/settings/hero-media');
+    }
+
     private function logAudit(string $action, string $entityType, int $entityId, array $details = []): void
     {
         try {

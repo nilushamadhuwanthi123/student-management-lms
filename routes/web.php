@@ -556,6 +556,12 @@ $router->post('/classes/{id}/update-room', ['App\Controllers\ClassController', '
     $router->post('/settings/ads/{id}/toggle', ['App\Controllers\SettingsController', 'toggleAd']);
     $router->post('/settings/ads/{id}/delete', ['App\Controllers\SettingsController', 'deleteAd']);
 
+    $router->get('/settings/hero-media', ['App\Controllers\SettingsController', 'heroMedia']);
+    $router->post('/settings/hero-media', ['App\Controllers\SettingsController', 'storeHeroMedia']);
+    $router->post('/settings/hero-media/{id}/update', ['App\Controllers\SettingsController', 'updateHeroMedia']);
+    $router->post('/settings/hero-media/{id}/toggle', ['App\Controllers\SettingsController', 'toggleHeroMedia']);
+    $router->post('/settings/hero-media/{id}/delete', ['App\Controllers\SettingsController', 'deleteHeroMedia']);
+
     // API-style endpoints
     $router->get('/api/classes-by-institute/{id}', ['App\Controllers\ApiController', 'classesByInstitute']);
 });
