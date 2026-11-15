@@ -275,26 +275,18 @@
             * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
         }
 
-        /* Mobile nav glass panel */
-        @media (max-width: 768px) {
-            .navbar__links {
-                background: var(--glass-bg) !important;
-                backdrop-filter: blur(24px);
-                -webkit-backdrop-filter: blur(24px);
-            }
-        }
-
         /*
-         * The public nav carries more than the base style.css's 768px
-         * breakpoint was built for (a long brand name + subtitle, 4
-         * links, a language switch, a login button and a theme toggle),
-         * so it wrapped and overlapped the logo on tablet-width screens.
-         * Collapse it into the hamburger menu earlier -- up to 1040px --
-         * on this nav specifically (base .navbar__toggle/.navbar__links
-         * rules are a lower-specificity single class, so these win).
+         * Mobile nav (screens <= 1040px):
+         * - Deep navy glass dropdown (no jarring white background)
+         * - Crisp white links with gold active highlights
+         * - High contrast header text when scrolled (never white on white)
          */
         @media (max-width: 1040px) {
-            .navbar--liquid-glass .navbar__toggle { display: block; }
+            .navbar--liquid-glass .navbar__toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
             .navbar--liquid-glass .navbar__links {
                 display: none;
                 position: absolute;
@@ -303,17 +295,70 @@
                 right: 0;
                 flex-direction: column;
                 align-items: stretch;
-                padding: 1rem;
-                gap: .75rem;
-                background: var(--glass-bg, var(--surface));
+                padding: 1.25rem 1.5rem;
+                gap: .85rem;
+                background: #0B1B3F !important;
+                background: rgba(11, 27, 63, 0.98) !important;
                 backdrop-filter: blur(24px);
                 -webkit-backdrop-filter: blur(24px);
-                border-bottom: 1px solid var(--border);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+                box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
             }
-            .navbar--liquid-glass .navbar__links.open { display: flex; }
-            .navbar--on-dark .navbar__toggle,
-            .navbar--on-dark .navbar__brand,
-            .navbar--on-dark .navbar__brand small { color: #fff !important; }
+            .navbar--liquid-glass .navbar__links.open {
+                display: flex;
+            }
+            .navbar--liquid-glass .navbar__links > li > a:not(.nav-login) {
+                color: rgba(255, 255, 255, 0.92) !important;
+                font-size: 0.95rem;
+                padding: 0.4rem 0;
+                font-weight: 500;
+            }
+            .navbar--liquid-glass .navbar__links > li > a:not(.nav-login):hover,
+            .navbar--liquid-glass .navbar__links > li > a.active {
+                color: #FACC15 !important;
+            }
+            .navbar--liquid-glass .navbar__links .nav-lang {
+                color: #FFFFFF !important;
+                border-color: rgba(255, 255, 255, 0.35) !important;
+                display: inline-block;
+                width: fit-content;
+            }
+            .navbar--liquid-glass .navbar__links #themeToggle {
+                color: #FFFFFF !important;
+            }
+
+            /* Over the dark hero (not scrolled): white header text */
+            .navbar--on-dark:not(.scrolled) .navbar__toggle,
+            .navbar--on-dark:not(.scrolled) .navbar__brand,
+            .navbar--on-dark:not(.scrolled) .navbar__brand small {
+                color: #fff !important;
+            }
+
+            /* When scrolled on mobile: dark text on light glass (or light text in dark theme), font is clearly visible */
+            .navbar--liquid-glass.scrolled .navbar__brand {
+                color: var(--text) !important;
+            }
+            .navbar--liquid-glass.scrolled .navbar__brand small {
+                color: var(--text-secondary) !important;
+            }
+            .navbar--liquid-glass.scrolled .navbar__toggle {
+                color: var(--text) !important;
+            }
+
+            /* When mobile menu is open: keep top navbar seamlessly unified with the dark menu */
+            .navbar--liquid-glass.menu-open,
+            .navbar--liquid-glass:has(.navbar__links.open) {
+                background: #0B1B3F !important;
+                background: rgba(11, 27, 63, 0.98) !important;
+            }
+            .navbar--liquid-glass.menu-open .navbar__brand,
+            .navbar--liquid-glass.menu-open .navbar__brand small,
+            .navbar--liquid-glass.menu-open .navbar__toggle,
+            .navbar--liquid-glass:has(.navbar__links.open) .navbar__brand,
+            .navbar--liquid-glass:has(.navbar__links.open) .navbar__brand small,
+            .navbar--liquid-glass:has(.navbar__links.open) .navbar__toggle {
+                color: #fff !important;
+            }
         }
         @media (min-width: 1041px) and (max-width: 1180px) {
             .navbar__brand small { display: none; }
@@ -335,6 +380,9 @@
         .navbar--on-dark:not(.scrolled) .navbar__toggle,
         .navbar--on-dark:not(.scrolled) .navbar__brand,
         .navbar--on-dark:not(.scrolled) .navbar__brand small { color: #fff !important; }
+        .navbar--liquid-glass.scrolled .navbar__brand { color: var(--text) !important; }
+        .navbar--liquid-glass.scrolled .navbar__brand small { color: var(--text-secondary) !important; }
+        .navbar--liquid-glass.scrolled .navbar__toggle { color: var(--text) !important; }
         .navbar__brand small { display: block; font-size: .72rem; font-weight: 500; opacity: .8; letter-spacing: .01em; line-height: 1.1; }
         .navbar__brand .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
         .nav-lang { border: 1px solid currentColor; border-radius: 999px; padding: .25rem .7rem !important; text-transform: none !important; font-size: .8rem !important; }
@@ -548,13 +596,22 @@
     <script src="<?= BASE_URL ?>/assets/js/app.js?v=<?= @filemtime(BASE_PATH . '/public/assets/js/app.js') ?: 1 ?>"></script>
     <script>
     (function () {
-        // â”€â”€ Mobile nav toggle â”€â”€
+        // ── Mobile nav toggle ──
+        var nav = document.getElementById('mainNav');
         var toggle = document.getElementById('navToggle');
         var links = document.getElementById('navLinks');
         if (toggle && links) {
             toggle.addEventListener('click', function () {
-                links.classList.toggle('open');
-                toggle.setAttribute('aria-expanded', links.classList.contains('open'));
+                var isOpen = links.classList.toggle('open');
+                if (nav) nav.classList.toggle('menu-open', isOpen);
+                toggle.setAttribute('aria-expanded', String(isOpen));
+            });
+            links.querySelectorAll('a').forEach(function (a) {
+                a.addEventListener('click', function () {
+                    links.classList.remove('open');
+                    if (nav) nav.classList.remove('menu-open');
+                    toggle.setAttribute('aria-expanded', 'false');
+                });
             });
         }
 
