@@ -72,7 +72,8 @@ $waBody = static function (array $it): string {
                     <p class="credential-card__hint">
                         <?= te('They open the page below, then enter their login ID, this code and a new password. (The "Forgot password?" link is NOT the right page -- that one only sends a brand new code by SMS.)') ?>
                         <br>
-                        <a class="credential-reset-link" href="<?= $e(\App\Controllers\AccountController::resetUrl()) ?>" target="_blank" rel="noopener noreferrer"><?= $e(\App\Controllers\AccountController::resetUrl()) ?></a>
+                        <?php $resetLink = \App\Controllers\AccountController::resetUrl() . '?id=' . rawurlencode((string) $it['login_id']); ?>
+                        <a class="credential-reset-link" href="<?= $e($resetLink) ?>" target="_blank" rel="noopener noreferrer"><?= $e(\App\Controllers\AccountController::resetUrl()) ?></a>
                     </p>
                 <?php else: ?>
                     <div class="credential-row">
