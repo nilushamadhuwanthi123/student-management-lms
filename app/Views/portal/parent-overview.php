@@ -42,6 +42,7 @@ foreach ($classes as $c) {
     }
 }
 ?>
+<?php include __DIR__ . '/../components/fee-due-bar.php'; ?>
 
 <div class="page-header">
     <div>

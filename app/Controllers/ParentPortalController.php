@@ -61,6 +61,10 @@ class ParentPortalController extends BaseController
         $this->view('portal/parent-overview', [
             'pageTitle' => 'My child',
             'student'   => $student,
+            // Same figure as the QR terminal and the student's own
+            // profile; one service answers all three so the office is
+            // never arguing with a parent about which screen is right.
+            'feeDue'    => (new \App\Services\PaymentDueService($this->db))->summary((int) $student['id']),
             'classes'   => $classes,
             'overall'   => $progress->forStudent((int) $student['id']),
             'month'     => $month,

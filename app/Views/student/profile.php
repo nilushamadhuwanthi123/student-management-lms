@@ -23,6 +23,7 @@ $earned = count(array_filter($motivation['badges'] ?? [], static fn ($b) => $b['
 $statusLabel = ['paid' => 'Paid', 'waived' => 'Waived', 'pending' => 'Pending', 'overdue' => 'Overdue'];
 $statusClass = ['paid' => 'pf-pill--ok', 'waived' => 'pf-pill--ok', 'pending' => 'pf-pill--wait', 'overdue' => 'pf-pill--due'];
 ?>
+<?php include __DIR__ . '/../components/fee-due-bar.php'; ?>
 
 <style>
 .pf-hero { display:flex; gap:1.25rem; align-items:center; flex-wrap:wrap; padding:1.5rem 1.6rem; border-radius:20px; color:#fff;

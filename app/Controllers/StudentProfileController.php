@@ -47,6 +47,10 @@ class StudentProfileController extends BaseController
 
         $this->view('student/profile', [
             'pageTitle'  => t('My Profile'),
+            // The same unpaid-months figure the QR terminal announces, so
+            // a student who heard the alert at the desk sees the identical
+            // months and total here rather than a second opinion.
+            'feeDue'     => (new \App\Services\PaymentDueService())->summary($studentId),
             'student'    => $student,
             'guardians'  => $this->records->guardians($studentId),
             'classes'    => $this->records->classes($studentId),
