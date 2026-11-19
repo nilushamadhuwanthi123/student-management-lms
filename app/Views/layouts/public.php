@@ -40,6 +40,8 @@
             --ts-font-head: <?= $__fontHead ?>;
         }
         body { background: var(--bg); font-family: var(--ts-font-body); }
+        .nav-fb { display: inline-flex; align-items: center; gap: .4rem; }
+        .nav-fb svg { flex: none; }
         h1, h2, h3, .ts-name { font-family: var(--ts-font-head); }
 
         /* Corner roundness, from "Corner roundness" in the CMS. */
@@ -574,6 +576,21 @@
             <li><a href="<?= BASE_URL ?>/downloads" class="<?= ($activePage ?? '') === 'downloads' ? 'active' : '' ?>"><?= te('Downloads') ?></a></li>
             <?php endif; ?>
             <li><a href="<?= BASE_URL ?>/contact" class="<?= ($activePage ?? '') === 'contact' ? 'active' : '' ?>"><?= te('Contact') ?></a></li>
+            <?php
+            // Only shown when the switch is on AND a Facebook address has
+            // actually been entered on the Contact tab -- a button that
+            // goes nowhere is worse than no button.
+            $__fb = \App\Services\PublicSite::externalUrl(\App\Services\PublicSite::content('contact_facebook_url'));
+            ?>
+            <?php if (($__fb ?? '') !== '' && \App\Services\PublicSite::isOn('show_nav_facebook')): ?>
+            <li>
+                <a href="<?= htmlspecialchars((string) $__fb, ENT_QUOTES, 'UTF-8') ?>" class="nav-fb"
+                   target="_blank" rel="noopener noreferrer" aria-label="<?= te('Our Facebook page') ?>">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.33v6.99A10 10 0 0 0 22 12z"/></svg>
+                    <span><?= te('Facebook') ?></span>
+                </a>
+            </li>
+            <?php endif; ?>
             <li><a href="<?= BASE_URL ?>/lang/<?= (function_exists('lang_current') && lang_current() === 'si') ? 'en' : 'si' ?>" class="nav-lang" hreflang="<?= (function_exists('lang_current') && lang_current() === 'si') ? 'en' : 'si' ?>"><?= (function_exists('lang_current') && lang_current() === 'si') ? 'English' : 'සිංහල' ?></a></li>
             <li>
                 <a href="<?= BASE_URL ?>/enroll" class="inline-flex items-center px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300"
