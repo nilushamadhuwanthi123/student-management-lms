@@ -18,6 +18,12 @@
     $__pbg = $__p::color('theme_page_bg');
     $__nbg = $__p::color('theme_nav_bg');
     $__ntx = $__p::color('theme_nav_text');
+    $__acc = $__p::color('theme_accent');
+    $__rad = (int) $__p::num('theme_radius');
+    $__tint = (int) $__p::num('hero_tint_percent');
+    $__fontKey = \App\Services\SiteContentService::FONTS[$__p::content('theme_font')] ?? null;
+    $__fontBody = $__fontKey[1] ?? "'Inter', system-ui, sans-serif";
+    $__fontHead = $__fontKey[2] ?? "'Playfair Display', Georgia, serif";
     ?>
     <style id="tsTheme">
         :root {
@@ -28,8 +34,23 @@
             --ts-nav-bg: <?= $__nbg ?>;
             --ts-nav-text: <?= $__ntx ?>;
             --ts-float-speed: <?= (int) $__p::num('hero_float_speed') ?>s;
+            --ts-accent: <?= $__acc ?>;
+            --ts-radius: <?= $__rad ?>px;
+            --ts-font-body: <?= $__fontBody ?>;
+            --ts-font-head: <?= $__fontHead ?>;
         }
-        body { background: var(--bg); }
+        body { background: var(--bg); font-family: var(--ts-font-body); }
+        h1, h2, h3, .ts-name { font-family: var(--ts-font-head); }
+
+        /* Corner roundness, from "Corner roundness" in the CMS. */
+        .ts-btn, .btn, .card, .ts-card, .sc-card { border-radius: var(--ts-radius); }
+
+        /* The yellow highlight the theme picks. */
+        .ts-btn--yellow { background: var(--ts-accent); }
+
+        /* How strongly the colour sits over the background photo.
+           0% leaves the photo bare; the shipped look is 100%. */
+        .ts-hero-bg::after { opacity: <?= max(0, min(100, $__tint)) / 100 ?>; }
     </style>
 
     <?php

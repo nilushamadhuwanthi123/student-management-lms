@@ -55,26 +55,40 @@ $stored = static function (array $values, string $key, string $lang): string {
             <h2 class="sc-group__title"><?= te($groupLabel) ?></h2>
 
             <?php if ($groupKey === 'appearance'): ?>
-                <div class="sc-palette">
-                    <div class="sc-palette__lead">
-                        <strong><?= te('Ready-made colour sets') ?></strong>
-                        <span><?= te('Click one to fill in the colour boxes below, then Save changes. You can still fine-tune any single colour afterwards.') ?></span>
+                <div class="sc-themes">
+                    <div class="sc-themes__lead">
+                        <strong><?= te('Ready-made styles') ?></strong>
+                        <span><?= te('Click one to see it on the boxes below, then press Save changes to put it live. Nothing changes on the public site until you save, so try as many as you like.') ?></span>
                     </div>
-                    <div class="sc-palette__row">
-                        <?php foreach (SiteContentService::PALETTES as $pKey => $p): ?>
-                            <button type="button" class="sc-swatch" data-palette="<?= $e($pKey) ?>"
-                                    data-primary="<?= $e($p[1]) ?>" data-secondary="<?= $e($p[2]) ?>"
-                                    data-bg="<?= $e($p[3]) ?>" data-nav="<?= $e($p[4]) ?>"
-                                    title="<?= $e(t($p[0])) ?>">
-                                <span class="sc-swatch__dots">
-                                    <i style="background: <?= $e($p[1]) ?>"></i>
-                                    <i style="background: <?= $e($p[2]) ?>"></i>
-                                    <i style="background: <?= $e($p[4]) ?>"></i>
+                    <div class="sc-themes__grid">
+                        <?php foreach (SiteContentService::THEMES as $tKey => $t): ?>
+                            <button type="button" class="sc-theme" data-theme="<?= $e($tKey) ?>"
+                                    data-primary="<?= $e($t['primary']) ?>" data-secondary="<?= $e($t['secondary']) ?>"
+                                    data-bg="<?= $e($t['bg']) ?>" data-nav="<?= $e($t['nav']) ?>"
+                                    data-navtext="<?= $e($t['navText']) ?>" data-accent="<?= $e($t['accent']) ?>"
+                                    data-radius="<?= $e((string) $t['radius']) ?>" data-tint="<?= $e((string) $t['tint']) ?>"
+                                    data-font="<?= $e($t['font']) ?>">
+                                <span class="sc-theme__preview" style="background: <?= $e($t['bg']) ?>;">
+                                    <span class="sc-theme__bar" style="background: <?= $e($t['nav']) ?>;">
+                                        <i style="background: <?= $e($t['navText']) ?>; opacity:.85;"></i>
+                                        <i style="background: <?= $e($t['navText']) ?>; opacity:.55;"></i>
+                                        <i style="background: <?= $e($t['accent']) ?>;"></i>
+                                    </span>
+                                    <span class="sc-theme__body">
+                                        <span class="sc-theme__line" style="background: <?= $e($t['primary']) ?>; width:62%;"></span>
+                                        <span class="sc-theme__line" style="background: <?= $e($t['secondary']) ?>; opacity:.5; width:88%;"></span>
+                                        <span class="sc-theme__btn" style="background: <?= $e($t['primary']) ?>; border-radius: <?= (int) $t['radius'] ?>px;"></span>
+                                        <span class="sc-theme__btn sc-theme__btn--alt" style="background: <?= $e($t['accent']) ?>; border-radius: <?= (int) $t['radius'] ?>px;"></span>
+                                    </span>
                                 </span>
-                                <span class="sc-swatch__name"><?= te($p[0]) ?></span>
+                                <span class="sc-theme__meta">
+                                    <span class="sc-theme__name"><?= te($t['name']) ?></span>
+                                    <span class="sc-theme__note"><?= te($t['note']) ?></span>
+                                </span>
                             </button>
                         <?php endforeach; ?>
                     </div>
+                    <p class="sc-themes__foot"><?= te('A style only fills in the boxes below -- you can still change any single colour afterwards.') ?></p>
                 </div>
             <?php endif; ?>
 
@@ -154,6 +168,20 @@ $stored = static function (array $values, string $key, string $lang): string {
                                 <span class="sc-switch__text"><?= te('Shown') ?></span>
                             </label>
                         </div>
+
+                    <?php elseif ($type === SiteContentService::TYPE_CHOICE): ?>
+                        <?php
+                        $listName = (string) ($field['choices'] ?? '');
+                        $choices  = $listName === 'FONTS' ? SiteContentService::FONTS : [];
+                        $raw = $stored($values, $key, $baseLang);
+                        $cur = $raw === '' ? (string) ($field['default'] ?? '') : $raw;
+                        ?>
+                        <select id="field_<?= $e($key) ?>_<?= $e($baseLang) ?>"
+                                name="fields[<?= $e($baseLang) ?>][<?= $e($key) ?>]" class="form-control" style="max-width:340px;">
+                            <?php foreach ($choices as $cKey => $c): ?>
+                                <option value="<?= $e($cKey) ?>" <?= $cur === $cKey ? 'selected' : '' ?>><?= te($c[0]) ?></option>
+                            <?php endforeach; ?>
+                        </select>
 
                     <?php elseif ($type === SiteContentService::TYPE_NUMBER): ?>
                         <?php
@@ -292,6 +320,26 @@ $stored = static function (array $values, string $key, string $lang): string {
 <style>
     .sc-help { margin: .35rem 0 0; font-size: .82rem; color: #64748B; }
 
+    .sc-themes { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 1.2rem; }
+    .sc-themes__lead { display: grid; gap: .15rem; margin-bottom: .85rem; }
+    .sc-themes__lead span { font-size: .84rem; color: #64748B; }
+    .sc-themes__foot { margin: .8rem 0 0; font-size: .8rem; color: #64748B; }
+    .sc-themes__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .7rem; }
+    .sc-theme { cursor: pointer; text-align: left; padding: 0; background: #fff;
+                border: 1.5px solid #E2E8F0; border-radius: 12px; overflow: hidden; }
+    .sc-theme:hover { border-color: #94A3B8; }
+    .sc-theme.is-picked { border-color: #1D4ED8; box-shadow: 0 0 0 3px rgba(29,78,216,.14); }
+    .sc-theme__preview { display: block; height: 82px; }
+    .sc-theme__bar { display: flex; align-items: center; gap: 4px; height: 20px; padding: 0 8px; }
+    .sc-theme__bar i { width: 13px; height: 4px; border-radius: 2px; display: block; }
+    .sc-theme__body { display: block; padding: 9px 10px; }
+    .sc-theme__line { display: block; height: 5px; border-radius: 3px; margin-bottom: 5px; }
+    .sc-theme__btn { display: inline-block; width: 34px; height: 12px; margin-top: 3px; }
+    .sc-theme__btn--alt { width: 22px; margin-left: 4px; }
+    .sc-theme__meta { display: block; padding: .5rem .6rem .6rem; border-top: 1px solid #F1F5F9; }
+    .sc-theme__name { display: block; font-size: .84rem; font-weight: 700; color: #1C2538; }
+    .sc-theme__note { display: block; font-size: .74rem; color: #64748B; line-height: 1.35; }
+
     .sc-palette { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: .9rem 1rem; margin-bottom: 1.1rem; }
     .sc-palette__lead { display: grid; gap: .15rem; margin-bottom: .7rem; }
     .sc-palette__lead span { font-size: .84rem; color: #64748B; }
@@ -364,6 +412,31 @@ $stored = static function (array $values, string $key, string $lang): string {
         var pick = document.querySelector('[data-color-for="field_' + key + '_<?= $e($baseLang) ?>"]');
         if (pick) { pick.value = value; }
     }
+
+    function setField(key, value) {
+        var el = document.getElementById('field_' + key + '_<?= $e($baseLang) ?>');
+        if (el) { el.value = value; }
+    }
+
+    // A style only fills the boxes in; the public site changes when the
+    // form is saved, so clicking through them costs nothing.
+    document.querySelectorAll('.sc-theme').forEach(function (card) {
+        card.addEventListener('click', function () {
+            setColour('theme_primary', card.getAttribute('data-primary'));
+            setColour('theme_secondary', card.getAttribute('data-secondary'));
+            setColour('theme_page_bg', card.getAttribute('data-bg'));
+            setColour('theme_nav_bg', card.getAttribute('data-nav'));
+            setColour('theme_nav_text', card.getAttribute('data-navtext'));
+            setColour('theme_accent', card.getAttribute('data-accent'));
+            setField('theme_radius', card.getAttribute('data-radius'));
+            setField('theme_font', card.getAttribute('data-font'));
+            setField('hero_tint_percent', card.getAttribute('data-tint'));
+
+            document.querySelectorAll('.sc-theme').forEach(function (o) { o.classList.remove('is-picked'); });
+            card.classList.add('is-picked');
+            card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+    });
 
     document.querySelectorAll('.sc-swatch').forEach(function (sw) {
         sw.addEventListener('click', function () {

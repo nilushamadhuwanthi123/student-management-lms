@@ -42,6 +42,8 @@ final class SiteContentService
     public const TYPE_TOGGLE = 'toggle';
     /** A plain number (timings, speeds). Bounds live on the field. */
     public const TYPE_NUMBER = 'number';
+    /** One of a fixed list, named by the field's 'choices' constant. */
+    public const TYPE_CHOICE = 'choice';
 
     /**
      * Ready-made colour sets, offered as one-click choices next to the
@@ -49,6 +51,76 @@ final class SiteContentService
      *
      * key => [label, primary, secondary, page background, nav background]
      */
+    public const THEMES = [
+        'royal' => [
+            'name' => 'Royal Blue', 'note' => 'The look the site ships with.',
+            'primary' => '#1D4ED8', 'secondary' => '#2563EB', 'bg' => '#F4F7FC',
+            'nav' => '#15307E', 'navText' => '#FFFFFF', 'accent' => '#FACC15',
+            'radius' => 14, 'tint' => 100, 'font' => 'inter',
+        ],
+        'midnight' => [
+            'name' => 'Midnight', 'note' => 'Deep navy, calm and formal.',
+            'primary' => '#3B82F6', 'secondary' => '#60A5FA', 'bg' => '#EEF2F9',
+            'nav' => '#0B1220', 'navText' => '#FFFFFF', 'accent' => '#38BDF8',
+            'radius' => 10, 'tint' => 100, 'font' => 'inter',
+        ],
+        'emerald' => [
+            'name' => 'Emerald', 'note' => 'Fresh green, easy on the eye.',
+            'primary' => '#15803D', 'secondary' => '#22C55E', 'bg' => '#F2FAF4',
+            'nav' => '#14532D', 'navText' => '#FFFFFF', 'accent' => '#FDE047',
+            'radius' => 16, 'tint' => 85, 'font' => 'inter',
+        ],
+        'teal' => [
+            'name' => 'Teal', 'note' => 'Blue-green, modern and clean.',
+            'primary' => '#0F766E', 'secondary' => '#14B8A6', 'bg' => '#F1FAF9',
+            'nav' => '#0B3F3A', 'navText' => '#FFFFFF', 'accent' => '#FBBF24',
+            'radius' => 14, 'tint' => 90, 'font' => 'inter',
+        ],
+        'plum' => [
+            'name' => 'Plum', 'note' => 'Purple, distinctive and warm.',
+            'primary' => '#7E22CE', 'secondary' => '#A855F7', 'bg' => '#FAF5FF',
+            'nav' => '#3B0764', 'navText' => '#FFFFFF', 'accent' => '#FACC15',
+            'radius' => 18, 'tint' => 95, 'font' => 'poppins',
+        ],
+        'sunset' => [
+            'name' => 'Sunset', 'note' => 'Orange, bright and friendly.',
+            'primary' => '#C2410C', 'secondary' => '#F97316', 'bg' => '#FFF8F2',
+            'nav' => '#7C2D12', 'navText' => '#FFFFFF', 'accent' => '#FACC15',
+            'radius' => 16, 'tint' => 85, 'font' => 'poppins',
+        ],
+        'crimson' => [
+            'name' => 'Crimson', 'note' => 'Strong red, high energy.',
+            'primary' => '#BE123C', 'secondary' => '#F43F5E', 'bg' => '#FFF5F6',
+            'nav' => '#4C0519', 'navText' => '#FFFFFF', 'accent' => '#FDE047',
+            'radius' => 12, 'tint' => 100, 'font' => 'inter',
+        ],
+        'gold' => [
+            'name' => 'Gold & Navy', 'note' => 'Classic, a prize-giving feel.',
+            'primary' => '#B45309', 'secondary' => '#F59E0B', 'bg' => '#FFFBEB',
+            'nav' => '#1E293B', 'navText' => '#FFFFFF', 'accent' => '#FDE68A',
+            'radius' => 10, 'tint' => 95, 'font' => 'playfair',
+        ],
+        'graphite' => [
+            'name' => 'Graphite', 'note' => 'Grey and quiet; photos stand out.',
+            'primary' => '#334155', 'secondary' => '#64748B', 'bg' => '#F6F8FB',
+            'nav' => '#0F172A', 'navText' => '#FFFFFF', 'accent' => '#38BDF8',
+            'radius' => 8, 'tint' => 70, 'font' => 'inter',
+        ],
+        'ocean' => [
+            'name' => 'Ocean', 'note' => 'Soft sky blue, light and airy.',
+            'primary' => '#0369A1', 'secondary' => '#0EA5E9', 'bg' => '#F0F9FF',
+            'nav' => '#0C4A6E', 'navText' => '#FFFFFF', 'accent' => '#FACC15',
+            'radius' => 20, 'tint' => 75, 'font' => 'poppins',
+        ],
+    ];
+
+    /** Heading/body font pairings a theme may select. */
+    public const FONTS = [
+        'inter'    => ['Inter (clean, the current one)', "'Inter', system-ui, sans-serif", "'Playfair Display', Georgia, serif"],
+        'poppins'  => ['Poppins (rounded, friendly)', "'Poppins', system-ui, sans-serif", "'Poppins', system-ui, sans-serif"],
+        'playfair' => ['Playfair (formal, traditional)', "'Inter', system-ui, sans-serif", "'Playfair Display', Georgia, serif"],
+    ];
+
     public const PALETTES = [
         'royal'   => ['Royal blue (current)', '#1D4ED8', '#2563EB', '#F4F7FC', '#15307E'],
         'teal'    => ['Teal',                 '#0F766E', '#14B8A6', '#F2FAF9', '#0B3F3A'],
@@ -73,7 +145,9 @@ final class SiteContentService
      * the editing screen -- a group has no effect on what a page renders.
      */
     public const GROUPS = [
-        'appearance' => 'Look and feel: colours, motion and what is shown',
+        'appearance' => 'Site design: themes, colours and the menu bar',
+        'background' => 'Home page background: photos, tint and motion',
+        'visibility' => 'Show or hide parts of the site',
         'hero'     => 'Home page: the top of the page',
         'teacher'  => 'Home page: "Your teacher"',
         'how'      => 'Home page: how the classes work',
@@ -93,6 +167,36 @@ final class SiteContentService
     /** @var array<string, array{label: string, default: string, type: string, group?: string}> */
     public const FIELDS = [
         // -- Look and feel: colours ------------------------------------------
+        'theme_accent' => [
+            'label'   => 'Highlight colour (buttons that must stand out)',
+            'default' => '#FACC15',
+            'type'    => self::TYPE_COLOR,
+            'group'   => 'appearance',
+        ],
+        'theme_radius' => [
+            'label'   => 'Corner roundness',
+            'default' => '14',
+            'type'    => self::TYPE_NUMBER,
+            'group'   => 'appearance',
+            'min'     => 0,
+            'max'     => 28,
+            'step'    => 2,
+            'suffix'  => 'px (0 = square corners)',
+        ],
+        'theme_font' => [
+            'label'   => 'Lettering',
+            'default' => 'inter',
+            'type'    => self::TYPE_CHOICE,
+            'group'   => 'appearance',
+            'choices' => 'FONTS',
+        ],
+        'theme_admin_follows' => [
+            'label'   => 'Use these colours inside the admin system as well',
+            'default' => '0',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'appearance',
+            'help'    => 'Off keeps the admin dashboard in its standard blue, which many offices prefer so staff can tell the two apart at a glance.',
+        ],
         'theme_primary' => [
             'label'   => 'Main colour (buttons, links, highlights)',
             'default' => '#1D4ED8',
@@ -129,24 +233,35 @@ final class SiteContentService
             'label'   => 'Show the opening animation when the site is first opened',
             'default' => '1',
             'type'    => self::TYPE_TOGGLE,
-            'group'   => 'appearance',
+            'group'   => 'background',
         ],
         'intro_hold_ms' => [
             'label'   => 'Opening animation: how long it stays on screen',
             'default' => '2200',
             'type'    => self::TYPE_NUMBER,
-            'group'   => 'appearance',
+            'group'   => 'background',
             'min'     => 600,
             'max'     => 10000,
             'step'    => 100,
             'suffix'  => 'milliseconds (1000 = 1 second)',
             'help'    => 'Raise this to let people read it; lower it to get to the page sooner.',
         ],
+        'hero_tint_percent' => [
+            'label'   => 'Colour tint over the background photo',
+            'default' => '100',
+            'type'    => self::TYPE_NUMBER,
+            'group'   => 'background',
+            'min'     => 0,
+            'max'     => 100,
+            'step'    => 5,
+            'suffix'  => '%',
+            'help'    => '100% is the tint the site ships with. Lower it to let more of the photo through; 0% removes it. Keep enough tint that the white heading stays readable.',
+        ],
         'hero_interval_ms' => [
             'label'   => 'Background photos: how long each one is shown',
             'default' => '5000',
             'type'    => self::TYPE_NUMBER,
-            'group'   => 'appearance',
+            'group'   => 'background',
             'min'     => 1500,
             'max'     => 30000,
             'step'    => 500,
@@ -157,13 +272,13 @@ final class SiteContentService
             'label'   => 'Show the drifting science icons over the background',
             'default' => '1',
             'type'    => self::TYPE_TOGGLE,
-            'group'   => 'appearance',
+            'group'   => 'background',
         ],
         'hero_float_speed' => [
             'label'   => 'Drifting icons: how long one full drift takes',
             'default' => '26',
             'type'    => self::TYPE_NUMBER,
-            'group'   => 'appearance',
+            'group'   => 'background',
             'min'     => 6,
             'max'     => 120,
             'step'    => 1,
@@ -176,37 +291,37 @@ final class SiteContentService
             'label'   => 'Menu: show "Events"',
             'default' => '1',
             'type'    => self::TYPE_TOGGLE,
-            'group'   => 'appearance',
+            'group'   => 'visibility',
         ],
         'show_nav_downloads' => [
             'label'   => 'Menu: show "Downloads"',
             'default' => '1',
             'type'    => self::TYPE_TOGGLE,
-            'group'   => 'appearance',
+            'group'   => 'visibility',
         ],
         'show_nav_facebook' => [
             'label'   => 'Menu: show a Facebook button (uses the Facebook address on the Contact tab)',
             'default' => '1',
             'type'    => self::TYPE_TOGGLE,
-            'group'   => 'appearance',
+            'group'   => 'visibility',
         ],
         'show_hero_text' => [
             'label'   => 'Home page: show the wording over the background photo',
             'default' => '1',
             'type'    => self::TYPE_TOGGLE,
-            'group'   => 'appearance',
+            'group'   => 'visibility',
         ],
         'show_how_section' => [
             'label'   => 'Home page: show "How the classes work"',
             'default' => '1',
             'type'    => self::TYPE_TOGGLE,
-            'group'   => 'appearance',
+            'group'   => 'visibility',
         ],
         'show_seminar_banner' => [
             'label'   => 'Home page: show the upcoming seminar strip at the top',
             'default' => '1',
             'type'    => self::TYPE_TOGGLE,
-            'group'   => 'appearance',
+            'group'   => 'visibility',
         ],
 
         // -- Home page: hero -------------------------------------------------
