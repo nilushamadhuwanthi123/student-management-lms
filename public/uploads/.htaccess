@@ -1,0 +1,43 @@
+# Uploaded files are data, never code.
+#
+# Everything under this folder arrives from a browser, so it must never be
+# executed by the server no matter what it is named or what slipped past an
+# upload check. This is the backstop: the upload code also decides the
+# extension from the file's own bytes rather than from the name it came
+# with. Either alone would do; both together mean one mistake is not enough.
+
+# Apache 2.4
+<IfModule mod_authz_core.c>
+    <FilesMatch "\.(?:php|phps|php[0-9]|phtml|phar|pl|py|cgi|rb|sh|jsp|asp|aspx|htaccess)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+# Apache 2.2
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.(?:php|phps|php[0-9]|phtml|phar|pl|py|cgi|rb|sh|jsp|asp|aspx|htaccess)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+# Belt and braces: if the handler is registered anyway, turn it off.
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+RemoveHandler .php .phtml .phar .php3 .php4 .php5 .php7 .php8
+RemoveType .php .phtml .phar .php3 .php4 .php5 .php7 .php8
+
+# Do not let a browser second-guess the type of an uploaded file.
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
+
+Options -ExecCGI -Indexes

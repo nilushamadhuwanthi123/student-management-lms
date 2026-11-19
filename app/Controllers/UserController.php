@@ -146,6 +146,36 @@ class UserController extends BaseController
     }
 
     /**
+     * The extension to save an uploaded image under, or null if it is not
+     * an image we accept.
+     *
+     * Decided by inspecting the file's own bytes. Both the browser's
+     * Content-Type and the original filename are attacker-controlled: a
+     * .php file announced as image/jpeg used to be saved under its own
+     * name into public/uploads/profiles, which is served by the web
+     * server, so visiting it afterwards ran it. The extension must come
+     * from what the file actually is, never from what it claims to be.
+     *
+     * Same approach as ParentPortalController::uploadPhoto().
+     */
+    private static function imageExtension(string $tmpPath): ?string
+    {
+        if (!is_uploaded_file($tmpPath)) {
+            return null;
+        }
+
+        $allowed = [
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/webp' => 'webp',
+        ];
+
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($tmpPath);
+
+        return $allowed[$mime] ?? null;
+    }
+
+    /**
      * Store new User
      */
     public function store(): void
@@ -204,10 +234,8 @@ class UserController extends BaseController
         // Profile Photo Upload Handling
         $profilePhoto = null;
         if (!empty($_FILES['profile_photo']['name']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
-            $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-            $fileType = $_FILES['profile_photo']['type'];
-            if (in_array($fileType, $allowedTypes, true)) {
-                $ext = pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION);
+            $ext = self::imageExtension($_FILES['profile_photo']['tmp_name']);
+            if ($ext !== null) {
                 $filename = 'user_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
                 $targetDir = BASE_PATH . '/public/uploads/profiles';
                 if (!is_dir($targetDir)) {
@@ -395,10 +423,8 @@ class UserController extends BaseController
 
         // Handle profile photo upload update
         if (!empty($_FILES['profile_photo']['name']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
-            $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-            $fileType = $_FILES['profile_photo']['type'];
-            if (in_array($fileType, $allowedTypes, true)) {
-                $ext = pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION);
+            $ext = self::imageExtension($_FILES['profile_photo']['tmp_name']);
+            if ($ext !== null) {
                 $filename = 'user_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
                 $targetDir = BASE_PATH . '/public/uploads/profiles';
                 if (!is_dir($targetDir)) {
