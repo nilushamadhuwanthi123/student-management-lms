@@ -74,7 +74,7 @@ class AccountController extends BaseController
         verifyCsrfToken();
 
         $target = (int) $id;
-        $stmt = $this->db->prepare("SELECT id, user_id_display, full_name, role FROM users WHERE id = :id");
+        $stmt = $this->db->prepare("SELECT id, user_id_display, full_name, role, email, phone1 FROM users WHERE id = :id");
         $stmt->execute([':id' => $target]);
         $user = $stmt->fetch(\PDO::FETCH_ASSOC);
         $scope = BranchScope::current();
@@ -87,7 +87,15 @@ class AccountController extends BaseController
             $this->redirect('/users');
         }
 
-        $this->issue('user', $target, $user['user_id_display'], $user['full_name'], '/users/' . $target . '/edit');
+        $this->issue(
+            'user',
+            $target,
+            $user['user_id_display'],
+            $user['full_name'],
+            '/users/' . $target . '/edit',
+            (string) ($user['phone1'] ?? ''),
+            (string) ($user['email'] ?? '')
+        );
     }
 
     /** GET /accounts/issued -- shows the codes/passwords once, then forgets them. */
@@ -352,7 +360,7 @@ class AccountController extends BaseController
             );
     }
 
-    private function issue(string $type, int $id, string $loginId, string $name, string $back): void
+    private function issue(string $type, int $id, string $loginId, string $name, string $back, string $phone = '', string $email = ''): void
     {
         $result = (new AccountService($this->db))->issueCode($type, $id, (int) session_get('user_id'));
 
@@ -365,6 +373,8 @@ class AccountController extends BaseController
             'login_id'   => $loginId,
             'secret'     => $result['code'],
             'expires_at' => $result['expires_at'],
+            'phone'      => $phone,
+            'email'      => $email,
         ]]);
         session_set('issued_back', $back);
         $this->redirect('/accounts/issued');
