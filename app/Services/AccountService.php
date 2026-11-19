@@ -295,14 +295,18 @@ final class AccountService
 
         [$type, $id] = $found[0];
 
+        // The email is fetched as well as the phone: staff accounts are
+        // routinely created with an address and no mobile, and an
+        // SMS-only recovery left those with no self-service route at all.
+        // The parents table has no email column, so that one is null.
         $sql = match ($type) {
-            'user' => "SELECT full_name AS name, status,
+            'user' => "SELECT full_name AS name, status, NULLIF(email, '') AS email,
                               COALESCE(NULLIF(whatsapp, ''), NULLIF(phone1, '')) AS phone
                          FROM users WHERE id = :id",
-            'student' => "SELECT full_name AS name, status,
+            'student' => "SELECT full_name AS name, status, NULLIF(email, '') AS email,
                                  COALESCE(NULLIF(whatsapp, ''), NULLIF(phone1, '')) AS phone
                             FROM students WHERE id = :id",
-            'parent' => "SELECT parent_name AS name, status,
+            'parent' => "SELECT parent_name AS name, status, NULL AS email,
                                 COALESCE(NULLIF(whatsapp, ''), NULLIF(phone1, '')) AS phone
                            FROM parents WHERE id = :id",
             default => null,
@@ -320,7 +324,15 @@ final class AccountService
         }
 
         $phone = WhatsAppService::normalisePhone($row['phone'] ?? null);
-        if ($phone === null) {
+
+        $email = trim((string) ($row['email'] ?? ''));
+        if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            $email = null;
+        }
+
+        // One usable way to reach them is enough; it used to insist on a
+        // phone, so an address-only account could not recover at all.
+        if ($phone === null && $email === null) {
             return null;
         }
 
@@ -329,6 +341,7 @@ final class AccountService
             'id'    => $id,
             'name'  => (string) $row['name'],
             'phone' => $phone,
+            'email' => $email,
         ];
     }
 }

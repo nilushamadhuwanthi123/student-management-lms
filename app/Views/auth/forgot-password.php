@@ -12,7 +12,7 @@
 <div class="login-card">
     <h1 class="login-card__title"><?= te('Forgotten password') ?></h1>
     <p class="login-card__subtitle">
-        <?= te('Type your login ID and we will send a reset code to the mobile number registered on your account. The code works once, for 30 minutes.') ?>
+        <?= te('Type your login ID and we will send a reset code to the mobile number or email address registered on your account. The code works once, for 30 minutes.') ?>
     </p>
 
     <form action="<?= BASE_URL ?>/forgot-password" method="POST" autocomplete="off" novalidate>
@@ -26,7 +26,7 @@
     </form>
 
     <p class="form-text" style="margin-top:1rem;">
-        <?= te('No mobile number on your account, or the number has changed? Call the branch office and they will give you a code after confirming who you are.') ?>
+        <?= te('No mobile number or email address on your account, or they have changed? Call the branch office and they will give you a code after confirming who you are.') ?>
     </p>
 
     <div class="forgot-divider"><span><?= te('or') ?></span></div>

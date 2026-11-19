@@ -228,7 +228,7 @@ class AccountController extends BaseController
             }
         }
 
-        $this->flash('success', t('If that ID is on our records, a reset code is on its way to the phone number registered for it. It works once, for 30 minutes.'));
+        $this->flash('success', t('If that ID is on our records, a reset code is on its way to the phone number or email address registered for it. It works once, for 30 minutes.'));
         $this->redirect('/reset-password');
     }
 
@@ -236,12 +236,19 @@ class AccountController extends BaseController
      * Issue a code for a confirmed account and get it to the phone on
      * that account.
      *
-     * Where the office has configured an SMS gateway the code is texted
-     * straight out, which is the only thing that scales past a handful
-     * of students. With no gateway, or when the gateway refuses, the
-     * code is queued as a WhatsApp message for the office to send by
-     * hand -- the behaviour this had before a gateway was possible.
-     * Only one of the two happens, so nobody gets the code twice.
+     * Tried in order, and it stops at the first one that works, so
+     * nobody gets the code twice:
+     *
+     *  1. SMS, where the office has configured a gateway. The only one
+     *     that scales past a handful of students -- and the only one
+     *     that costs money, which is why it is so often absent.
+     *  2. Email, where the account has an address and SMTP is set up.
+     *     This exists because staff accounts are routinely created with
+     *     an address and no mobile: with SMS-only delivery, pressing
+     *     "Send me a reset code" did nothing at all for them, and there
+     *     was no way to tell that from the outside.
+     *  3. The WhatsApp queue, for the office to send by hand. The
+     *     behaviour this had before any gateway was possible.
      *
      * A failure here is swallowed on purpose: the caller must answer the
      * same way whether or not anything was sent.
@@ -256,23 +263,32 @@ class AccountController extends BaseController
                 ['name' => $target['name'], 'code' => $result['code']]
             );
 
-            $texted = (new \App\Services\SmsService())->send($target['phone'], $body);
+            $phone = $target['phone'] ?? null;
+            $email = $target['email'] ?? null;
 
-            if (!$texted) {
+            $delivery = 'none';
+
+            if ($phone !== null && (new \App\Services\SmsService())->send($phone, $body)) {
+                $delivery = 'sms';
+            } elseif ($email !== null
+                && (new EmailService())->send($email, t('Your class portal reset code'), $body)) {
+                $delivery = 'email';
+            } elseif ($phone !== null) {
                 (new WhatsAppService())->queue([
                     'recipient_name'  => $target['name'],
-                    'recipient_phone' => $target['phone'],
+                    'recipient_phone' => $phone,
                     'recipient_type'  => $target['type'] === 'parent' ? 'parent' : 'student',
                     'template_key'    => 'password_reset_code',
                     'body'            => $body,
                     'student_id'      => $target['type'] === 'student' ? $target['id'] : null,
                 ]);
+                $delivery = 'whatsapp_queue';
             }
 
             // The code itself never reaches the audit log.
             $this->audit(null, 'system', 'self_reset_code_requested', $target['type'], $target['id'], [
                 'expires_at' => $result['expires_at'],
-                'delivery'   => $texted ? 'sms' : 'whatsapp_queue',
+                'delivery'   => $delivery,
             ]);
         } catch (\Throwable $e) {
             error_log('Self-service reset code failed: ' . $e->getMessage());
