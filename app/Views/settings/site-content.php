@@ -54,6 +54,30 @@ $stored = static function (array $values, string $key, string $lang): string {
         <section class="card sc-group">
             <h2 class="sc-group__title"><?= te($groupLabel) ?></h2>
 
+            <?php if ($groupKey === 'appearance'): ?>
+                <div class="sc-palette">
+                    <div class="sc-palette__lead">
+                        <strong><?= te('Ready-made colour sets') ?></strong>
+                        <span><?= te('Click one to fill in the colour boxes below, then Save changes. You can still fine-tune any single colour afterwards.') ?></span>
+                    </div>
+                    <div class="sc-palette__row">
+                        <?php foreach (SiteContentService::PALETTES as $pKey => $p): ?>
+                            <button type="button" class="sc-swatch" data-palette="<?= $e($pKey) ?>"
+                                    data-primary="<?= $e($p[1]) ?>" data-secondary="<?= $e($p[2]) ?>"
+                                    data-bg="<?= $e($p[3]) ?>" data-nav="<?= $e($p[4]) ?>"
+                                    title="<?= $e(t($p[0])) ?>">
+                                <span class="sc-swatch__dots">
+                                    <i style="background: <?= $e($p[1]) ?>"></i>
+                                    <i style="background: <?= $e($p[2]) ?>"></i>
+                                    <i style="background: <?= $e($p[4]) ?>"></i>
+                                </span>
+                                <span class="sc-swatch__name"><?= te($p[0]) ?></span>
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <?php if ($groupKey === 'classes'): ?>
                 <div class="sc-addbranch">
                     <span><?= te('This section only edits the heading text above the branch list. Each box on the Classes page is one branch.') ?></span>
@@ -99,6 +123,55 @@ $stored = static function (array $values, string $key, string $lang): string {
                             </div>
                         </div>
 
+                    <?php elseif ($type === SiteContentService::TYPE_COLOR): ?>
+                        <?php $cur = $stored($values, $key, $baseLang); ?>
+                        <?php $cur = preg_match('/^#[0-9A-Fa-f]{6}$/', $cur) === 1 ? $cur : (string) ($field['default'] ?? '#000000'); ?>
+                        <div class="sc-color">
+                            <input type="color" class="sc-color__pick" value="<?= $e($cur) ?>"
+                                   data-color-for="field_<?= $e($key) ?>_<?= $e($baseLang) ?>"
+                                   aria-label="<?= $e(t($field['label'])) ?>">
+                            <input type="text" id="field_<?= $e($key) ?>_<?= $e($baseLang) ?>"
+                                   name="fields[<?= $e($baseLang) ?>][<?= $e($key) ?>]"
+                                   class="form-control sc-color__hex" value="<?= $e($cur) ?>"
+                                   data-color-hex="1" spellcheck="false" maxlength="7">
+                            <button type="button" class="btn btn--sm btn--ghost sc-color__reset"
+                                    data-reset-to="<?= $e((string) ($field['default'] ?? '')) ?>"><?= te('Reset') ?></button>
+                        </div>
+
+                    <?php elseif ($type === SiteContentService::TYPE_TOGGLE): ?>
+                        <?php
+                        $raw = $stored($values, $key, $baseLang);
+                        $on  = ($raw === '' ? (string) ($field['default'] ?? '1') : $raw) === '1';
+                        ?>
+                        <div class="sc-toggle">
+                            <!-- An unticked box sends nothing, so this carries the "off". -->
+                            <input type="hidden" name="fields[<?= $e($baseLang) ?>][<?= $e($key) ?>]" value="0">
+                            <label class="sc-switch">
+                                <input type="checkbox" id="field_<?= $e($key) ?>_<?= $e($baseLang) ?>"
+                                       name="fields[<?= $e($baseLang) ?>][<?= $e($key) ?>]" value="1"
+                                       <?= $on ? 'checked' : '' ?>>
+                                <span class="sc-switch__track"><span class="sc-switch__thumb"></span></span>
+                                <span class="sc-switch__text"><?= te('Shown') ?></span>
+                            </label>
+                        </div>
+
+                    <?php elseif ($type === SiteContentService::TYPE_NUMBER): ?>
+                        <?php
+                        $raw = $stored($values, $key, $baseLang);
+                        $cur = $raw === '' ? (string) ($field['default'] ?? '0') : $raw;
+                        ?>
+                        <div class="sc-number">
+                            <input type="number" id="field_<?= $e($key) ?>_<?= $e($baseLang) ?>"
+                                   name="fields[<?= $e($baseLang) ?>][<?= $e($key) ?>]"
+                                   class="form-control" value="<?= $e($cur) ?>"
+                                   min="<?= $e((string) ($field['min'] ?? 0)) ?>"
+                                   max="<?= $e((string) ($field['max'] ?? 999999)) ?>"
+                                   step="<?= $e((string) ($field['step'] ?? 1)) ?>">
+                            <?php if (!empty($field['suffix'])): ?>
+                                <span class="sc-number__suffix"><?= te($field['suffix']) ?></span>
+                            <?php endif; ?>
+                        </div>
+
                     <?php else: ?>
                         <div class="sc-langs">
                             <?php foreach ($langs as $lang): ?>
@@ -141,6 +214,10 @@ $stored = static function (array $values, string $key, string $lang): string {
                                 </div>
                             <?php endforeach; ?>
                         </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($field['help'])): ?>
+                        <p class="sc-help"><?= te($field['help']) ?></p>
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
@@ -209,5 +286,95 @@ $stored = static function (array $values, string $key, string $lang): string {
             document.querySelectorAll('.rte').forEach(syncToTextarea);
         });
     }
+})();
+</script>
+
+<style>
+    .sc-help { margin: .35rem 0 0; font-size: .82rem; color: #64748B; }
+
+    .sc-palette { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: .9rem 1rem; margin-bottom: 1.1rem; }
+    .sc-palette__lead { display: grid; gap: .15rem; margin-bottom: .7rem; }
+    .sc-palette__lead span { font-size: .84rem; color: #64748B; }
+    .sc-palette__row { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .sc-swatch { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer;
+                 background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; padding: .4rem .7rem; }
+    .sc-swatch:hover { border-color: #94A3B8; }
+    .sc-swatch.is-picked { border-color: #1D4ED8; box-shadow: 0 0 0 2px rgba(29,78,216,.15); }
+    .sc-swatch__dots { display: inline-flex; }
+    .sc-swatch__dots i { width: 14px; height: 14px; border-radius: 50%; display: inline-block;
+                         border: 1.5px solid #fff; margin-left: -5px; }
+    .sc-swatch__dots i:first-child { margin-left: 0; }
+    .sc-swatch__name { font-size: .82rem; font-weight: 600; color: #1C2538; }
+
+    .sc-color { display: flex; align-items: center; gap: .5rem; }
+    .sc-color__pick { width: 46px; height: 38px; padding: 2px; border: 1px solid #E2E8F0;
+                      border-radius: 8px; background: #fff; cursor: pointer; }
+    .sc-color__hex { max-width: 140px; font-family: ui-monospace, monospace; text-transform: uppercase; }
+
+    .sc-number { display: flex; align-items: center; gap: .6rem; }
+    .sc-number input { max-width: 160px; }
+    .sc-number__suffix { font-size: .84rem; color: #64748B; }
+
+    .sc-toggle { padding-top: .15rem; }
+    .sc-switch { display: inline-flex; align-items: center; gap: .6rem; cursor: pointer; }
+    .sc-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .sc-switch__track { width: 46px; height: 26px; border-radius: 999px; background: #CBD5E1;
+                        position: relative; transition: background .18s ease; flex: none; }
+    .sc-switch__thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+                        border-radius: 50%; background: #fff; transition: transform .18s ease;
+                        box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+    .sc-switch input:checked + .sc-switch__track { background: #16A34A; }
+    .sc-switch input:checked + .sc-switch__track .sc-switch__thumb { transform: translateX(20px); }
+    .sc-switch input:focus-visible + .sc-switch__track { outline: 2px solid #1D4ED8; outline-offset: 2px; }
+    .sc-switch__text { font-size: .86rem; color: #475569; }
+</style>
+
+<script>
+(function () {
+    // Keep the picker and the hex box showing the same thing, whichever
+    // one is used. The hex box is the field that actually submits.
+    document.querySelectorAll('.sc-color__pick').forEach(function (pick) {
+        var hex = document.getElementById(pick.getAttribute('data-color-for'));
+        if (!hex) { return; }
+
+        pick.addEventListener('input', function () { hex.value = pick.value.toUpperCase(); });
+        hex.addEventListener('input', function () {
+            if (/^#[0-9A-Fa-f]{6}$/.test(hex.value.trim())) { pick.value = hex.value.trim(); }
+        });
+    });
+
+    document.querySelectorAll('.sc-color__reset').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var wrap = btn.closest('.sc-color');
+            var to = btn.getAttribute('data-reset-to') || '';
+            if (!wrap || !to) { return; }
+            var hex = wrap.querySelector('[data-color-hex]');
+            var pick = wrap.querySelector('.sc-color__pick');
+            if (hex) { hex.value = to.toUpperCase(); }
+            if (pick) { pick.value = to; }
+        });
+    });
+
+    // A palette fills every colour box at once; nothing is saved until
+    // the form is submitted, so a mis-click costs nothing.
+    function setColour(key, value) {
+        var hex = document.getElementById('field_' + key + '_<?= $e($baseLang) ?>');
+        if (!hex) { return; }
+        hex.value = value.toUpperCase();
+        var pick = document.querySelector('[data-color-for="field_' + key + '_<?= $e($baseLang) ?>"]');
+        if (pick) { pick.value = value; }
+    }
+
+    document.querySelectorAll('.sc-swatch').forEach(function (sw) {
+        sw.addEventListener('click', function () {
+            setColour('theme_primary', sw.getAttribute('data-primary'));
+            setColour('theme_secondary', sw.getAttribute('data-secondary'));
+            setColour('theme_page_bg', sw.getAttribute('data-bg'));
+            setColour('theme_nav_bg', sw.getAttribute('data-nav'));
+
+            document.querySelectorAll('.sc-swatch').forEach(function (o) { o.classList.remove('is-picked'); });
+            sw.classList.add('is-picked');
+        });
+    });
 })();
 </script>

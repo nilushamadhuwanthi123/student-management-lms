@@ -8,6 +8,31 @@
     <?= csrfMeta() ?>
 
     <?php
+    // Look and feel, straight from Website Content -> "Look and feel".
+    // Every value is validated there (a colour must be #rrggbb, a timing
+    // is clamped to its field's bounds), so nothing user-typed reaches
+    // the stylesheet raw.
+    $__p   = \App\Services\PublicSite::class;
+    $__pri = $__p::color('theme_primary');
+    $__sec = $__p::color('theme_secondary');
+    $__pbg = $__p::color('theme_page_bg');
+    $__nbg = $__p::color('theme_nav_bg');
+    $__ntx = $__p::color('theme_nav_text');
+    ?>
+    <style id="tsTheme">
+        :root {
+            --primary: <?= $__pri ?>;
+            --primary-hover: <?= $__pri ?>;
+            --secondary: <?= $__sec ?>;
+            --bg: <?= $__pbg ?>;
+            --ts-nav-bg: <?= $__nbg ?>;
+            --ts-nav-text: <?= $__ntx ?>;
+            --ts-float-speed: <?= (int) $__p::num('hero_float_speed') ?>s;
+        }
+        body { background: var(--bg); }
+    </style>
+
+    <?php
     $__ogTitle = $pageTitle ?? (\App\Services\PublicSite::teacherName() ?? t('Science classes'));
     $__ogDesc = $metaDescription ?? 'Science classes for Grades 6 to 11.';
     $__origin = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
@@ -463,6 +488,12 @@
         if (!sheet) { return; }
 
         var seen = false;
+        // Turned off in Website Content -> "Look and feel": never show it.
+        if (!<?= \App\Services\PublicSite::isOn('intro_enabled') ? 'true' : 'false' ?>) {
+            if (sheet && sheet.parentNode) { sheet.parentNode.removeChild(sheet); }
+            return;
+        }
+
         try { seen = window.sessionStorage.getItem('tsIntroSeen') === '1'; } catch (e) { seen = false; }
         var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -484,8 +515,14 @@
         }
 
         // Whichever comes first: the page finishing, or 2.2 seconds.
-        window.addEventListener('load', function () { setTimeout(finish, 450); });
-        setTimeout(finish, 2200);
+        // Both timings come from Website Content -> "Look and feel", so the
+        // opening can be slowed down for people to read it, or sped up,
+        // without touching this file. The first is the pause after the
+        // page is ready; the second is the hard stop, so a slow page can
+        // never leave the sheet up indefinitely.
+        var holdMs = <?= (int) \App\Services\PublicSite::num('intro_hold_ms') ?>;
+        window.addEventListener('load', function () { setTimeout(finish, Math.round(holdMs * 0.2)); });
+        setTimeout(finish, holdMs);
         // A click should never be trapped behind it.
         sheet.addEventListener('click', finish);
     })();
@@ -509,8 +546,12 @@
             <li><a href="<?= BASE_URL ?>/" class="<?= ($activePage ?? '') === 'home' ? 'active' : '' ?>"><?= te('Home') ?></a></li>
             <li><a href="<?= BASE_URL ?>/about" class="<?= ($activePage ?? '') === 'about' ? 'active' : '' ?>"><?= te('About') ?></a></li>
             <li><a href="<?= BASE_URL ?>/our-classes" class="<?= ($activePage ?? '') === 'classes' ? 'active' : '' ?>"><?= te('Classes') ?></a></li>
+            <?php if (\App\Services\PublicSite::isOn('show_nav_events')): ?>
             <li><a href="<?= BASE_URL ?>/events" class="<?= ($activePage ?? '') === 'events' ? 'active' : '' ?>"><?= te('Events') ?></a></li>
+            <?php endif; ?>
+            <?php if (\App\Services\PublicSite::isOn('show_nav_downloads')): ?>
             <li><a href="<?= BASE_URL ?>/downloads" class="<?= ($activePage ?? '') === 'downloads' ? 'active' : '' ?>"><?= te('Downloads') ?></a></li>
+            <?php endif; ?>
             <li><a href="<?= BASE_URL ?>/contact" class="<?= ($activePage ?? '') === 'contact' ? 'active' : '' ?>"><?= te('Contact') ?></a></li>
             <li><a href="<?= BASE_URL ?>/lang/<?= (function_exists('lang_current') && lang_current() === 'si') ? 'en' : 'si' ?>" class="nav-lang" hreflang="<?= (function_exists('lang_current') && lang_current() === 'si') ? 'en' : 'si' ?>"><?= (function_exists('lang_current') && lang_current() === 'si') ? 'English' : 'සිංහල' ?></a></li>
             <li>
@@ -564,8 +605,12 @@
                         <li><a href="<?= BASE_URL ?>/" class="hover:text-white" style="color:#94A3B8;"><?= te('Home') ?></a></li>
                         <li><a href="<?= BASE_URL ?>/about" class="hover:text-white" style="color:#94A3B8;"><?= te('About') ?></a></li>
                         <li><a href="<?= BASE_URL ?>/our-classes" class="hover:text-white" style="color:#94A3B8;"><?= te('Classes') ?></a></li>
+                        <?php if (\App\Services\PublicSite::isOn('show_nav_events')): ?>
                         <li><a href="<?= BASE_URL ?>/events" class="hover:text-white" style="color:#94A3B8;"><?= te('Events') ?></a></li>
+                        <?php endif; ?>
+                        <?php if (\App\Services\PublicSite::isOn('show_nav_downloads')): ?>
                         <li><a href="<?= BASE_URL ?>/downloads" class="hover:text-white" style="color:#94A3B8;"><?= te('Downloads') ?></a></li>
+                        <?php endif; ?>
                         <li><a href="<?= BASE_URL ?>/enroll" class="hover:text-white" style="color:#94A3B8;"><?= te('Enrol now') ?></a></li>
                         <li><a href="<?= BASE_URL ?>/contact" class="hover:text-white" style="color:#94A3B8;"><?= te('Contact') ?></a></li>
                     </ul>

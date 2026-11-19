@@ -407,4 +407,51 @@ final class PublicSite
         }
         return self::$cache[$cacheKey];
     }
+
+    /**
+     * The look-and-feel switches and values, for views.
+     *
+     * Each one fails open to the field's own default: if the settings
+     * table cannot be read at all, the page still renders the way it did
+     * before any of this was configurable, rather than losing its colours
+     * or hiding half its sections.
+     */
+    public static function isOn(string $key): bool
+    {
+        $cacheKey = 'on:' . $key;
+        if (!array_key_exists($cacheKey, self::$cache)) {
+            try {
+                self::$cache[$cacheKey] = (new SiteContentService())->isOn($key);
+            } catch (\Throwable $e) {
+                self::$cache[$cacheKey] = (string) (SiteContentService::FIELDS[$key]['default'] ?? '1') === '1';
+            }
+        }
+        return self::$cache[$cacheKey];
+    }
+
+    public static function num(string $key): int
+    {
+        $cacheKey = 'num:' . $key;
+        if (!array_key_exists($cacheKey, self::$cache)) {
+            try {
+                self::$cache[$cacheKey] = (new SiteContentService())->num($key);
+            } catch (\Throwable $e) {
+                self::$cache[$cacheKey] = (int) (SiteContentService::FIELDS[$key]['default'] ?? 0);
+            }
+        }
+        return self::$cache[$cacheKey];
+    }
+
+    public static function color(string $key): string
+    {
+        $cacheKey = 'color:' . $key;
+        if (!array_key_exists($cacheKey, self::$cache)) {
+            try {
+                self::$cache[$cacheKey] = (new SiteContentService())->color($key);
+            } catch (\Throwable $e) {
+                self::$cache[$cacheKey] = (string) (SiteContentService::FIELDS[$key]['default'] ?? '#000000');
+            }
+        }
+        return self::$cache[$cacheKey];
+    }
 }

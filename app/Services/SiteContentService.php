@@ -36,6 +36,29 @@ final class SiteContentService
     public const TYPE_RICHTEXT = 'richtext';
     public const TYPE_IMAGE = 'image';
     public const TYPE_MEDIA = 'media';
+    /** A colour, stored as #rrggbb. Edited with a picker and a palette. */
+    public const TYPE_COLOR = 'color';
+    /** On/off. Stored as '1' or '0'; read back with isOn(). */
+    public const TYPE_TOGGLE = 'toggle';
+    /** A plain number (timings, speeds). Bounds live on the field. */
+    public const TYPE_NUMBER = 'number';
+
+    /**
+     * Ready-made colour sets, offered as one-click choices next to the
+     * pickers so the site owner is not left guessing at hex codes.
+     *
+     * key => [label, primary, secondary, page background, nav background]
+     */
+    public const PALETTES = [
+        'royal'   => ['Royal blue (current)', '#1D4ED8', '#2563EB', '#F4F7FC', '#15307E'],
+        'teal'    => ['Teal',                 '#0F766E', '#14B8A6', '#F2FAF9', '#0B3F3A'],
+        'plum'    => ['Plum',                 '#7E22CE', '#A855F7', '#FAF5FF', '#3B0764'],
+        'sunset'  => ['Sunset orange',        '#C2410C', '#F97316', '#FFF7ED', '#7C2D12'],
+        'forest'  => ['Forest green',         '#15803D', '#22C55E', '#F3FAF4', '#14532D'],
+        'crimson' => ['Crimson',              '#BE123C', '#F43F5E', '#FFF1F3', '#4C0519'],
+        'slate'   => ['Graphite',             '#334155', '#64748B', '#F6F8FB', '#0F172A'],
+        'gold'    => ['Gold and navy',        '#B45309', '#F59E0B', '#FFFBEB', '#1E293B'],
+    ];
 
     /**
      * The language whose wording is stored under the plain key, and the
@@ -50,6 +73,7 @@ final class SiteContentService
      * the editing screen -- a group has no effect on what a page renders.
      */
     public const GROUPS = [
+        'appearance' => 'Look and feel: colours, motion and what is shown',
         'hero'     => 'Home page: the top of the page',
         'teacher'  => 'Home page: "Your teacher"',
         'how'      => 'Home page: how the classes work',
@@ -68,6 +92,123 @@ final class SiteContentService
 
     /** @var array<string, array{label: string, default: string, type: string, group?: string}> */
     public const FIELDS = [
+        // -- Look and feel: colours ------------------------------------------
+        'theme_primary' => [
+            'label'   => 'Main colour (buttons, links, highlights)',
+            'default' => '#1D4ED8',
+            'type'    => self::TYPE_COLOR,
+            'group'   => 'appearance',
+        ],
+        'theme_secondary' => [
+            'label'   => 'Second colour (gradients and accents)',
+            'default' => '#2563EB',
+            'type'    => self::TYPE_COLOR,
+            'group'   => 'appearance',
+        ],
+        'theme_page_bg' => [
+            'label'   => 'Page background colour',
+            'default' => '#F4F7FC',
+            'type'    => self::TYPE_COLOR,
+            'group'   => 'appearance',
+        ],
+        'theme_nav_bg' => [
+            'label'   => 'Top menu bar: background colour',
+            'default' => '#15307E',
+            'type'    => self::TYPE_COLOR,
+            'group'   => 'appearance',
+        ],
+        'theme_nav_text' => [
+            'label'   => 'Top menu bar: text colour',
+            'default' => '#FFFFFF',
+            'type'    => self::TYPE_COLOR,
+            'group'   => 'appearance',
+        ],
+
+        // -- Look and feel: motion -------------------------------------------
+        'intro_enabled' => [
+            'label'   => 'Show the opening animation when the site is first opened',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'appearance',
+        ],
+        'intro_hold_ms' => [
+            'label'   => 'Opening animation: how long it stays on screen',
+            'default' => '2200',
+            'type'    => self::TYPE_NUMBER,
+            'group'   => 'appearance',
+            'min'     => 600,
+            'max'     => 10000,
+            'step'    => 100,
+            'suffix'  => 'milliseconds (1000 = 1 second)',
+            'help'    => 'Raise this to let people read it; lower it to get to the page sooner.',
+        ],
+        'hero_interval_ms' => [
+            'label'   => 'Background photos: how long each one is shown',
+            'default' => '5000',
+            'type'    => self::TYPE_NUMBER,
+            'group'   => 'appearance',
+            'min'     => 1500,
+            'max'     => 30000,
+            'step'    => 500,
+            'suffix'  => 'milliseconds (1000 = 1 second)',
+            'help'    => 'Only matters when more than one background photo is active.',
+        ],
+        'hero_float_enabled' => [
+            'label'   => 'Show the drifting science icons over the background',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'appearance',
+        ],
+        'hero_float_speed' => [
+            'label'   => 'Drifting icons: how long one full drift takes',
+            'default' => '26',
+            'type'    => self::TYPE_NUMBER,
+            'group'   => 'appearance',
+            'min'     => 6,
+            'max'     => 120,
+            'step'    => 1,
+            'suffix'  => 'seconds',
+            'help'    => 'A bigger number drifts more slowly.',
+        ],
+
+        // -- Look and feel: what is shown ------------------------------------
+        'show_nav_events' => [
+            'label'   => 'Menu: show "Events"',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'appearance',
+        ],
+        'show_nav_downloads' => [
+            'label'   => 'Menu: show "Downloads"',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'appearance',
+        ],
+        'show_nav_facebook' => [
+            'label'   => 'Menu: show a Facebook button (uses the Facebook address on the Contact tab)',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'appearance',
+        ],
+        'show_hero_text' => [
+            'label'   => 'Home page: show the wording over the background photo',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'appearance',
+        ],
+        'show_how_section' => [
+            'label'   => 'Home page: show "How the classes work"',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'appearance',
+        ],
+        'show_seminar_banner' => [
+            'label'   => 'Home page: show the upcoming seminar strip at the top',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'appearance',
+        ],
+
         // -- Home page: hero -------------------------------------------------
         'home_hero_text' => [
             'label'   => 'Hero paragraph (under the heading)',
@@ -489,6 +630,57 @@ final class SiteContentService
     public function __construct(?PDO $db = null)
     {
         $this->db = $db ?? \Database::connect();
+    }
+
+    /**
+     * Is an on/off field switched on?
+     *
+     * Anything unset falls back to the field's own default, so a site
+     * that has never been edited behaves exactly as it did before these
+     * switches existed.
+     */
+    public function isOn(string $key): bool
+    {
+        $raw = trim($this->get($key));
+        if ($raw === '') {
+            $raw = (string) (self::FIELDS[$key]['default'] ?? '1');
+        }
+
+        return $raw === '1';
+    }
+
+    /**
+     * A numeric field, clamped to the bounds declared on the field so a
+     * stray value cannot freeze an animation on screen or blink it past
+     * before anyone sees it.
+     */
+    public function num(string $key): int
+    {
+        $field = self::FIELDS[$key] ?? [];
+        $value = trim($this->get($key));
+        $value = $value === '' ? (string) ($field['default'] ?? '0') : $value;
+        $value = (int) $value;
+
+        $min = (int) ($field['min'] ?? PHP_INT_MIN);
+        $max = (int) ($field['max'] ?? PHP_INT_MAX);
+
+        return max($min, min($max, $value));
+    }
+
+    /**
+     * A colour field as #rrggbb.
+     *
+     * The value is going straight into a stylesheet, so anything that is
+     * not plainly a hex colour is refused and the default used instead --
+     * that keeps a stray value from closing the CSS rule and injecting
+     * its own.
+     */
+    public function color(string $key): string
+    {
+        $default = (string) (self::FIELDS[$key]['default'] ?? '#000000');
+        $value = trim($this->get($key));
+
+        return preg_match('/^#[0-9A-Fa-f]{6}$/', $value) === 1 ? $value : $default;
     }
 
     /**
