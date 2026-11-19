@@ -342,6 +342,18 @@ class AccountController extends BaseController
     }
 
     /**
+     * The page where an office-issued reset code is actually redeemed.
+     *
+     * Not the same page as "Forgot password?", which only sends a NEW code
+     * by SMS and has no field for a code the office already gave out --
+     * pointing people there is what made an issued code look unusable.
+     */
+    public static function resetUrl(): string
+    {
+        return rtrim((string) env('APP_URL', ''), '/') . '/reset-password';
+    }
+
+    /**
      * The exact wording sent for a credential, shared by every issuer so
      * a parent sees the same message whether it went out from this
      * screen's "Send by..." buttons, the enrolment-approval auto-send,
@@ -351,8 +363,8 @@ class AccountController extends BaseController
     {
         return $kind === 'reset_code'
             ? t(
-                'Hello {name}. Your reset code for the class portal is {code}. Open the login page, choose "Forgot password?", and use login ID {id} with this code within 30 minutes.',
-                ['name' => $name !== '' ? $name : $loginId, 'code' => $secret, 'id' => $loginId]
+                'Hello {name}. Your reset code for the class portal is {code}. Open {url}, then enter login ID {id}, this code and a new password, within 30 minutes.',
+                ['name' => $name !== '' ? $name : $loginId, 'code' => $secret, 'id' => $loginId, 'url' => self::resetUrl()]
             )
             : t(
                 'Hello {name}. Your class portal login: ID {id}, temporary password {password}. You must choose your own password the first time you log in.',

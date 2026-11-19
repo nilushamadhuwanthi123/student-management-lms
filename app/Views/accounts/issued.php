@@ -15,17 +15,12 @@
 $items = $items ?? [];
 $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 $waBody = static function (array $it): string {
-    $name = (string) ($it['name'] ?? '');
-    $loginId = (string) ($it['login_id'] ?? '');
-    return ($it['kind'] ?? 'password') === 'reset_code'
-        ? t(
-            'Hello {name}. Your reset code for the class portal is {code}. Open the login page, choose "Forgot password?", and use login ID {id} with this code within 30 minutes.',
-            ['name' => $name !== '' ? $name : $loginId, 'code' => (string) ($it['secret'] ?? ''), 'id' => $loginId]
-        )
-        : t(
-            'Hello {name}. Your class portal login: ID {id}, temporary password {password}. You must choose your own password the first time you log in.',
-            ['name' => $name !== '' ? $name : $loginId, 'id' => $loginId, 'password' => (string) ($it['secret'] ?? '')]
-        );
+    return \App\Controllers\AccountController::credentialMessage(
+        (string) ($it['kind'] ?? 'password'),
+        (string) ($it['name'] ?? ''),
+        (string) ($it['login_id'] ?? ''),
+        (string) ($it['secret'] ?? '')
+    );
 };
 ?>
 <div class="page-header">
@@ -74,7 +69,11 @@ $waBody = static function (array $it): string {
                         <span class="credential-row__label"><?= te('Valid until') ?></span>
                         <span class="credential-row__value"><?= $e(lang_date('j M Y, g:i a', (string) $it['expires_at'])) ?></span>
                     </div>
-                    <p class="credential-card__hint"><?= te('They open the login page, choose "Forgot password?", and enter their login ID, this code and a new password.') ?></p>
+                    <p class="credential-card__hint">
+                        <?= te('They open the page below, then enter their login ID, this code and a new password. (The "Forgot password?" link is NOT the right page -- that one only sends a brand new code by SMS.)') ?>
+                        <br>
+                        <a class="credential-reset-link" href="<?= $e(\App\Controllers\AccountController::resetUrl()) ?>" target="_blank" rel="noopener noreferrer"><?= $e(\App\Controllers\AccountController::resetUrl()) ?></a>
+                    </p>
                 <?php else: ?>
                     <div class="credential-row">
                         <span class="credential-row__label"><?= te('Temporary password') ?></span>
@@ -160,6 +159,7 @@ $waBody = static function (array $it): string {
     .credential-row__value { font-weight: 600; }
     .credential-row__value--big { font-size: 1.2rem; letter-spacing: .06em; color: #4F46E5; }
     .credential-card__hint { margin: .5rem 0 0; font-size: .82rem; color: #64748B; }
+    .credential-reset-link { display: inline-block; margin-top: .35rem; font-weight: 600; color: #4F46E5; word-break: break-all; }
     .credential-card__actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
     .credential-send-form { display: inline-block; }
     .btn--sm { padding: .35rem .75rem; font-size: .85rem; }
