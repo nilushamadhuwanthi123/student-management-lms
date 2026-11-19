@@ -217,10 +217,12 @@ class AccountController extends BaseController
         $limiter->incrementAttempts($ipKey);
         $limiter->incrementAttempts($idKey);
 
+        $sentTo = null;
+
         if ($loginId !== '') {
             $target = (new AccountService($this->db))->recoveryTarget($loginId);
             if ($target !== null) {
-                $this->sendCode($target);
+                $sentTo = $this->sendCode($target);
             } else {
                 $this->audit(null, 'system', 'self_reset_code_missed', null, 0, [
                     'login_id' => mb_substr($loginId, 0, 40),
@@ -228,7 +230,19 @@ class AccountController extends BaseController
             }
         }
 
-        $this->flash('success', t('If that ID is on our records, a reset code is on its way to the phone number or email address registered for it. It works once, for 30 minutes.'));
+        // Naming where it went, masked, is what lets somebody tell "it is
+        // on its way to the phone in my hand" from "it went to a number I
+        // no longer use" -- the difference between waiting and calling the
+        // office. The trade-off is that it confirms the ID exists, which
+        // the branch office accepted for this install.
+        if ($sentTo !== null && $sentTo !== '') {
+            $this->flash('success', t('A reset code is on its way to {where}. It works once, for 30 minutes.', ['where' => $sentTo]));
+        } else {
+            $this->flash('success', t('If that ID is on our records, a reset code is on its way to the phone number or email address registered for it. It works once, for 30 minutes.'));
+        }
+
+        // The login ID carries over so the next page is already half filled.
+        session_flash('reset_old', ['login_id' => $loginId, 'reset_code' => '']);
         $this->redirect('/reset-password');
     }
 
@@ -253,7 +267,7 @@ class AccountController extends BaseController
      * A failure here is swallowed on purpose: the caller must answer the
      * same way whether or not anything was sent.
      */
-    private function sendCode(array $target): void
+    private function sendCode(array $target): ?string
     {
         try {
             $result = (new AccountService($this->db))->issueCode($target['type'], $target['id'], null);
@@ -267,12 +281,15 @@ class AccountController extends BaseController
             $email = $target['email'] ?? null;
 
             $delivery = 'none';
+            $sentTo = null;
 
             if ($phone !== null && (new \App\Services\SmsService())->send($phone, $body)) {
                 $delivery = 'sms';
+                $sentTo = self::maskPhone($phone);
             } elseif ($email !== null
                 && (new EmailService())->send($email, t('Your class portal reset code'), $body)) {
                 $delivery = 'email';
+                $sentTo = self::maskEmail($email);
             } elseif ($phone !== null) {
                 (new WhatsAppService())->queue([
                     'recipient_name'  => $target['name'],
@@ -283,6 +300,7 @@ class AccountController extends BaseController
                     'student_id'      => $target['type'] === 'student' ? $target['id'] : null,
                 ]);
                 $delivery = 'whatsapp_queue';
+                $sentTo = self::maskPhone($phone);
             }
 
             // The code itself never reaches the audit log.
@@ -290,9 +308,42 @@ class AccountController extends BaseController
                 'expires_at' => $result['expires_at'],
                 'delivery'   => $delivery,
             ]);
+
+            return $sentTo;
         } catch (\Throwable $e) {
             error_log('Self-service reset code failed: ' . $e->getMessage());
         }
+
+        return null;
+    }
+
+    /**
+     * "0771234567" -> "••• ••• •567".
+     *
+     * Enough for somebody to recognise their own number, not enough to
+     * read one off the screen.
+     */
+    private static function maskPhone(string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', $phone) ?? '';
+        $last = mb_substr($digits, -3);
+
+        return $last === '' ? '' : '••• ••• •' . $last;
+    }
+
+    /** "nilusha@example.com" -> "ni•••@example.com". */
+    private static function maskEmail(string $email): string
+    {
+        $at = mb_strpos($email, '@');
+        if ($at === false || $at < 1) {
+            return '';
+        }
+
+        $name = mb_substr($email, 0, $at);
+        $domain = mb_substr($email, $at);
+        $head = mb_substr($name, 0, min(2, mb_strlen($name)));
+
+        return $head . '•••' . $domain;
     }
 
     /** GET /reset-password */
