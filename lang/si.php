@@ -871,6 +871,8 @@ return [
     'I have a reset code' => 'මා සතුව යළි සැකසීමේ කේතයක් තිබේ',
     'If that ID is on our records, a reset code is on its way to the phone number or email address registered for it. It works once, for 30 minutes.' => 'එම අංකය අපගේ වාර්තාවල ඇත්නම්, ඒ සඳහා ලියාපදිංචි කර ඇති දුරකථන අංකයට හෝ විද්‍යුත් තැපැල් ලිපිනයට යළි සැකසීමේ කේතයක් එවනු ලැබේ. එය එක් වරක් පමණක්, විනාඩි 30ක් වැඩ කරයි.',
     'Your class portal reset code' => 'ඔබේ පන්ති ද්වාරයේ යළි සැකසීමේ කේතය',
+    'This page has been open too long and scanning has stopped. Please reload the page to carry on.' => 'මෙම පිටුව දිගු වේලාවක් විවෘතව තිබූ නිසා scan කිරීම නතර වී ඇත. දිගටම කරගෙන යාමට පිටුව නැවත load කරන්න.',
+    'Reload' => 'නැවත load කරන්න',
     'A reset code is on its way to {where}. It works once, for 30 minutes.' => 'යළි සැකසීමේ කේතයක් {where} වෙත යවා ඇත. එය එක් වරක් පමණක්, විනාඩි 30ක් වැඩ කරයි.',
     'Type your login ID and we will send a reset code to the mobile number or email address registered on your account. The code works once, for 30 minutes.' => 'ඔබගේ පිවිසුම් අංකය ටයිප් කරන්න, එවිට ඔබගේ ගිණුමට ලියාපදිංචි කර ඇති ජංගම දුරකථන අංකයට හෝ විද්‍යුත් තැපැල් ලිපිනයට යළි සැකසීමේ කේතයක් එවනු ලැබේ. එම කේතය විනාඩි 30ක් ඇතුළත එක් වරක් පමණක් වැඩ කරයි.',
     'No mobile number or email address on your account, or they have changed? Call the branch office and they will give you a code after confirming who you are.' => 'ඔබගේ ගිණුමේ ජංගම දුරකථන අංකයක් හෝ විද්‍යුත් තැපැල් ලිපිනයක් නැද්ද, නැතහොත් ඒවා වෙනස් වී තිබේද? ශාඛා කාර්යාලයට අමතන්න, ඔබ කවුදැයි තහවුරු කිරීමෙන් පසු ඔබට කේතයක් ලබා දෙනු ඇත.',

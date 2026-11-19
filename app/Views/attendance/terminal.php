@@ -154,6 +154,15 @@ $classes = $classes ?? [];
     </div>
 </div>
 
+<div id="scanExpiredNote" style="display:none; margin:0 0 1rem; padding:.85rem 1rem; border-radius:10px;
+     background:#FEF2F2; border:1px solid #FECACA; color:#B3261E; font-weight:600; text-align:center;">
+    <?= te('This page has been open too long and scanning has stopped. Please reload the page to carry on.') ?>
+    <button type="button" onclick="window.location.reload()"
+            style="margin-left:.6rem; padding:.3rem .8rem; border-radius:8px; border:0; background:#B3261E; color:#fff; cursor:pointer; font-weight:600;">
+        <?= te('Reload') ?>
+    </button>
+</div>
+
 <script>
 // Labels the JS below swaps in dynamically -- translated once here so the
 // terminal reads correctly in Sinhala instead of hard-coded English.
@@ -259,15 +268,27 @@ function processScan(code, classId) {
     box.style.borderColor = '#3b82f6';
     box.style.background = '#eff6ff';
 
+    var csrfMetaTag = document.querySelector('meta[name="csrf-token"]');
+
     fetch('<?= BASE_URL ?>/attendance/scan', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-Token': csrfMetaTag ? csrfMetaTag.getAttribute('content') : ''
         },
+        credentials: 'same-origin',
         body: JSON.stringify({ code: code, class_id: classId })
     })
-    .then(function(res) { return res.json(); })
+    .then(function(res) {
+        // A scan terminal is left open all day, and the CSRF token in the
+        // page expires after an hour. Without this the scanner would just
+        // stop working with no sign of why, so say so plainly instead.
+        if (res.status === 403) {
+            throw new Error('csrf_expired');
+        }
+        return res.json();
+    })
     .then(function(data) {
         box.style.borderColor = 'var(--primary)';
         box.style.background = 'var(--surface-sunken)';
@@ -288,6 +309,13 @@ function processScan(code, classId) {
     .catch(function(err) {
         console.error('Scan error:', err);
         box.style.borderColor = 'var(--danger)';
+
+        if (err && err.message === 'csrf_expired') {
+            var note = document.getElementById('scanExpiredNote');
+            if (note) {
+                note.style.display = 'block';
+            }
+        }
     });
 }
 
