@@ -288,6 +288,7 @@ class UserController extends BaseController
             session_set('issued_credentials', [[
                 'kind' => 'password', 'name' => $fullName, 'login_id' => $displayId,
                 'secret' => $temporaryPassword, 'expires_at' => null,
+                'phone' => $phone1, 'email' => (string) ($email ?? ''),
             ]]);
             session_set('issued_back', '/users');
             $this->flash('success', t('Account created. Login ID: {id}', ['id' => $displayId]));
