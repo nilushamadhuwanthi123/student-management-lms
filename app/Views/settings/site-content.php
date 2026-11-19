@@ -195,6 +195,7 @@ $stored = static function (array $values, string $key, string $lang): string {
                         $choices = match ($listName) {
                             'FONTS'      => SiteContentService::FONTS,
                             'NAV_STYLES' => SiteContentService::NAV_STYLES,
+                            'DOWNLOAD_OPEN_MODES' => SiteContentService::DOWNLOAD_OPEN_MODES,
                             default      => [],
                         };
                         $raw = $stored($values, $key, $baseLang);

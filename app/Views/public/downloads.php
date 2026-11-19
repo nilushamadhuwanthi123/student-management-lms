@@ -57,11 +57,13 @@ $renderFolder = static function (array $folder, int $depth, bool $openDefault) u
         <summary class="ts-dl-folder__head">
             <span class="ts-dl-folder__icon" aria-hidden="true">&#128193;</span>
             <span class="ts-dl-folder__name"><?= $e($label) ?></span>
-            <span class="ts-dl-folder__count"><?= te('{n} files', ['n' => $count]) ?></span>
+            <?php if (\App\Services\PublicSite::isOn('downloads_show_counts')): ?>
+                <span class="ts-dl-folder__count"><?= te('{n} files', ['n' => $count]) ?></span>
+            <?php endif; ?>
         </summary>
         <div class="ts-dl-folder__body">
             <?php foreach ($folder['children'] as $child): ?>
-                <?php $renderFolder($child, $depth + 1, false); ?>
+                <?php $renderFolder($child, $depth + 1, \App\Services\PublicSite::content('downloads_open_mode') === 'all'); ?>
             <?php endforeach; ?>
             <?php
                 $videoItems = [];
@@ -118,8 +120,13 @@ $renderFolder = static function (array $folder, int $depth, bool $openDefault) u
             <p class="ts-muted"><?= $e($sc->get('downloads_empty_text')) ?></p>
         <?php else: ?>
         <div class="ts-dl-folders">
+            <?php
+            // Set in the CMS: with two or three folders, opening them all
+            // saves a tap; with twenty, all closed is far easier to scan.
+            $openMode = \App\Services\PublicSite::content('downloads_open_mode');
+            ?>
             <?php foreach ($folders as $i => $folder): ?>
-                <?php $renderFolder($folder, 0, $i === 0); ?>
+                <?php $renderFolder($folder, 0, $openMode === 'all' || ($openMode !== 'none' && $i === 0)); ?>
             <?php endforeach; ?>
         </div>
         <?php endif; ?>

@@ -116,6 +116,13 @@ final class SiteContentService
         ],
     ];
 
+    /** Which Downloads folders start open on the public page. */
+    public const DOWNLOAD_OPEN_MODES = [
+        'first' => ['Open the first folder, keep the rest closed'],
+        'all'   => ['Open every folder'],
+        'none'  => ['Keep every folder closed'],
+    ];
+
     /** How the top menu bar behaves over the page. */
     public const NAV_STYLES = [
         'glass' => ['See-through, frosting as you scroll (the current look)'],
@@ -769,6 +776,20 @@ final class SiteContentService
             'label'   => 'Intro line (under the heading)',
             'default' => 'Past papers, notes and other files the teacher or super admin has shared.',
             'type'    => self::TYPE_TEXT,
+            'group'   => 'downloads',
+        ],
+        'downloads_open_mode' => [
+            'label'   => 'Downloads page: which folders start open',
+            'default' => 'first',
+            'type'    => self::TYPE_CHOICE,
+            'group'   => 'downloads',
+            'choices' => 'DOWNLOAD_OPEN_MODES',
+            'help'    => 'With only a few folders, opening all of them saves a tap. With many, all closed is easier to scan.',
+        ],
+        'downloads_show_counts' => [
+            'label'   => 'Downloads page: show how many files each folder holds',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
             'group'   => 'downloads',
         ],
         'downloads_empty_text' => [
