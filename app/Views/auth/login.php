@@ -49,7 +49,9 @@
         <?php endif; ?>
     </div>
 
-    <div style="text-align:right; margin:-0.5rem 0 0.75rem; font-size:0.875rem;">
+    <div class="login-help-links">
+        <a href="<?= BASE_URL ?>/reset-password"><?= te('I have a reset code') ?></a>
+        <span aria-hidden="true">&middot;</span>
         <a href="<?= BASE_URL ?>/forgot-password"><?= te('Forgot password?') ?></a>
     </div>
 
@@ -59,6 +61,15 @@
         <?= te('Sign In') ?>
     </button>
 </form>
+
+<style>
+    .login-help-links {
+        display: flex; flex-wrap: wrap; justify-content: flex-end;
+        align-items: center; gap: .5rem;
+        margin: -0.25rem 0 0.9rem; font-size: 0.875rem;
+    }
+    .login-help-links span { color: var(--text-muted, #94A3B8); }
+</style>
 
 <script>
 (function () {

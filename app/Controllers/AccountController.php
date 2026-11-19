@@ -282,7 +282,21 @@ class AccountController extends BaseController
     /** GET /reset-password */
     public function showReset(): void
     {
-        $this->view('auth/reset-password', ['pageTitle' => t('Reset your password')], 'layouts/auth');
+        // A failed attempt used to clear the whole form, so a mistyped
+        // password meant typing the login ID and the code again from
+        // scratch -- and the code is one-use, so people assumed it had
+        // been burned. Put back what they already typed.
+        $old = session_get_flash('reset_old');
+        $old = is_array($old) ? $old : [];
+
+        $this->view('auth/reset-password', [
+            'pageTitle'   => t('Reset your password'),
+            // ?id=... lets the office hand over a link that is already
+            // filled in. The code itself is never put in a URL: it would
+            // end up in browser history and referrer headers.
+            'oldLoginId'  => (string) ($old['login_id'] ?? ($_GET['id'] ?? '')),
+            'oldResetCode' => (string) ($old['reset_code'] ?? ''),
+        ], 'layouts/auth');
     }
 
     /** POST /reset-password */
@@ -294,6 +308,10 @@ class AccountController extends BaseController
         $key = 'reset_ip_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
         $check = $limiter->checkRateLimit($key, 10, 15);
         if (!$check['allowed']) {
+            session_flash('reset_old', [
+                'login_id'   => trim((string) ($_POST['login_id'] ?? '')),
+                'reset_code' => (string) ($_POST['reset_code'] ?? ''),
+            ]);
             $this->flash('error', t('Too many attempts. Please wait 15 minutes and try again.'));
             $this->redirect('/reset-password');
         }
@@ -305,6 +323,7 @@ class AccountController extends BaseController
 
         $problem = self::passwordProblem($new, $confirm);
         if ($problem !== null) {
+            session_flash('reset_old', ['login_id' => $loginId, 'reset_code' => $code]);
             $this->flash('error', $problem);
             $this->redirect('/reset-password');
         }
@@ -313,6 +332,7 @@ class AccountController extends BaseController
         if ($done === null) {
             $limiter->incrementAttempts($key);
             $this->audit(null, 'system', 'password_reset_failed', null, 0, ['login_id' => mb_substr($loginId, 0, 40)]);
+            session_flash('reset_old', ['login_id' => $loginId, 'reset_code' => $code]);
             $this->flash('error', t('That reset code is not valid. Check the code, or ask the branch office for a new one.'));
             $this->redirect('/reset-password');
         }
