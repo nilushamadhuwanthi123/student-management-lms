@@ -93,6 +93,11 @@ class AttendanceController extends BaseController
         AuthMiddleware::requireAuth();
         // access: role-checked -- same as Attendance; a student could otherwise mark attendance
         AuthMiddleware::requireRole([AuthMiddleware::ROLE_SUPER_ADMIN, AuthMiddleware::ROLE_ADMIN, AuthMiddleware::ROLE_COORDINATOR, AuthMiddleware::ROLE_STAFF, AuthMiddleware::ROLE_TEACHER]);
+        // Marking attendance is a write, so it needs the same CSRF proof as
+        // every other POST. The terminal sends the token in X-CSRF-Token,
+        // which also makes this answer 403 rather than redirecting -- a
+        // redirect would be meaningless to the fetch() waiting on JSON.
+        verifyCsrfToken();
 
         $rawInput = file_get_contents('php://input');
         $data = json_decode($rawInput, true);

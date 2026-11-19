@@ -541,7 +541,6 @@ $router->post('/classes/{id}/update-room', ['App\Controllers\ClassController', '
     $router->post('/settings/feature-visibility', ['App\Controllers\SettingsController', 'updateFeatureVisibility']);
     $router->get('/settings/site-content', ['App\Controllers\SettingsController', 'siteContent']);
     $router->post('/settings/site-content', ['App\Controllers\SettingsController', 'updateSiteContent']);
-    $router->post('/settings/branch-box-size', ['App\Controllers\SettingsController', 'updateBranchBoxSize']);
     $router->get('/settings/sms', ['App\Controllers\SettingsController', 'sms']);
     $router->post('/settings/sms', ['App\Controllers\SettingsController', 'updateSms']);
     $router->post('/settings/sms/test', ['App\Controllers\SettingsController', 'testSms']);
