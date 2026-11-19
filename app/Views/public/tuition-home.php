@@ -285,14 +285,26 @@ if ($heroMediaRows !== []) {
         <h2><?= $sc('home_how_title') ?></h2><div class="ts-title-bar"></div>
         <p class="ts-lead"><?= $sc('home_how_text') ?></p>
         <div class="ts-grid">
-            <div class="ts-card ts-reveal"><div class="ts-icon ts-icon--c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg></div><h3><?= te('Weekly classes') ?></h3><p class="ts-muted"><?= te('Regular classes by grade at each branch, following the school Science syllabus.') ?></p></div>
-            <div class="ts-card ts-reveal"><div class="ts-icon ts-icon--c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg></div><h3><?= te('Recordings and notes') ?></h3><p class="ts-muted"><?= te('Missed a class or need a second look? Recordings, notes and videos are posted for each month.') ?></p></div>
-            <div class="ts-card ts-reveal"><div class="ts-icon ts-icon--c3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div><h3><?= te('Quizzes and homework') ?></h3><p class="ts-muted"><?= te('Timed online quizzes with marks, and homework the teacher marks with feedback.') ?></p></div>
-            <div class="ts-card ts-reveal"><div class="ts-icon ts-icon--c4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></div><h3><?= te('Past papers') ?></h3><p class="ts-muted"><?= te('Term test and model papers for each grade, with marking schemes released after the class has tried them.') ?></p></div>
-            <div class="ts-card ts-reveal"><div class="ts-icon ts-icon--c5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 21v-1a6 6 0 0 1 12 0v1"/><path d="M15 21v-1a4 4 0 0 1 6-3.5"/></svg></div><h3><?= te('Parent portal') ?></h3><p class="ts-muted"><?= te("Parents see marks, attendance, progress, fees and receipts for their child.") ?></p></div>
-            <div class="ts-card ts-reveal"><div class="ts-icon ts-icon--c6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div><h3><?= te('Absence alerts') ?></h3><p class="ts-muted"><?= te('If a child is marked absent, the family gets an alert in the parent portal.') ?></p></div>
-            <?php if ($hasOnline): ?><div class="ts-card ts-reveal"><div class="ts-icon ts-icon--c7"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/></svg></div><h3><?= te('Online classes') ?></h3><p class="ts-muted"><?= te('Some classes also run online. The joining link is given privately to enrolled students.') ?></p></div><?php endif; ?>
-            <div class="ts-card ts-reveal"><div class="ts-icon ts-icon--c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h9"/><path d="M8.5 3v2c0 5-3 8-5 9"/><path d="M6 9c1 2.5 3 4 6 5"/><path d="m13 20 4-9 4 9"/><path d="M14.5 17h5"/></svg></div><h3><?= te('Sinhala or English') ?></h3><p class="ts-muted"><?= te('Students and parents can switch the portal between Sinhala and English.') ?></p></div>
+            <?php
+            // The cards, their wording and whether each is shown all come
+            // from the CMS now; the icons live in HomeFeatureCards. A card
+            // listed as conditional stays hidden unless the institute
+            // really does that thing, however the switch is set -- the
+            // Online classes card must not advertise classes nobody runs.
+            $__conds = ['hasOnline' => !empty($hasOnline)];
+            foreach (\App\Services\HomeFeatureCards::CARDS as $__ck => $__card):
+                $__cond = \App\Services\HomeFeatureCards::CONDITIONAL[$__ck] ?? null;
+                if ($__cond !== null && empty($__conds[$__cond])) { continue; }
+                if (!\App\Services\PublicSite::isOn(\App\Services\HomeFeatureCards::showKey($__ck))) { continue; }
+            ?>
+                <div class="ts-card ts-reveal">
+                    <div class="ts-icon ts-icon--<?= $e($__card[0]) ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><?= $__card[3] ?></svg>
+                    </div>
+                    <h3><?= $sc(\App\Services\HomeFeatureCards::titleKey($__ck)) ?></h3>
+                    <p class="ts-muted"><?= $sc(\App\Services\HomeFeatureCards::textKey($__ck)) ?></p>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
@@ -304,6 +316,7 @@ if ($heroMediaRows !== []) {
         <h2><?= $sc('home_join_title') ?></h2><div class="ts-title-bar"></div>
         <div class="ts-steps" style="margin-top:1.8rem;">
             <?php foreach ([1, 2, 3, 4] as $stepNo): ?>
+                <?php if (!\App\Services\PublicSite::isOn('show_step_' . $stepNo)) { continue; } ?>
                 <?php $stepTitle = $sc('home_step_' . $stepNo . '_title'); ?>
                 <?php $stepText = $sc('home_step_' . $stepNo . '_text'); ?>
                 <?php if ($stepTitle === '' && $stepText === '') { continue; } ?>
