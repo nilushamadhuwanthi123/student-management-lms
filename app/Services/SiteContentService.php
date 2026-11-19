@@ -44,6 +44,8 @@ final class SiteContentService
     public const TYPE_NUMBER = 'number';
     /** One of a fixed list, named by the field's 'choices' constant. */
     public const TYPE_CHOICE = 'choice';
+    /** Several of a fixed list, stored comma-separated. */
+    public const TYPE_ICONSET = 'iconset';
 
     /**
      * Ready-made colour sets, offered as one-click choices next to the
@@ -273,6 +275,33 @@ final class SiteContentService
             'default' => '1',
             'type'    => self::TYPE_TOGGLE,
             'group'   => 'background',
+        ],
+        'hero_float_icons' => [
+            'label'   => 'Which icons drift over the background',
+            'default' => 'atom,flask,dna,microscope,molecule',
+            'type'    => self::TYPE_ICONSET,
+            'group'   => 'background',
+            'help'    => 'Tick the ones you want. They are placed and timed automatically, so any number works -- four or five looks best.',
+        ],
+        'hero_float_size' => [
+            'label'   => 'Drifting icons: size',
+            'default' => '100',
+            'type'    => self::TYPE_NUMBER,
+            'group'   => 'background',
+            'min'     => 40,
+            'max'     => 220,
+            'step'    => 10,
+            'suffix'  => '% of the normal size',
+        ],
+        'hero_float_opacity' => [
+            'label'   => 'Drifting icons: how faint they are',
+            'default' => '100',
+            'type'    => self::TYPE_NUMBER,
+            'group'   => 'background',
+            'min'     => 10,
+            'max'     => 220,
+            'step'    => 10,
+            'suffix'  => '% (lower is fainter)',
         ],
         'hero_float_speed' => [
             'label'   => 'Drifting icons: how long one full drift takes',

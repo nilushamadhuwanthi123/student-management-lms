@@ -169,6 +169,26 @@ $stored = static function (array $values, string $key, string $lang): string {
                             </label>
                         </div>
 
+                    <?php elseif ($type === SiteContentService::TYPE_ICONSET): ?>
+                        <?php
+                        $raw = $stored($values, $key, $baseLang);
+                        $raw = $raw === '' ? (string) ($field['default'] ?? '') : $raw;
+                        $picked = array_filter(array_map('trim', explode(',', $raw)));
+                        ?>
+                        <div class="sc-icons">
+                            <!-- Untick everything and the field would post nothing at all. -->
+                            <input type="hidden" name="icons_present[<?= $e($key) ?>]" value="1">
+                            <?php foreach (\App\Services\HeroIconLibrary::ICONS as $iKey => $icon): ?>
+                                <label class="sc-icon<?= in_array($iKey, $picked, true) ? ' is-on' : '' ?>">
+                                    <input type="checkbox" name="icons[<?= $e($key) ?>][]" value="<?= $e($iKey) ?>"
+                                           <?= in_array($iKey, $picked, true) ? 'checked' : '' ?>>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><?= $icon[1] ?></svg>
+                                    <span><?= te($icon[0]) ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+
                     <?php elseif ($type === SiteContentService::TYPE_CHOICE): ?>
                         <?php
                         $listName = (string) ($field['choices'] ?? '');
@@ -354,6 +374,16 @@ $stored = static function (array $values, string $key, string $lang): string {
     .sc-swatch__dots i:first-child { margin-left: 0; }
     .sc-swatch__name { font-size: .82rem; font-weight: 600; color: #1C2538; }
 
+    .sc-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: .5rem; }
+    .sc-icon { display: flex; flex-direction: column; align-items: center; gap: .3rem; cursor: pointer;
+               border: 1.5px solid #E2E8F0; border-radius: 10px; padding: .6rem .4rem; background: #fff;
+               color: #64748B; transition: border-color .15s ease, color .15s ease; }
+    .sc-icon:hover { border-color: #94A3B8; }
+    .sc-icon.is-on { border-color: #1D4ED8; color: #1D4ED8; background: #F5F8FF; }
+    .sc-icon input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .sc-icon svg { width: 26px; height: 26px; }
+    .sc-icon span { font-size: .72rem; font-weight: 600; text-align: center; line-height: 1.2; }
+
     .sc-color { display: flex; align-items: center; gap: .5rem; }
     .sc-color__pick { width: 46px; height: 38px; padding: 2px; border: 1px solid #E2E8F0;
                       border-radius: 8px; background: #fff; cursor: pointer; }
@@ -381,6 +411,12 @@ $stored = static function (array $values, string $key, string $lang): string {
 (function () {
     // Keep the picker and the hex box showing the same thing, whichever
     // one is used. The hex box is the field that actually submits.
+    document.querySelectorAll('.sc-icon input').forEach(function (box) {
+        box.addEventListener('change', function () {
+            box.closest('.sc-icon').classList.toggle('is-on', box.checked);
+        });
+    });
+
     document.querySelectorAll('.sc-color__pick').forEach(function (pick) {
         var hex = document.getElementById(pick.getAttribute('data-color-for'));
         if (!hex) { return; }

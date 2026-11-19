@@ -171,12 +171,28 @@ a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-
 
 /* ---- v4: more colour and motion ---------------------------------- */
 .ts-float { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-.ts-float svg { position: absolute; color: rgba(255,255,255,.16); animation: tsFloat 9s ease-in-out infinite; }
-.ts-float svg:nth-child(1) { left: 4%; top: 18%; width: 54px; animation-delay: 0s; }
-.ts-float svg:nth-child(2) { left: 46%; top: 9%; width: 40px; animation-delay: -2s; color: rgba(250,204,21,.28); }
-.ts-float svg:nth-child(3) { left: 40%; bottom: 16%; width: 60px; animation-delay: -4s; }
-.ts-float svg:nth-child(4) { right: 3%; bottom: 10%; width: 46px; animation-delay: -6s; color: rgba(250,204,21,.22); }
-.ts-float svg:nth-child(5) { left: 12%; bottom: 8%; width: 36px; animation-delay: -3s; }
+/* Size and fade come from the CMS as --ts-float-scale / --ts-float-fade,
+   set on the wrapper; both default to 1 so an unconfigured site looks
+   exactly as it always did. The drift speed is --ts-float-speed. */
+.ts-float svg { position: absolute;
+  color: rgba(255,255,255,calc(.16 * var(--ts-float-fade, 1)));
+  animation: tsFloat var(--ts-float-speed, 9s) ease-in-out infinite; }
+
+/* Twelve places, because the icons are now chosen in the CMS and the
+   old five rules left a sixth pick stacked in the top-left corner.
+   Every other one is gold, so a long list still alternates. */
+.ts-float svg:nth-child(1)  { left: 4%;   top: 18%;    width: calc(54px * var(--ts-float-scale, 1)); animation-delay: 0s; }
+.ts-float svg:nth-child(2)  { left: 46%;  top: 9%;     width: calc(40px * var(--ts-float-scale, 1)); animation-delay: -2s; color: rgba(250,204,21,calc(.28 * var(--ts-float-fade, 1))); }
+.ts-float svg:nth-child(3)  { left: 40%;  bottom: 16%; width: calc(60px * var(--ts-float-scale, 1)); animation-delay: -4s; }
+.ts-float svg:nth-child(4)  { right: 3%;  bottom: 10%; width: calc(46px * var(--ts-float-scale, 1)); animation-delay: -6s; color: rgba(250,204,21,calc(.22 * var(--ts-float-fade, 1))); }
+.ts-float svg:nth-child(5)  { left: 12%;  bottom: 8%;  width: calc(36px * var(--ts-float-scale, 1)); animation-delay: -3s; }
+.ts-float svg:nth-child(6)  { right: 14%; top: 14%;    width: calc(48px * var(--ts-float-scale, 1)); animation-delay: -1s; color: rgba(250,204,21,calc(.20 * var(--ts-float-fade, 1))); }
+.ts-float svg:nth-child(7)  { left: 26%;  top: 36%;    width: calc(34px * var(--ts-float-scale, 1)); animation-delay: -5s; }
+.ts-float svg:nth-child(8)  { right: 26%; bottom: 28%; width: calc(42px * var(--ts-float-scale, 1)); animation-delay: -7s; color: rgba(250,204,21,calc(.18 * var(--ts-float-fade, 1))); }
+.ts-float svg:nth-child(9)  { left: 62%;  top: 26%;    width: calc(30px * var(--ts-float-scale, 1)); animation-delay: -2.5s; }
+.ts-float svg:nth-child(10) { left: 2%;   top: 52%;    width: calc(38px * var(--ts-float-scale, 1)); animation-delay: -4.5s; color: rgba(250,204,21,calc(.16 * var(--ts-float-fade, 1))); }
+.ts-float svg:nth-child(11) { right: 8%;  top: 44%;    width: calc(32px * var(--ts-float-scale, 1)); animation-delay: -6.5s; }
+.ts-float svg:nth-child(12) { left: 34%;  top: 4%;     width: calc(44px * var(--ts-float-scale, 1)); animation-delay: -8s; color: rgba(250,204,21,calc(.14 * var(--ts-float-fade, 1))); }
 @keyframes tsFloat { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-16px) rotate(8deg); } }
 .ts-wave { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 70px; z-index: 0; }
 .ts-wave path { fill: var(--bg, #F5F7FB); }

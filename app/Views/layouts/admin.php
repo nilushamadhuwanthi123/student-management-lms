@@ -56,6 +56,31 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
     <?php include __DIR__ . '/../components/favicon.php'; ?>
     <?php if (function_exists('csrfMeta')): ?><?= csrfMeta() ?><?php endif; ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=<?= @filemtime(BASE_PATH . '/public/assets/css/style.css') ?: 1 ?>">
+
+    <?php
+    // The admin system keeps its own blue unless the owner has asked for
+    // the site's colours here too (Site Builder -> Design & content).
+    // Off by default on purpose: many offices want staff to be able to
+    // tell the admin system from the public site at a glance, and a
+    // mis-picked colour should never make the screen staff work in all
+    // day hard to read.
+    $__adminThemed = false;
+    try {
+        $__adminThemed = \App\Services\PublicSite::isOn('theme_admin_follows');
+    } catch (\Throwable $e) {
+        $__adminThemed = false;
+    }
+    ?>
+    <?php if ($__adminThemed): ?>
+    <style id="adminTheme">
+        :root {
+            --primary: <?= \App\Services\PublicSite::color('theme_primary') ?>;
+            --primary-hover: <?= \App\Services\PublicSite::color('theme_primary') ?>;
+            --secondary: <?= \App\Services\PublicSite::color('theme_secondary') ?>;
+        }
+    </style>
+    <?php endif; ?>
+
     <style>
         .navbar-admin {
             padding-left: 1rem;

@@ -74,7 +74,19 @@ if ($heroMediaRows !== []) {
     </div>
     <?php endif; ?>
     <?php if (\App\Services\PublicSite::isOn('hero_float_enabled')): ?>
-    <div class="ts-float" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.6"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3c0 6 10 6 10 12s-10 6-10 6"/><path d="M17 3c0 6-10 6-10 12s10 6 10 6"/><path d="M8 7h8M8 17h8"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v6"/><path d="m4.9 4.9 4.2 4.2"/><path d="M2 12h6"/><circle cx="12" cy="12" r="4"/><path d="M16 12h6"/><path d="m14.9 14.9 4.2 4.2"/><path d="M12 16v6"/></svg></div>
+    <?php
+    // Which icons, how big and how faint all come from the CMS now;
+    // the markup for each one lives in HeroIconLibrary so adding a
+    // choice does not mean editing this page.
+    $__icons = \App\Services\HeroIconLibrary::chosen(\App\Services\PublicSite::content('hero_float_icons'));
+    $__iSize = (int) \App\Services\PublicSite::num('hero_float_size');
+    $__iFade = (int) \App\Services\PublicSite::num('hero_float_opacity');
+    ?>
+    <div class="ts-float" aria-hidden="true" style="--ts-float-scale: <?= $__iSize / 100 ?>; --ts-float-fade: <?= $__iFade / 100 ?>;">
+        <?php foreach ($__icons as $__k): ?>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><?= \App\Services\HeroIconLibrary::ICONS[$__k][1] ?></svg>
+        <?php endforeach; ?>
+    </div>
     <?php endif; ?>
     <?php if (count($bgSlides) > 1): ?>
     <div class="ts-bg-dots" role="group" aria-label="<?= te('Photos from the classes') ?>">

@@ -731,6 +731,23 @@ class SettingsController extends BaseController
                     }
                     continue;
                 }
+                // Tick-boxes post nothing when all are cleared, so the
+                // companion icons_present marker says "this field was on
+                // the form" and an empty set is saved as empty rather
+                // than silently keeping the old icons.
+                if (($field['type'] ?? 'text') === \App\Services\SiteContentService::TYPE_ICONSET) {
+                    if (!empty($_POST['icons_present'][$key])) {
+                        $chosen = $_POST['icons'][$key] ?? [];
+                        $chosen = is_array($chosen) ? $chosen : [];
+                        $chosen = array_values(array_filter(
+                            array_map('strval', $chosen),
+                            static fn (string $k): bool => isset(\App\Services\HeroIconLibrary::ICONS[$k])
+                        ));
+                        $service->set($key, implode(',', $chosen), $userId, \App\Services\SiteContentService::BASE_LANG);
+                    }
+                    continue;
+                }
+
                 foreach (\App\Services\SiteContentService::LANGS as $lang) {
                     $posted = $_POST['fields'][$lang][$key] ?? null;
                     if ($posted === null) {
