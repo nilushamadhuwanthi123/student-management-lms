@@ -126,6 +126,47 @@ $classes = $classes ?? [];
 <!-- ======================================================== -->
 <!-- DEACTIVATED ACCOUNT RED ALERT MODAL (Document 2 Page 2, 9) -->
 <!-- ======================================================== -->
+<!-- Fee reminder. Amber, not red: the student has been checked in and
+     is welcome; this is for the desk to mention the outstanding months
+     while the family is still standing there. -->
+<div id="feeOverdueModal" style="display:none; position:fixed; inset:0; background:rgba(180, 83, 9, 0.40); backdrop-filter:blur(6px); z-index:10000; align-items:center; justify-content:center; animation:fadeIn 0.2s ease;">
+    <div style="background:#ffffff; border:3px solid #D97706; border-radius:16px; width:100%; max-width:540px; margin:1rem; padding:1.9rem; box-shadow:0 25px 50px -12px rgba(217,119,6,0.35);">
+        <div style="text-align:center;">
+            <div style="width:68px; height:68px; border-radius:50%; background:#FEF3C7; color:#B45309; display:flex; align-items:center; justify-content:center; font-size:2.2rem; margin:0 auto .9rem auto;">
+                &#128181;
+            </div>
+            <h2 style="margin:0 0 .25rem; font-size:1.3rem; color:#B45309;"><?= te('Fee not paid') ?></h2>
+            <p style="margin:0 0 1rem; color:#64748B; font-size:.9rem;"><?= te('The student has been checked in. Please mention this at the desk.') ?></p>
+        </div>
+
+        <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:12px; padding:.9rem 1rem; margin-bottom:1rem;">
+            <div style="font-weight:700; font-size:1.05rem; color:#1C2538;" id="feeStudentName"></div>
+            <div style="font-family:ui-monospace,monospace; font-size:.85rem; color:#64748B;" id="feeStudentID"></div>
+        </div>
+
+        <p style="margin:0 0 .4rem; font-weight:600; font-size:.9rem; color:#1C2538;">
+            <?= te('Unpaid months') ?> (<span id="feeMonthCount">0</span>)
+        </p>
+        <ul id="feeMonthList" style="list-style:none; margin:0 0 1rem; padding:0; max-height:190px; overflow:auto; border:1px solid #E2E8F0; border-radius:10px;"></ul>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:.7rem .9rem; background:#FEF3C7; border-radius:10px; margin-bottom:1.2rem;">
+            <span style="font-weight:600; color:#92400E;"><?= te('Total outstanding') ?></span>
+            <strong style="font-size:1.15rem; color:#B45309;"><span id="feeTotal">0.00</span></strong>
+        </div>
+
+        <button type="button" onclick="closeFeeOverdueModal()"
+                style="width:100%; padding:.8rem; border:0; border-radius:10px; background:#D97706; color:#fff; font-weight:700; font-size:1rem; cursor:pointer;">
+            <?= te('Noted, continue scanning') ?>
+        </button>
+    </div>
+</div>
+
+<style>
+    #feeMonthList li { display:flex; justify-content:space-between; gap:1rem; padding:.55rem .8rem; font-size:.88rem; border-bottom:1px solid #F1F5F9; }
+    #feeMonthList li:last-child { border-bottom:0; }
+    #feeMonthList li strong { color:#B45309; font-variant-numeric: tabular-nums; }
+</style>
+
 <div id="deactivatedAlertModal" style="display:none; position:fixed; inset:0; background:rgba(220, 38, 38, 0.45); backdrop-filter:blur(6px); z-index:10000; align-items:center; justify-content:center; animation:fadeIn 0.2s ease;">
     <div style="background:#ffffff; border:3px solid #dc2626; border-radius:16px; width:100%; max-width:540px; margin:1rem; padding:2rem; box-shadow:0 25px 50px -12px rgba(220,38,38,0.35); text-align:center;">
         <div style="width:72px; height:72px; border-radius:50%; background:#fee2e2; color:#dc2626; display:flex; align-items:center; justify-content:center; font-size:2.5rem; margin:0 auto 1rem auto; animation:bounce 1s infinite;">
@@ -299,7 +340,15 @@ function processScan(code, classId) {
             showDeactivatedModal(data);
             addFeedItem(data, 'red_flag');
         } else if (data.success) {
-            playSuccessChime();
+            // The scan has already been recorded. An unpaid fee is a
+            // reminder for the desk, never a refusal, so the student is
+            // still checked in and the normal chime still plays.
+            if (data.payment_due && data.payment_due.overdue) {
+                playFeeOverdueSiren();
+                showFeeOverdueModal(data);
+            } else {
+                playSuccessChime();
+            }
             showScanSuccess(data);
             addFeedItem(data, 'present');
         } else {
@@ -317,6 +366,71 @@ function processScan(code, classId) {
             }
         }
     });
+}
+
+// Fee reminder siren. Deliberately gentler than the deactivated-account
+// alert -- two short rising notes rather than five seconds of wailing.
+// A family that is simply late should not be announced to the whole
+// hall as though something is wrong with them.
+function playFeeOverdueSiren() {
+    try {
+        var ctx = getAudioContext();
+        var t0 = ctx.currentTime;
+
+        [0, 0.42].forEach(function (offset) {
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(620, t0 + offset);
+            osc.frequency.linearRampToValueAtTime(880, t0 + offset + 0.3);
+            gain.gain.setValueAtTime(0.0001, t0 + offset);
+            gain.gain.exponentialRampToValueAtTime(0.45, t0 + offset + 0.04);
+            gain.gain.exponentialRampToValueAtTime(0.0001, t0 + offset + 0.34);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(t0 + offset);
+            osc.stop(t0 + offset + 0.36);
+        });
+    } catch (e) {
+        console.error('Audio playback error:', e);
+    }
+}
+
+function showFeeOverdueModal(data) {
+    var modal = document.getElementById('feeOverdueModal');
+    if (!modal) { return; }
+
+    var s = data.student || {};
+    var due = data.payment_due || {};
+
+    document.getElementById('feeStudentName').textContent = s.full_name || TL.student;
+    document.getElementById('feeStudentID').textContent = s.student_id_display || '';
+
+    var list = document.getElementById('feeMonthList');
+    list.innerHTML = '';
+    (due.detail || []).forEach(function (d) {
+        var li = document.createElement('li');
+        var left = document.createElement('span');
+        left.textContent = d.label + (d.class_name ? ' \u00b7 ' + d.class_name : '');
+        var right = document.createElement('strong');
+        right.textContent = Number(d.balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        li.appendChild(left);
+        li.appendChild(right);
+        list.appendChild(li);
+    });
+
+    document.getElementById('feeTotal').textContent =
+        Number(due.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('feeMonthCount').textContent = due.count || 0;
+
+    modal.style.display = 'flex';
+}
+
+function closeFeeOverdueModal() {
+    var modal = document.getElementById('feeOverdueModal');
+    if (modal) { modal.style.display = 'none'; }
+    var input = document.getElementById('scanInput');
+    if (input) { input.focus(); }
 }
 
 function showDeactivatedModal(data) {

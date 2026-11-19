@@ -141,6 +141,23 @@ class AttendanceController extends BaseController
             ]);
         }
 
+        // Unpaid months, for the alert at the desk. The scan itself has
+        // already been recorded by this point and nothing below can undo
+        // it: a student is never turned away over a fee by this code,
+        // the office is simply told while the family is still there.
+        $scannedId = (int) ($result['student']['id'] ?? 0);
+        if ($scannedId > 0) {
+            $due = (new \App\Services\PaymentDueService($this->db))->summary($scannedId);
+            $result['payment_due'] = $due;
+
+            if ($due['overdue']) {
+                $this->logAudit('scan_payment_overdue_alert', 'student', $scannedId, [
+                    'months' => $due['count'],
+                    'total'  => $due['total'],
+                ]);
+            }
+        }
+
         $this->json($result);
     }
 
