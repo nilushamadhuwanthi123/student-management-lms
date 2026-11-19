@@ -699,6 +699,29 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             <?php endif; ?>
 
             <?php if ($userRole === 'super_admin'): ?>
+            <!-- Site Builder: everything that changes the public website.
+                 Kept apart from Settings because the two are different
+                 jobs -- one is how the site looks to families, the other
+                 is how the system behaves. -->
+            <div class="sidebar__nav-group">
+                <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'sitebuilder' ? 'active open' : '' ?>" data-toggle-sub="sitebuilder-sub">
+                    <span style="display:flex;align-items:center;gap:0.75rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+                        <?= te('Site Builder') ?>
+                    </span>
+                    <span class="chevron">&#9654;</span>
+                </a>
+                <div class="sidebar__sub-links <?= $activePage === 'sitebuilder' ? 'open' : '' ?>" id="sitebuilder-sub">
+                    <a href="<?= BASE_URL ?>/site-builder" class="sidebar__sub-link <?= $activeSubPage === 'builder-home' ? 'active' : '' ?>"><?= te('Overview') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/site-content" class="sidebar__sub-link <?= $activeSubPage === 'site-content' ? 'active' : '' ?>"><?= te('Design &amp; content') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/hero-media" class="sidebar__sub-link <?= $activeSubPage === 'hero-media' ? 'active' : '' ?>"><?= te('Background photos') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/ads" class="sidebar__sub-link <?= $activeSubPage === 'ads' ? 'active' : '' ?>"><?= te('Announcements') ?></a>
+                    <a href="<?= BASE_URL ?>/downloads/manage" class="sidebar__sub-link <?= $activeSubPage === 'downloads-manage' ? 'active' : '' ?>"><?= te('Downloads') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/translations" class="sidebar__sub-link <?= $activeSubPage === 'translations' ? 'active' : '' ?>"><?= te('Wording &amp; languages') ?></a>
+                    <a href="<?= BASE_URL ?>/" target="_blank" rel="noopener" class="sidebar__sub-link"><?= te('View the site') ?> &#8599;</a>
+                </div>
+            </div>
+
             <!-- Settings (system-wide, so super admin only) -->
             <div class="sidebar__nav-group">
                 <a href="#" class="sidebar__link sidebar__link--has-sub <?= $activePage === 'settings' ? 'active open' : '' ?>" data-toggle-sub="settings-sub">
@@ -714,9 +737,6 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                     <a href="<?= BASE_URL ?>/settings/deletion" class="sidebar__sub-link <?= $activeSubPage === 'deletion' ? 'active' : '' ?>"><?= te('Deletion') ?></a>
                     <a href="<?= BASE_URL ?>/settings/dashboard-items" class="sidebar__sub-link <?= $activeSubPage === 'dashboard-items' ? 'active' : '' ?>"><?= te('Dashboard Items') ?></a>
                     <a href="<?= BASE_URL ?>/settings/feature-visibility" class="sidebar__sub-link <?= $activeSubPage === 'feature-visibility' ? 'active' : '' ?>"><?= te('Feature Visibility') ?></a>
-                    <a href="<?= BASE_URL ?>/settings/site-content" class="sidebar__sub-link <?= $activeSubPage === 'site-content' ? 'active' : '' ?>"><?= te('Website Content') ?></a>
-                    <a href="<?= BASE_URL ?>/settings/ads" class="sidebar__sub-link <?= $activeSubPage === 'ads' ? 'active' : '' ?>"><?= te('Website Ads') ?></a>
-                    <a href="<?= BASE_URL ?>/settings/hero-media" class="sidebar__sub-link <?= $activeSubPage === 'hero-media' ? 'active' : '' ?>"><?= te('Homepage Background') ?></a>
                     <a href="<?= BASE_URL ?>/settings/sms" class="sidebar__sub-link <?= $activeSubPage === 'sms' ? 'active' : '' ?>"><?= te('Text messages') ?></a>
                     <a href="<?= BASE_URL ?>/settings/whatsapp" class="sidebar__sub-link <?= $activeSubPage === 'whatsapp' ? 'active' : '' ?>"><?= te('WhatsApp Client') ?></a>
                     <a href="<?= BASE_URL ?>/settings/email" class="sidebar__sub-link <?= $activeSubPage === 'email' ? 'active' : '' ?>"><?= te('Email') ?></a>

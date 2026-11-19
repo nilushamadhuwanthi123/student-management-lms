@@ -358,6 +358,46 @@ class SettingsController extends BaseController
      * The small, fixed set of editable public-website text blocks (see
      * SiteContentService / migration 019).
      */
+    /**
+     * GET /site-builder
+     *
+     * The way in to everything that changes the public website. It owns
+     * no settings of its own: the counts are read only so the cards can
+     * say how much is already set up.
+     */
+    public function siteBuilder(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+
+        // A count that cannot be read is shown as zero rather than
+        // breaking the page the owner came here to use.
+        $slideCount = 0;
+        $adCount = 0;
+        try {
+            $slideCount = count((new \App\Services\HeroMediaService($this->db))->all());
+        } catch (\Throwable $e) {
+            error_log('Site Builder: hero count failed: ' . $e->getMessage());
+        }
+        try {
+            $adCount = count((new \App\Services\SiteAdService($this->db))->all());
+        } catch (\Throwable $e) {
+            error_log('Site Builder: ad count failed: ' . $e->getMessage());
+        }
+
+        $this->view('settings/site-builder', [
+            'pageTitle'     => t('Site Builder'),
+            'activePage'    => 'sitebuilder',
+            'activeSubPage' => 'builder-home',
+            'slideCount'    => $slideCount,
+            'adCount'       => $adCount,
+        ]);
+    }
+
     public function siteContent(): void
     {
         AuthMiddleware::requireAuth();

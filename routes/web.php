@@ -539,6 +539,7 @@ $router->post('/classes/{id}/update-room', ['App\Controllers\ClassController', '
     $router->post('/settings/dashboard-items', ['App\Controllers\SettingsController', 'updateDashboardItems']);
     $router->get('/settings/feature-visibility', ['App\Controllers\SettingsController', 'featureVisibility']);
     $router->post('/settings/feature-visibility', ['App\Controllers\SettingsController', 'updateFeatureVisibility']);
+    $router->get('/site-builder', ['App\Controllers\SettingsController', 'siteBuilder']);
     $router->get('/settings/site-content', ['App\Controllers\SettingsController', 'siteContent']);
     $router->post('/settings/site-content', ['App\Controllers\SettingsController', 'updateSiteContent']);
     $router->get('/settings/sms', ['App\Controllers\SettingsController', 'sms']);
