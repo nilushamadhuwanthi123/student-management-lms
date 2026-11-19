@@ -116,6 +116,12 @@ final class SiteContentService
         ],
     ];
 
+    /** How the top menu bar behaves over the page. */
+    public const NAV_STYLES = [
+        'glass' => ['See-through, frosting as you scroll (the current look)'],
+        'solid' => ['Always solid, in the colour chosen below'],
+    ];
+
     /** Heading/body font pairings a theme may select. */
     public const FONTS = [
         'inter'    => ['Inter (clean, the current one)', "'Inter', system-ui, sans-serif", "'Playfair Display', Georgia, serif"],
@@ -217,6 +223,14 @@ final class SiteContentService
             'type'    => self::TYPE_COLOR,
             'group'   => 'appearance',
         ],
+        'nav_style' => [
+            'label'   => 'Top menu bar: how it looks',
+            'default' => 'glass',
+            'type'    => self::TYPE_CHOICE,
+            'group'   => 'appearance',
+            'choices' => 'NAV_STYLES',
+            'help'    => 'See-through lets the background photo show behind the menu. Solid is easier to read, and is the safer choice with a busy photo.',
+        ],
         'theme_nav_bg' => [
             'label'   => 'Top menu bar: background colour',
             'default' => '#15307E',
@@ -316,6 +330,19 @@ final class SiteContentService
         ],
 
         // -- Look and feel: what is shown ------------------------------------
+        'show_nav_enrol' => [
+            'label'   => 'Menu: show the "Enrol now" button',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'visibility',
+        ],
+        'show_nav_login' => [
+            'label'   => 'Menu: show the "Login" button',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'visibility',
+            'help'    => 'Students and parents can still reach the login page directly; this only hides the button.',
+        ],
         'show_nav_events' => [
             'label'   => 'Menu: show "Events"',
             'default' => '1',

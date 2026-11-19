@@ -192,7 +192,11 @@ $stored = static function (array $values, string $key, string $lang): string {
                     <?php elseif ($type === SiteContentService::TYPE_CHOICE): ?>
                         <?php
                         $listName = (string) ($field['choices'] ?? '');
-                        $choices  = $listName === 'FONTS' ? SiteContentService::FONTS : [];
+                        $choices = match ($listName) {
+                            'FONTS'      => SiteContentService::FONTS,
+                            'NAV_STYLES' => SiteContentService::NAV_STYLES,
+                            default      => [],
+                        };
                         $raw = $stored($values, $key, $baseLang);
                         $cur = $raw === '' ? (string) ($field['default'] ?? '') : $raw;
                         ?>

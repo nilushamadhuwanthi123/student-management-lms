@@ -42,6 +42,42 @@
         body { background: var(--bg); font-family: var(--ts-font-body); }
         .nav-fb { display: inline-flex; align-items: center; gap: .4rem; }
         .nav-fb svg { flex: none; }
+
+        <?php if (\App\Services\PublicSite::content('nav_style') === 'solid'): ?>
+        /* Solid bar: the chosen colour from the first scroll pixel, so
+           the menu never sits see-through over a busy photo. The glass
+           rules below it are overridden rather than removed, because
+           they also carry the layout and the scrolled transition. */
+        .navbar--liquid-glass,
+        .navbar--liquid-glass.scrolled {
+            background: var(--ts-nav-bg) !important;
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+            border-bottom: 1px solid rgba(0, 0, 0, .14) !important;
+        }
+        .navbar--liquid-glass .navbar__links a,
+        .navbar--liquid-glass.scrolled .navbar__links a,
+        .navbar--liquid-glass .navbar__brand,
+        .navbar--liquid-glass.scrolled .navbar__brand {
+            color: var(--ts-nav-text) !important;
+        }
+        .navbar--liquid-glass .navbar__links a.active,
+        .navbar--liquid-glass.scrolled .navbar__links a.active {
+            color: var(--ts-accent) !important;
+        }
+        .navbar--liquid-glass .navbar__toggle { color: var(--ts-nav-text) !important; }
+        <?php else: ?>
+        /* See-through bar: the chosen colour is what it frosts to once
+           the page is scrolled; at the very top it stays transparent so
+           the background photo reads through it. */
+        .navbar--liquid-glass.scrolled {
+            background: color-mix(in srgb, var(--ts-nav-bg) 86%, transparent);
+        }
+        .navbar--liquid-glass.scrolled .navbar__links a,
+        .navbar--liquid-glass.scrolled .navbar__brand {
+            color: var(--ts-nav-text);
+        }
+        <?php endif; ?>
         h1, h2, h3, .ts-name { font-family: var(--ts-font-head); }
 
         /* Corner roundness, from "Corner roundness" in the CMS. */
@@ -592,18 +628,22 @@
             </li>
             <?php endif; ?>
             <li><a href="<?= BASE_URL ?>/lang/<?= (function_exists('lang_current') && lang_current() === 'si') ? 'en' : 'si' ?>" class="nav-lang" hreflang="<?= (function_exists('lang_current') && lang_current() === 'si') ? 'en' : 'si' ?>"><?= (function_exists('lang_current') && lang_current() === 'si') ? 'English' : 'සිංහල' ?></a></li>
+            <?php if (\App\Services\PublicSite::isOn('show_nav_enrol')): ?>
             <li>
                 <a href="<?= BASE_URL ?>/enroll" class="inline-flex items-center px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300"
                    style="text-transform:none; background:#1D4ED8; color:#fff;">
                     <?= te('Enrol now') ?>
                 </a>
             </li>
+            <?php endif; ?>
+            <?php if (\App\Services\PublicSite::isOn('show_nav_login')): ?>
             <li>
                 <a href="<?= BASE_URL ?>/login" class="nav-login inline-flex items-center px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300"
                    style="text-transform:none; background:#FACC15; color:#0B1B3F;">
                     <?= te('Login') ?>
                 </a>
             </li>
+            <?php endif; ?>
             <li>
                 <button type="button" class="btn btn--ghost btn--sm rounded-full" id="themeToggle" aria-label="Toggle dark mode" title="Toggle theme">
                     <span class="theme-icon-light">&#9790;</span>
