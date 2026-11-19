@@ -73,7 +73,9 @@ if ($heroMediaRows !== []) {
         <?php endforeach; ?>
     </div>
     <?php endif; ?>
+    <?php if (\App\Services\PublicSite::isOn('hero_float_enabled')): ?>
     <div class="ts-float" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.6"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7.5 15h9"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3c0 6 10 6 10 12s-10 6-10 6"/><path d="M17 3c0 6-10 6-10 12s10 6 10 6"/><path d="M8 7h8M8 17h8"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v6"/><path d="m4.9 4.9 4.2 4.2"/><path d="M2 12h6"/><circle cx="12" cy="12" r="4"/><path d="M16 12h6"/><path d="m14.9 14.9 4.2 4.2"/><path d="M12 16v6"/></svg></div>
+    <?php endif; ?>
     <?php if (count($bgSlides) > 1): ?>
     <div class="ts-bg-dots" role="group" aria-label="<?= te('Photos from the classes') ?>">
         <?php foreach ($bgSlides as $i => $sl): ?><button type="button" aria-label="<?= te('Photo {n}', ['n' => $i + 1]) ?>" aria-current="<?= $i === 0 ? 'true' : 'false' ?>"></button><?php endforeach; ?>
@@ -89,7 +91,7 @@ if ($heroMediaRows !== []) {
             cur = (n + slides.length) % slides.length;
             slides[cur].classList.add('is-on'); dots[cur].setAttribute('aria-current', 'true');
         }
-        function play() { if (!still && !timer) { timer = setInterval(function () { show(cur + 1); }, 5000); } }
+        function play() { if (!still && !timer) { timer = setInterval(function () { show(cur + 1); }, <?= (int) \App\Services\PublicSite::num('hero_interval_ms') ?>); } }
         function stop() { clearInterval(timer); timer = null; }
         dots.forEach(function (d, i) { d.addEventListener('click', function () { stop(); show(i); play(); }); });
         document.addEventListener('visibilitychange', function () { document.hidden ? stop() : play(); });
@@ -102,6 +104,7 @@ if ($heroMediaRows !== []) {
         <div>
             <?php $adEvents = \App\Services\PublicSite::homeAds(6); ?>
             <?php if ($adEvents !== []): ?>
+            <?php if (\App\Services\PublicSite::isOn('show_seminar_banner')): ?>
             <div class="ts-ad" id="ts-ad" aria-label="<?= te('Announcements') ?>">
                 <span class="ts-ad__label"><?= te('Upcoming') ?></span>
                 <span class="ts-ad__rot" id="ts-ad-rot">
@@ -137,6 +140,7 @@ if ($heroMediaRows !== []) {
             </script>
             <?php endif; ?>
             <?php endif; ?>
+            <?php endif; ?>
             <div class="ts-eyebrow"><?= te('Science classes') ?> &middot; <?= te('Grades {r}', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
             <?php $teacherFirst = $teacher ? trim((string) strtok($teacher, ' ')) : null; ?>
             <h1>
@@ -152,7 +156,9 @@ if ($heroMediaRows !== []) {
                     <?= te('Science classes for') ?> <span class="ts-name"><?= te('Grades 6 to 11') ?></span>
                 <?php endif; ?>
             </h1>
+            <?php if (\App\Services\PublicSite::isOn('show_hero_text')): ?>
             <div class="ts-rich"><?= \App\Services\PublicSite::content('home_hero_text', ['r' => \App\Services\PublicSite::gradeRange()]) ?></div>
+            <?php endif; ?>
             <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
                 <a href="#inquiry" class="ts-btn ts-btn--yellow"><?= $sc('home_hero_cta_1') ?></a>
                 <a href="<?= BASE_URL ?>/timetable" class="ts-btn ts-btn--ghost"><?= $sc('home_hero_cta_2') ?></a>
@@ -260,6 +266,7 @@ if ($heroMediaRows !== []) {
 </section>
 <?php endif; ?>
 
+<?php if (\App\Services\PublicSite::isOn('show_how_section')): ?>
 <section class="ts-section ts-section--alt" id="how">
     <div class="ts-wrap">
         <div class="ts-kicker"><?= te('How it works') ?></div>
@@ -277,6 +284,7 @@ if ($heroMediaRows !== []) {
         </div>
     </div>
 </section>
+<?php endif; ?>
 
 <section class="ts-section" id="join-steps">
     <div class="ts-wrap">
