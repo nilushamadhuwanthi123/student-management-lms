@@ -45,6 +45,11 @@ $stored = static function (array $values, string $key, string $lang): string {
 </div>
 
 <form method="POST" action="<?= BASE_URL ?>/settings/site-content" enctype="multipart/form-data">
+    <?php /* An unticked box posts nothing. This says the eyes were on the
+             form, so "all visible" is saved as all visible rather than
+             read as "no switches submitted". */ ?>
+    <input type="hidden" name="hide_present" value="1">
+
     <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
 
     <?php foreach ($groups as $groupKey => $groupLabel): ?>
@@ -118,9 +123,30 @@ $stored = static function (array $values, string $key, string $lang): string {
             <?php endif; ?>
 
             <?php foreach ($groupFields as $key => $field): ?>
-                <?php $type = $field['type'] ?? SiteContentService::TYPE_TEXT; ?>
-                <div class="form-group sc-field">
-                    <label class="form-label" for="field_<?= $e($key) ?>_<?= $e($baseLang) ?>"><?= te($field['label']) ?></label>
+                <?php
+                $type = $field['type'] ?? SiteContentService::TYPE_TEXT;
+                // Wording can be hidden one line at a time; a colour or a
+                // number cannot, so it gets no eye.
+                $canHide = $type === SiteContentService::TYPE_TEXT
+                        || $type === SiteContentService::TYPE_RICHTEXT;
+                $isHidden = $canHide && !empty($hidden[$key]);
+                ?>
+                <div class="form-group sc-field<?= $isHidden ? ' is-hidden-text' : '' ?>">
+                    <div class="sc-field__head">
+                        <label class="form-label" for="field_<?= $e($key) ?>_<?= $e($baseLang) ?>"><?= te($field['label']) ?></label>
+
+                        <?php if ($canHide): ?>
+                            <label class="sc-eye<?= $isHidden ? ' is-off' : '' ?>"
+                                   title="<?= te('Show or hide this line on the website. Hiding keeps the wording here.') ?>">
+                                <input type="checkbox" name="hide[<?= $e($key) ?>]" value="1"
+                                       <?= $isHidden ? 'checked' : '' ?>>
+                                <span class="sc-eye__mark" aria-hidden="true"></span>
+                                <span class="sc-eye__text">
+                                    <?= $isHidden ? te('Hidden') : te('Visible') ?>
+                                </span>
+                            </label>
+                        <?php endif; ?>
+                    </div>
 
                     <?php if ($type === SiteContentService::TYPE_IMAGE || $type === SiteContentService::TYPE_MEDIA): ?>
                         <?php
@@ -303,6 +329,28 @@ $stored = static function (array $values, string $key, string $lang): string {
 .sc-group { margin-bottom: 1.25rem; }
 .sc-group__title { font-size: 1.05rem; margin: 0 0 1rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border-color, #e5e7eb); }
 .sc-field { margin-bottom: 1.5rem; }
+.sc-field__head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.sc-field__head .form-label { margin: 0; }
+
+/* A hidden line stays readable and editable -- it is dimmed, not greyed
+   out, because the office still needs to fix the wording while it is off
+   the site. */
+.sc-field.is-hidden-text > :not(.sc-field__head) { opacity: .55; }
+
+.sc-eye { display: inline-flex; align-items: center; gap: .4rem; cursor: pointer;
+          font-size: .74rem; font-weight: 700; letter-spacing: .01em;
+          color: #15803D; background: #F0FDF4; border: 1px solid #BBF7D0;
+          border-radius: 999px; padding: .2rem .55rem .2rem .45rem; user-select: none; }
+.sc-eye input { position: absolute; opacity: 0; width: 0; height: 0; }
+.sc-eye__mark { width: 15px; height: 15px; border-radius: 50%;
+                background: #15803D; position: relative; flex: none; }
+.sc-eye__mark::after { content: ''; position: absolute; inset: 0; margin: auto;
+                       width: 5px; height: 5px; border-radius: 50%; background: #F0FDF4; }
+.sc-eye.is-off { color: #9A3412; background: #FFF7ED; border-color: #FED7AA; }
+.sc-eye.is-off .sc-eye__mark { background: #9A3412; }
+.sc-eye.is-off .sc-eye__mark::after { width: 11px; height: 2px; border-radius: 1px; background: #FFF7ED; }
+.sc-eye:hover { filter: brightness(.97); }
+.sc-eye:focus-within { outline: 2px solid #1D4ED8; outline-offset: 2px; }
 .sc-field:last-child { margin-bottom: 0; }
 .sc-langs { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .75rem; }
 .sc-lang { min-width: 0; }
@@ -438,6 +486,20 @@ $stored = static function (array $values, string $key, string $lang): string {
 (function () {
     // Keep the picker and the hex box showing the same thing, whichever
     // one is used. The hex box is the field that actually submits.
+    // The per-line eyes. Ticked means hidden, so the wording the office
+    // reads has to be flipped: the label says what the visitor gets, not
+    // what the checkbox holds.
+    document.querySelectorAll('.sc-eye input').forEach(function (box) {
+        box.addEventListener('change', function () {
+            var eye = box.closest('.sc-eye');
+            var field = box.closest('.sc-field');
+            var text = eye.querySelector('.sc-eye__text');
+            eye.classList.toggle('is-off', box.checked);
+            if (field) { field.classList.toggle('is-hidden-text', box.checked); }
+            if (text) { text.textContent = box.checked ? <?= json_encode(t('Hidden')) ?> : <?= json_encode(t('Visible')) ?>; }
+        });
+    });
+
     document.querySelectorAll('.sc-icon input').forEach(function (box) {
         box.addEventListener('change', function () {
             box.closest('.sc-icon').classList.toggle('is-on', box.checked);

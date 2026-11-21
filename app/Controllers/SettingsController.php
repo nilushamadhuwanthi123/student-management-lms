@@ -452,6 +452,16 @@ class SettingsController extends BaseController
             $values[$key] = mb_substr(trim((string) $posted), 0, 4000);
         }
 
+        // The eyes are previewed too, so the owner can see the page
+        // without a line before deciding to hide it for real.
+        if (!empty($_POST['hide_present'])) {
+            $hide = is_array($_POST['hide'] ?? null) ? $_POST['hide'] : [];
+            foreach (\App\Services\SiteContentService::textKeys() as $textKey) {
+                $values[\App\Services\SiteContentService::hideKey($textKey)]
+                    = empty($hide[$textKey]) ? '0' : '1';
+            }
+        }
+
         session_set('site_preview', $values);
         $this->flash('info', t('Showing a preview. Nothing has been saved yet.'));
         $this->redirect('/');
@@ -541,6 +551,7 @@ class SettingsController extends BaseController
             'langs'        => \App\Services\SiteContentService::LANGS,
             'baseLang'     => \App\Services\SiteContentService::BASE_LANG,
             'values'       => $service->getAllForEditing(),
+            'hidden'       => $service->hiddenMap(),
         ]);
     }
 
@@ -882,6 +893,17 @@ class SettingsController extends BaseController
                     $service->set($key, mb_substr($value, 0, 4000), $userId, $lang);
                 }
             }
+            // The per-sentence eyes. An unticked box posts nothing, so
+            // hide_present marks that the switches were on the form at
+            // all -- without it, turning every eye back on would look
+            // like "no switches submitted" and keep them all hidden.
+            if (!empty($_POST['hide_present'])) {
+                $hide = is_array($_POST['hide'] ?? null) ? $_POST['hide'] : [];
+                foreach (\App\Services\SiteContentService::textKeys() as $textKey) {
+                    $service->setHidden($textKey, !empty($hide[$textKey]), $userId);
+                }
+            }
+
             $this->logAudit('update_site_content', 'site_content', 0);
             $this->flash('success', 'Website content updated.');
         } catch (\InvalidArgumentException $e) {

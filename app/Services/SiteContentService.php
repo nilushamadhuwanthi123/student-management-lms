@@ -1137,6 +1137,127 @@ final class SiteContentService
         return $value;
     }
 
+    /**
+     * The prefix for the per-sentence show/hide switches.
+     *
+     * The group switches ('show_how_section' and the like) take whole
+     * sections down. That is too blunt for the office's actual question,
+     * which is always about one line: the enrolment paragraph is wrong
+     * for this term, the fourth bullet names a branch that closed, the
+     * hero button should not be there until the forms are printed. Short
+     * of asking a developer, the only answer used to be blanking the
+     * field, which loses the wording -- so next term it has to be typed
+     * again from memory.
+     *
+     * So every piece of wording gets its own switch, stored under
+     * 'hide_<key>'. Hidden, not deleted: the words stay in the editor
+     * where they were, and turning it back on restores them exactly.
+     *
+     * Stored as "hide" rather than "show" on purpose. An absent setting
+     * then means visible, so every sentence that exists today keeps
+     * showing with nothing written to the database -- a site that has
+     * never used this reads exactly as it does now.
+     */
+    public const HIDE_PREFIX = 'hide_';
+
+    /** The storage key holding the switch for one piece of wording. */
+    public static function hideKey(string $key): string
+    {
+        return self::HIDE_PREFIX . $key;
+    }
+
+    /**
+     * The fields that are wording, so can be hidden one at a time.
+     *
+     * Colours, numbers and the switches themselves are not sentences:
+     * hiding "Corner roundness" would mean nothing, and offering it
+     * would make the editor look careless.
+     *
+     * @return list<string>
+     */
+    public static function textKeys(): array
+    {
+        $keys = [];
+        foreach (self::FIELDS as $key => $field) {
+            $type = $field['type'] ?? self::TYPE_TEXT;
+            if ($type === self::TYPE_TEXT || $type === self::TYPE_RICHTEXT) {
+                $keys[] = $key;
+            }
+        }
+
+        return $keys;
+    }
+
+    /**
+     * Has the office hidden this piece of wording?
+     *
+     * Fails to "visible" on any problem. A settings table that cannot be
+     * read must not blank the public site: a page with its words missing
+     * looks broken to a parent, while a page showing wording the office
+     * meant to hide is merely out of date.
+     */
+    public function isHidden(string $key): bool
+    {
+        return $this->fetch(self::hideKey($key)) === '1';
+    }
+
+    /**
+     * Every piece of wording currently hidden, for the editor.
+     *
+     * One query rather than 78: the editing screen needs the state of
+     * all of them at once to draw the switches.
+     *
+     * @return array<string, true>
+     */
+    public function hiddenMap(): array
+    {
+        $map = [];
+
+        try {
+            $sql = 'SELECT content_key FROM site_content
+                     WHERE content_key LIKE :p AND content_value = :one';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':p' => self::HIDE_PREFIX . '%', ':one' => '1']);
+            foreach ($stmt->fetchAll(\PDO::FETCH_COLUMN) ?: [] as $storageKey) {
+                $map[substr((string) $storageKey, strlen(self::HIDE_PREFIX))] = true;
+            }
+        } catch (\Throwable $e) {
+            error_log('Hidden-wording map unavailable: ' . $e->getMessage());
+        }
+
+        return $map;
+    }
+
+    /**
+     * Show or hide one piece of wording.
+     *
+     * Only a key that is actually wording is accepted, so a crafted form
+     * post cannot write arbitrary rows into the settings table.
+     */
+    public function setHidden(string $key, bool $hidden, int $userId): void
+    {
+        if (!in_array($key, self::textKeys(), true)) {
+            return;
+        }
+
+        // Written straight here rather than through set(): the switch is
+        // not one of the declared fields, and it is deliberately not
+        // added to FIELDS -- it would then appear in the editor as a
+        // field of its own, 78 times over, instead of as the small eye
+        // beside the wording it belongs to.
+        $this->db->prepare(
+            'INSERT INTO site_content (content_key, content_value, updated_by, updated_at)
+             VALUES (:k, :v, :by, NOW())
+             ON DUPLICATE KEY UPDATE content_value = :v2, updated_by = :by2, updated_at = NOW()'
+        )->execute([
+            ':k'  => self::hideKey($key),
+            ':v'  => $hidden ? '1' : '0',
+            ':by' => $userId,
+            ':v2' => $hidden ? '1' : '0',
+            ':by2' => $userId,
+        ]);
+    }
+
     /** The stored value for an exact storage key, or null when unset, blank or unreadable. */
     private function fetch(string $storageKey): ?string
     {

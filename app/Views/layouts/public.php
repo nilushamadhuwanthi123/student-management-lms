@@ -25,6 +25,27 @@
     $__fontBody = $__fontKey[1] ?? "'Inter', system-ui, sans-serif";
     $__fontHead = $__fontKey[2] ?? "'Playfair Display', Georgia, serif";
     ?>
+    <style id="tsCollapse">
+        /* A line hidden from the CMS renders as nothing, which leaves the
+           tag that held it behind: an empty <h2> still takes its margin,
+           so the page shows a gap where the sentence used to be. These
+           collapse any text element the CMS has emptied.
+
+           :empty only matches an element with nothing at all inside it,
+           including whitespace -- which is why the templates print these
+           with no space around the tag. An element that still holds
+           anything is untouched, so this can never blank something that
+           is actually there. */
+        h1:empty, h2:empty, h3:empty, h4:empty, h5:empty, h6:empty,
+        p:empty, li:empty, blockquote:empty,
+        .ts-rich:empty, .ts-lead:empty, .ts-kicker:empty,
+        .ts-section__title:empty, .ts-section__text:empty,
+        .ts-card__title:empty, .ts-card__text:empty {
+            display: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+    </style>
     <style id="tsTheme">
         :root {
             --primary: <?= $__pri ?>;

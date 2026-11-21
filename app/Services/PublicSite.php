@@ -443,9 +443,47 @@ final class PublicSite
     /** @var array<string, string>|null */
     private static ?array $previewValues = null;
 
+    /**
+     * Has the office hidden this one piece of wording?
+     *
+     * Cached per request like everything else here: a home page asks for
+     * dozens of pieces of wording, and each would otherwise be a second
+     * query just to learn it is still visible.
+     */
+    public static function isHidden(string $key): bool
+    {
+        $cacheKey = 'hidden:' . $key;
+        if (!array_key_exists($cacheKey, self::$cache)) {
+            try {
+                self::$cache[$cacheKey] = (new SiteContentService())->isHidden($key);
+            } catch (\Throwable $e) {
+                // Fail visible: a page missing its words looks broken to
+                // a parent; a page showing wording the office meant to
+                // hide is only out of date.
+                self::$cache[$cacheKey] = false;
+            }
+        }
+
+        return (bool) self::$cache[$cacheKey];
+    }
+
     public static function content(string $key, array $params = []): string
     {
         $preview = self::preview();
+
+        // Hidden one sentence at a time. Checked before the wording is
+        // fetched, and checked against the preview first, so pressing
+        // "Preview on the site" with an eye just closed shows the page
+        // without that line -- which is the whole point of looking.
+        $hideKey = SiteContentService::hideKey($key);
+        if ($preview !== null && array_key_exists($hideKey, $preview)) {
+            if ($preview[$hideKey] === '1') {
+                return '';
+            }
+        } elseif (self::isHidden($key)) {
+            return '';
+        }
+
         if ($preview !== null && array_key_exists($key, $preview)) {
             return $preview[$key];
         }
