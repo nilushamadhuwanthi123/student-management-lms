@@ -41,7 +41,7 @@ $new = count(array_filter($items, static fn (array $m): bool => $m['status'] ===
                 <?php if (($m['kind'] ?? 'contact') === 'enrollment' && !empty($m['institute_id'])): ?>
                     <form method="POST" action="<?= BASE_URL ?>/inquiries/<?= (int) $m['id'] ?>/approve">
                         <?= csrfField() ?>
-                        <button class="btn btn--primary btn--sm" type="submit" title="<?= te('Marks this inquiry responded and opens the student registration form with these details filled in.') ?>">&#10003; <?= te('Approve &amp; Register') ?></button>
+                        <button class="btn btn--primary btn--sm" type="submit" title="<?= te('Marks this inquiry responded and opens the student registration form with these details filled in.') ?>">&#10003; <?= te('Approve & Register') ?></button>
                     </form>
                 <?php endif; ?>
                 <form method="POST" action="<?= BASE_URL ?>/inquiries/<?= (int) $m['id'] ?>/status" style="display:flex; gap:.4rem; align-items:start;">

@@ -738,11 +738,11 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 </a>
                 <div class="sidebar__sub-links <?= $activePage === 'sitebuilder' ? 'open' : '' ?>" id="sitebuilder-sub">
                     <a href="<?= BASE_URL ?>/site-builder" class="sidebar__sub-link <?= $activeSubPage === 'builder-home' ? 'active' : '' ?>"><?= te('Overview') ?></a>
-                    <a href="<?= BASE_URL ?>/settings/site-content" class="sidebar__sub-link <?= $activeSubPage === 'site-content' ? 'active' : '' ?>"><?= te('Design &amp; content') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/site-content" class="sidebar__sub-link <?= $activeSubPage === 'site-content' ? 'active' : '' ?>"><?= te('Design & content') ?></a>
                     <a href="<?= BASE_URL ?>/settings/hero-media" class="sidebar__sub-link <?= $activeSubPage === 'hero-media' ? 'active' : '' ?>"><?= te('Background photos') ?></a>
                     <a href="<?= BASE_URL ?>/settings/ads" class="sidebar__sub-link <?= $activeSubPage === 'ads' ? 'active' : '' ?>"><?= te('Announcements') ?></a>
                     <a href="<?= BASE_URL ?>/downloads/manage" class="sidebar__sub-link <?= $activeSubPage === 'downloads-manage' ? 'active' : '' ?>"><?= te('Downloads') ?></a>
-                    <a href="<?= BASE_URL ?>/settings/translations" class="sidebar__sub-link <?= $activeSubPage === 'translations' ? 'active' : '' ?>"><?= te('Wording &amp; languages') ?></a>
+                    <a href="<?= BASE_URL ?>/settings/translations" class="sidebar__sub-link <?= $activeSubPage === 'translations' ? 'active' : '' ?>"><?= te('Wording & languages') ?></a>
                     <a href="<?= BASE_URL ?>/" target="_blank" rel="noopener" class="sidebar__sub-link"><?= te('View the site') ?> &#8599;</a>
                 </div>
             </div>

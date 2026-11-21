@@ -76,7 +76,7 @@ $cards = [
 </div>
 
 <div class="sb-hint">
-    <strong><?= te('Start with Design &amp; content.') ?></strong>
+    <strong><?= te('Start with Design & content.') ?></strong>
     <?= te('Pick one of the ten styles, press Save changes, then open the site in another tab to see it. Nothing goes live until you save, so you can click through the styles freely.') ?>
 </div>
 

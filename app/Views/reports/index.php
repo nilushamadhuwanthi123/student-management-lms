@@ -32,7 +32,7 @@
     <div class="card" style="border-top:4px solid #2563EB; display:flex; flex-direction:column; justify-content:space-between;">
         <div>
             <div style="font-size:2rem; margin-bottom:0.5rem;">&#128218;</div>
-            <h3 style="margin-bottom:0.4rem;"><?= te('Class &amp; Enrollment Reports') ?></h3>
+            <h3 style="margin-bottom:0.4rem;"><?= te('Class & Enrollment Reports') ?></h3>
             <p class="text-sm text-muted"><?= te('Tuition batch rosters, active student headcounts, venue capacity allocations, and teacher schedules.') ?></p>
         </div>
         <div class="mt-3 pt-2" style="border-top:1px solid var(--border);">
@@ -46,7 +46,7 @@
     <div class="card" style="border-top:4px solid #2563EB; display:flex; flex-direction:column; justify-content:space-between;">
         <div>
             <div style="font-size:2rem; margin-bottom:0.5rem;">&#128101;</div>
-            <h3 style="margin-bottom:0.4rem;"><?= te('User &amp; Staff Reports') ?></h3>
+            <h3 style="margin-bottom:0.4rem;"><?= te('User & Staff Reports') ?></h3>
             <p class="text-sm text-muted"><?= te('Directory breakdown of Admins, Coordinators, Staff, and Teachers with active/inactive statuses and branch assignments.') ?></p>
         </div>
         <div class="mt-3 pt-2" style="border-top:1px solid var(--border);">

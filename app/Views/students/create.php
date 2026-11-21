@@ -133,7 +133,7 @@ $fromInquiry = $fromInquiry ?? null;
     </div>
 
     <div class="form-group" id="classSelectionGroup">
-        <label class="form-label"><?= te('Classes &amp; Scholarship Type') ?> <span class="required">*</span></label>
+        <label class="form-label"><?= te('Classes & Scholarship Type') ?> <span class="required">*</span></label>
         <div id="classCheckboxes" style="display:flex;flex-direction:column;gap:0.75rem;">
             <?php if (!empty($classes)): ?>
                 <?php foreach ($classes as $cls): ?>

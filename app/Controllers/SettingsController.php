@@ -399,6 +399,79 @@ class SettingsController extends BaseController
     }
 
     /**
+     * POST /settings/site-content/preview
+     *
+     * Show the live site with the values currently typed into the form,
+     * without saving any of them. Clicking through ten styles is only
+     * useful if you can see what one does, and "save it and look" means
+     * families briefly get whatever was being tried.
+     *
+     * The values go in the session, never the settings table, and
+     * PublicSite only applies them for a signed-in super admin -- so a
+     * half-finished look can never reach a visitor.
+     */
+    public function previewLook(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+        verifyCsrfToken();
+
+        $base = \App\Services\SiteContentService::BASE_LANG;
+        $values = [];
+
+        foreach (\App\Services\SiteContentService::FIELDS as $key => $field) {
+            $type = $field['type'] ?? 'text';
+
+            if ($type === \App\Services\SiteContentService::TYPE_ICONSET) {
+                if (!empty($_POST['icons_present'][$key])) {
+                    $chosen = is_array($_POST['icons'][$key] ?? null) ? $_POST['icons'][$key] : [];
+                    $chosen = array_values(array_filter(
+                        array_map('strval', $chosen),
+                        static fn (string $k): bool => isset(\App\Services\HeroIconLibrary::ICONS[$k])
+                    ));
+                    $values[$key] = implode(',', $chosen);
+                }
+                continue;
+            }
+
+            // Photos are not previewed: they are uploads, and an upload
+            // that has not been saved has nowhere to be served from.
+            if ($type === \App\Services\SiteContentService::TYPE_IMAGE
+                || $type === \App\Services\SiteContentService::TYPE_MEDIA) {
+                continue;
+            }
+
+            $posted = $_POST['fields'][$base][$key] ?? null;
+            if ($posted === null) {
+                continue;
+            }
+            $values[$key] = mb_substr(trim((string) $posted), 0, 4000);
+        }
+
+        session_set('site_preview', $values);
+        $this->flash('info', t('Showing a preview. Nothing has been saved yet.'));
+        $this->redirect('/');
+    }
+
+    /**
+     * POST|GET /settings/site-content/preview/stop
+     *
+     * Drop the preview and go back to the editor. Reachable by GET as
+     * well, because the banner on the previewed page is a plain link --
+     * the only thing it changes is this person's own session.
+     */
+    public function stopPreview(): void
+    {
+        AuthMiddleware::requireAuth();
+        session_set('site_preview', null);
+        $this->redirect('/settings/site-content');
+    }
+
+    /**
      * POST /settings/site-content/reset-look
      *
      * Put every look-and-feel field back to the value the site shipped

@@ -512,6 +512,26 @@
     </style>
 </head>
 <body class="public-layout">
+<?php if (\App\Services\PublicSite::isPreviewing()): ?>
+    <!-- Only ever rendered for the super admin who started the preview. -->
+    <div class="ts-preview-bar" role="status">
+        <span><strong><?= te('Preview') ?></strong> &mdash; <?= te('this is how the site would look. Nothing has been saved yet, and visitors still see the live version.') ?></span>
+        <a href="<?= BASE_URL ?>/settings/site-content/preview/stop"><?= te('Finish and go back to the editor') ?></a>
+    </div>
+    <style>
+        .ts-preview-bar {
+            position: sticky; top: 0; z-index: 9999;
+            display: flex; flex-wrap: wrap; gap: .75rem;
+            align-items: center; justify-content: center;
+            padding: .6rem 1rem; text-align: center;
+            background: #FACC15; color: #1C2538;
+            font-size: .88rem; font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0,0,0,.18);
+        }
+        .ts-preview-bar a { color: #15307E; text-decoration: underline; white-space: nowrap; }
+    </style>
+<?php endif; ?>
+
 
     <?php
     // The opening titles: an atom draws itself, the teacher's name

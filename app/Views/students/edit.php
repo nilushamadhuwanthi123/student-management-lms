@@ -132,7 +132,7 @@ foreach ($enrollments as $enr) {
     </div>
 
     <div class="form-group" id="classSelectionGroup">
-        <label class="form-label"><?= te('Classes &amp; Scholarship Type') ?></label>
+        <label class="form-label"><?= te('Classes & Scholarship Type') ?></label>
         <div id="classCheckboxes" style="display:flex;flex-direction:column;gap:0.75rem;">
             <?php if (!empty($classes)): ?>
                 <?php foreach ($classes as $cls): ?>

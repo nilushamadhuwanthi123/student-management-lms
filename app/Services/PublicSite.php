@@ -395,8 +395,61 @@ final class PublicSite
      * SiteContentService) -- the only free text anywhere on this page,
      * everything else above stays strictly from real records.
      */
+    /**
+     * Values being previewed, or null when nothing is.
+     *
+     * The Website Content screen can send the form straight to the live
+     * pages without saving, so the owner sees a style on the real site
+     * before committing to it. The values live in the session, never in
+     * the settings table.
+     *
+     * Gated twice on purpose: a preview only applies to a signed-in
+     * super admin, and only for as long as it sits in their own
+     * session. A visitor can never be shown one, and nothing another
+     * person does can put a half-finished look in front of families.
+     *
+     * @return array<string, string>|null
+     */
+    private static function preview(): ?array
+    {
+        if (self::$previewChecked) {
+            return self::$previewValues;
+        }
+        self::$previewChecked = true;
+        self::$previewValues = null;
+
+        if (!function_exists('session_get')) {
+            return null;
+        }
+        if ((string) session_get('user_role') !== 'super_admin') {
+            return null;
+        }
+
+        $raw = session_get('site_preview');
+        if (is_array($raw) && $raw !== []) {
+            self::$previewValues = array_map('strval', $raw);
+        }
+
+        return self::$previewValues;
+    }
+
+    /** True while a preview is being shown, so pages can say so. */
+    public static function isPreviewing(): bool
+    {
+        return self::preview() !== null;
+    }
+
+    private static bool $previewChecked = false;
+    /** @var array<string, string>|null */
+    private static ?array $previewValues = null;
+
     public static function content(string $key, array $params = []): string
     {
+        $preview = self::preview();
+        if ($preview !== null && array_key_exists($key, $preview)) {
+            return $preview[$key];
+        }
+
         $cacheKey = 'content:' . $key . ':' . md5(serialize($params));
         if (!array_key_exists($cacheKey, self::$cache)) {
             try {
@@ -418,6 +471,11 @@ final class PublicSite
      */
     public static function isOn(string $key): bool
     {
+        $preview = self::preview();
+        if ($preview !== null && array_key_exists($key, $preview)) {
+            return $preview[$key] === '1';
+        }
+
         $cacheKey = 'on:' . $key;
         if (!array_key_exists($cacheKey, self::$cache)) {
             try {
@@ -431,6 +489,15 @@ final class PublicSite
 
     public static function num(string $key): int
     {
+        $preview = self::preview();
+        if ($preview !== null && array_key_exists($key, $preview)) {
+            // Clamped exactly as a saved value would be, so a preview
+            // cannot freeze an animation on screen either.
+            $field = SiteContentService::FIELDS[$key] ?? [];
+            $v = (int) $preview[$key];
+            return max((int) ($field['min'] ?? PHP_INT_MIN), min((int) ($field['max'] ?? PHP_INT_MAX), $v));
+        }
+
         $cacheKey = 'num:' . $key;
         if (!array_key_exists($cacheKey, self::$cache)) {
             try {
@@ -444,6 +511,14 @@ final class PublicSite
 
     public static function color(string $key): string
     {
+        $preview = self::preview();
+        if ($preview !== null && array_key_exists($key, $preview)) {
+            // Same refusal as a saved colour: it goes into a stylesheet.
+            return preg_match('/^#[0-9A-Fa-f]{6}$/', $preview[$key]) === 1
+                ? $preview[$key]
+                : (string) (SiteContentService::FIELDS[$key]['default'] ?? '#000000');
+        }
+
         $cacheKey = 'color:' . $key;
         if (!array_key_exists($cacheKey, self::$cache)) {
             try {

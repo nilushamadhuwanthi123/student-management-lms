@@ -15,7 +15,7 @@ $deactivatedCount = (int) ($stats['deactivated_count'] ?? 0);
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title"><?= te('Student Status &amp; Deactivation Reports') ?></h1>
+        <h1 class="page-header__title"><?= te('Student Status & Deactivation Reports') ?></h1>
         <p class="text-sm text-muted"><?= te('Lifecycle tracking, active enrollments, and deactivated account compliance audit') ?></p>
     </div>
     <div class="page-header__actions d-flex gap-1">

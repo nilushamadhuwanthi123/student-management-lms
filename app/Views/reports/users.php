@@ -11,7 +11,7 @@ $status = $status ?? '';
 
 <div class="page-header">
     <div>
-        <h1 class="page-header__title"><?= te('User &amp; Staff Directory Reports') ?></h1>
+        <h1 class="page-header__title"><?= te('User & Staff Directory Reports') ?></h1>
         <p class="text-sm text-muted"><?= te('Administrative roster, active credentials, and role breakdown') ?></p>
     </div>
     <div class="page-header__actions d-flex gap-1">

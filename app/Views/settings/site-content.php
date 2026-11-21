@@ -89,6 +89,14 @@ $stored = static function (array $values, string $key, string $lang): string {
                         <?php endforeach; ?>
                     </div>
                     <p class="sc-themes__foot"><?= te('A style only fills in the boxes below -- you can still change any single colour afterwards.') ?></p>
+                    <p class="sc-themes__foot sc-themes__actions">
+                        <button type="submit" class="btn btn--sm btn--secondary"
+                                formaction="<?= BASE_URL ?>/settings/site-content/preview"
+                                formtarget="_blank" formnovalidate>
+                            <?= te('Preview on the site') ?> &#8599;
+                        </button>
+                        <span class="sc-preview-note"><?= te('Opens the real pages with what is on this form, without saving.') ?></span>
+                    </p>
                     <p class="sc-themes__foot">
                         <?= te('Tried a few and want to start over?') ?>
                         <button type="submit" class="sc-reset-link"
@@ -358,6 +366,8 @@ $stored = static function (array $values, string $key, string $lang): string {
     .sc-themes__lead { display: grid; gap: .15rem; margin-bottom: .85rem; }
     .sc-themes__lead span { font-size: .84rem; color: #64748B; }
     .sc-themes__foot { margin: .8rem 0 0; font-size: .8rem; color: #64748B; }
+    .sc-themes__actions { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+    .sc-preview-note { font-size: .78rem; color: #64748B; }
     .sc-reset-link { background: none; border: 0; padding: 0; margin-left: .25rem; cursor: pointer;
                      font-size: .8rem; font-weight: 700; color: #B3261E; text-decoration: underline; }
     .sc-reset-link:hover { color: #7F1D1D; }

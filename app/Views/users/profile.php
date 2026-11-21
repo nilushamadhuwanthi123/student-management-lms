@@ -53,7 +53,7 @@ $roleBadge = match ($role) {
     <!-- Details Card -->
     <div style="flex:1; min-width:320px;">
         <div class="card mb-3">
-            <h3 style="margin-bottom:1rem; font-size:1.15rem;"><?= te('Contact &amp; Personal Information') ?></h3>
+            <h3 style="margin-bottom:1rem; font-size:1.15rem;"><?= te('Contact & Personal Information') ?></h3>
             <ul class="profile-card__details">
                 <li><span class="label"><?= te('Full Name') ?></span><span class="value"><?= htmlspecialchars($user['full_name'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span></li>
                 <li><span class="label"><?= te('Email Address') ?></span><span class="value"><?= htmlspecialchars($user['email'] ?? '-', ENT_QUOTES, 'UTF-8') ?></span></li>
