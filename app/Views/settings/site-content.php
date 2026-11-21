@@ -126,12 +126,18 @@ $stored = static function (array $values, string $key, string $lang): string {
 
                     <p class="sc-themes__foot"><?= te('A style only fills in the boxes below -- you can still change any single colour afterwards.') ?></p>
                     <p class="sc-themes__foot sc-themes__actions">
+                        <?php /* This used to open in a new tab, which is how it
+                                 came to look like a dead button: a blocked popup
+                                 leaves the page you are on completely unchanged,
+                                 and a tab that does open behind the current one
+                                 is easy to miss. It now goes in this tab, and the
+                                 previewed page carries a bar back to here. */ ?>
                         <button type="submit" class="btn btn--sm btn--secondary"
                                 formaction="<?= BASE_URL ?>/settings/site-content/preview"
-                                formtarget="_blank" formnovalidate>
-                            <?= te('Preview on the site') ?> &#8599;
+                                formnovalidate>
+                            <?= te('Preview on the site') ?> &rarr;
                         </button>
-                        <span class="sc-preview-note"><?= te('Opens the real pages with what is on this form, without saving.') ?></span>
+                        <span class="sc-preview-note"><?= te('Shows the real pages with what is on this form, without saving. A bar at the top brings you back here.') ?></span>
                     </p>
                     <p class="sc-themes__foot">
                         <?= te('Tried a few and want to start over?') ?>
