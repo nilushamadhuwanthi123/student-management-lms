@@ -73,6 +73,49 @@ foreach ($files as $file) {
         }
     }
 
+    // The CMS field registry also holds labels, group headings, theme
+    // names and notes, and the choice lists -- all of which reach the
+    // screen through te(). They are not written as t('...') literals,
+    // so a scan for those alone reports full coverage while half the
+    // settings screen is still in English.
+    if (str_ends_with($rel, 'SiteContentService.php')
+        || str_ends_with($rel, 'SiteAdDesign.php')
+        || str_ends_with($rel, 'HeroIconLibrary.php')
+        || str_ends_with($rel, 'HomeFeatureCards.php')) {
+        $patterns = [
+            "/'label'\s*=>\s*'((?:[^'\\\\]|\\\\.)*)'/",
+            "/'name'\s*=>\s*'((?:[^'\\\\]|\\\\.)*)'/",
+            "/'note'\s*=>\s*'((?:[^'\\\\]|\\\\.)*)'/",
+            "/'suffix'\s*=>\s*'((?:[^'\\\\]|\\\\.)*)'/",
+            "/'help'\s*=>\s*'((?:[^'\\\\]|\\\\.)*)'/",
+        ];
+        foreach ($patterns as $pattern) {
+            if (preg_match_all($pattern, $src, $mL)) {
+                foreach ($mL[1] as $raw) {
+                    $sTxt = str_replace(["\\'", '\\\\'], ["'", '\\'], $raw);
+                    if ($sTxt === '' || !preg_match('/[A-Za-z]/', $sTxt)) {
+                        continue;
+                    }
+                    $wanted[$sTxt]['CMS labels'] = true;
+                }
+            }
+        }
+    }
+
+    // GROUPS is written as 'key' => 'Heading', which none of the
+    // patterns above matches, so it is read from its own block.
+    if (str_ends_with($rel, 'SiteContentService.php')
+        && preg_match('/const GROUPS = \[(.*?)\n    \];/s', $src, $mG)) {
+        if (preg_match_all("/=>\s*'((?:[^'\\\\]|\\\\.)*)'/", $mG[1], $mGL)) {
+            foreach ($mGL[1] as $raw) {
+                $sTxt = str_replace(["\\'", '\\\\'], ["'", '\\'], $raw);
+                if ($sTxt !== '' && preg_match('/[A-Za-z]/', $sTxt)) {
+                    $wanted[$sTxt]['CMS groups'] = true;
+                }
+            }
+        }
+    }
+
     // 'default' => 'Some English wording', in the CMS field registry.
     if (str_ends_with($rel, 'SiteContentService.php')
         && preg_match_all("/'default'\\s*=>\\s*'((?:[^'\\\\]|\\\\.)*)'/", $src, $m2)) {
