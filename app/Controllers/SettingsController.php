@@ -398,6 +398,58 @@ class SettingsController extends BaseController
         ]);
     }
 
+    /**
+     * POST /settings/site-content/reset-look
+     *
+     * Put every look-and-feel field back to the value the site shipped
+     * with. Ten styles are one click each to try, and without this the
+     * only way back to the original is remembering four hex codes --
+     * which nobody does, so people stop trying the styles at all.
+     *
+     * Clears the stored values rather than writing the defaults in:
+     * get() already falls back to the field's default, so a site that
+     * has been reset behaves exactly like one that was never edited,
+     * and a later change to a default is picked up.
+     *
+     * Only touches appearance, background and visibility. Wording and
+     * photos are the office's own work and are never cleared here.
+     */
+    public function resetLook(): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireSuperAdmin();
+        AuthMiddleware::requireRole([
+            AuthMiddleware::ROLE_SUPER_ADMIN,
+            AuthMiddleware::ROLE_ADMIN,
+        ]);
+        verifyCsrfToken();
+
+        $service = new \App\Services\SiteContentService($this->db);
+        $userId = (int) session_get('user_id');
+        $groups = ['appearance', 'background', 'visibility'];
+        $done = 0;
+
+        try {
+            foreach (\App\Services\SiteContentService::FIELDS as $key => $field) {
+                if (!in_array($field['group'] ?? '', $groups, true)) {
+                    continue;
+                }
+                foreach (\App\Services\SiteContentService::LANGS as $lang) {
+                    $service->set($key, '', $userId, $lang);
+                }
+                $done++;
+            }
+
+            $this->logAudit('reset_site_look', 'site_content', 0, ['fields' => $done]);
+            $this->flash('success', t('The look has been put back to how the site started. Your wording and photos were not touched.'));
+        } catch (\Throwable $e) {
+            error_log('Reset look failed: ' . $e->getMessage());
+            $this->flash('error', t('The look could not be reset. Please try again.'));
+        }
+
+        $this->redirect('/settings/site-content');
+    }
+
     public function siteContent(): void
     {
         AuthMiddleware::requireAuth();

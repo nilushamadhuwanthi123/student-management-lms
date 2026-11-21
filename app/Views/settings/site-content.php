@@ -89,6 +89,15 @@ $stored = static function (array $values, string $key, string $lang): string {
                         <?php endforeach; ?>
                     </div>
                     <p class="sc-themes__foot"><?= te('A style only fills in the boxes below -- you can still change any single colour afterwards.') ?></p>
+                    <p class="sc-themes__foot">
+                        <?= te('Tried a few and want to start over?') ?>
+                        <button type="submit" class="sc-reset-link"
+                                formaction="<?= BASE_URL ?>/settings/site-content/reset-look"
+                                formnovalidate
+                                onclick="return confirm('<?= $e(t('Put the colours, motion and show/hide switches back to how the site started? Your wording and photos are not touched.')) ?>');">
+                            <?= te('Put the look back to how it started') ?>
+                        </button>
+                    </p>
                 </div>
             <?php endif; ?>
 
@@ -349,6 +358,9 @@ $stored = static function (array $values, string $key, string $lang): string {
     .sc-themes__lead { display: grid; gap: .15rem; margin-bottom: .85rem; }
     .sc-themes__lead span { font-size: .84rem; color: #64748B; }
     .sc-themes__foot { margin: .8rem 0 0; font-size: .8rem; color: #64748B; }
+    .sc-reset-link { background: none; border: 0; padding: 0; margin-left: .25rem; cursor: pointer;
+                     font-size: .8rem; font-weight: 700; color: #B3261E; text-decoration: underline; }
+    .sc-reset-link:hover { color: #7F1D1D; }
     .sc-themes__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .7rem; }
     .sc-theme { cursor: pointer; text-align: left; padding: 0; background: #fff;
                 border: 1.5px solid #E2E8F0; border-radius: 12px; overflow: hidden; }
