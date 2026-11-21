@@ -88,6 +88,15 @@ $totalStudents = $totalStudents ?? 0;
                                 </div>
                                 <div>
                                     <div class="font-medium"><?= htmlspecialchars($student['full_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+                                    <?php if (!empty($unenrolled[(int) ($student['id'] ?? 0)])): ?>
+                                        <?php /* Registered but in no running class: their portal is
+                                                 empty and nothing else on this screen would say so. */ ?>
+                                        <a class="stu-noclass"
+                                           href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/edit"
+                                           title="<?= te('This student is registered but not in any running class, so their portal is empty. Click to enrol them.') ?>">
+                                            <?= te('In no class') ?>
+                                        </a>
+                                    <?php endif; ?>
                                     <?php if (!empty($student['email'])): ?>
                                         <div class="text-xs text-muted"><?= htmlspecialchars($student['email'], ENT_QUOTES, 'UTF-8') ?></div>
                                     <?php endif; ?>
@@ -166,3 +175,14 @@ $totalStudents = $totalStudents ?? 0;
         ?>
     <?php endif; ?>
 </div>
+
+<style>
+    /* A warning, not an error: the record is valid, the child's portal
+       is just empty. It links to the place that fixes it rather than
+       only pointing the problem out. */
+    .stu-noclass { display: inline-block; margin-top: .15rem; text-decoration: none;
+                   font-size: .68rem; font-weight: 800; letter-spacing: .02em;
+                   color: #9A3412; background: #FFF7ED; border: 1px solid #FED7AA;
+                   border-radius: 999px; padding: .08rem .45rem; }
+    .stu-noclass:hover { background: #FFEDD5; }
+</style>

@@ -71,9 +71,48 @@ class StudentController extends BaseController
             $pagination = $this->studentModel->paginate($page, $perPage, [], 'full_name ASC');
         }
 
+        // Which of the students on this page are in no class at all.
+        //
+        // Registering a student and enrolling them are two steps, and
+        // the second one gets missed -- an office interrupted mid-form
+        // saves the student and moves on. Nothing complains: the record
+        // is perfectly valid. The child just logs in to an empty portal
+        // with no materials, no quizzes and no marks, and nobody finds
+        // out until the parent rings.
+        //
+        // One query for the page, not one per row.
+        $unenrolled = [];
+        $pageIds = array_values(array_filter(array_map(
+            static fn ($r): int => (int) ($r['id'] ?? 0),
+            $pagination['data']
+        )));
+        if ($pageIds !== []) {
+            try {
+                $in = implode(',', array_map('intval', $pageIds));
+                $rows = $this->db->query(
+                    "SELECT s.id FROM students s
+                      WHERE s.id IN ({$in})
+                        AND s.status = 'active'
+                        AND NOT EXISTS (
+                            SELECT 1 FROM enrollments e
+                             JOIN classes c ON c.id = e.class_id
+                             WHERE e.student_id = s.id
+                               AND e.enrollment_status = 'active'
+                               AND c.status = 'active')"
+                )->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+                foreach ($rows as $sid) {
+                    $unenrolled[(int) $sid] = true;
+                }
+            } catch (\Throwable $e) {
+                // A flag that cannot be worked out is simply not shown.
+                error_log('Unenrolled-student check failed: ' . $e->getMessage());
+            }
+        }
+
         $this->view('students/index', [
             'pageTitle'  => 'Students',
             'students'   => $pagination['data'],
+            'unenrolled' => $unenrolled,
             'pagination' => $pagination,
             'search'     => $search,
             'filters'    => [
