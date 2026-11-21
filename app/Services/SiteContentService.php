@@ -832,6 +832,31 @@ final class SiteContentService
         ],
 
         // -- About page -------------------------------------------------------
+        'show_about_teacher' => [
+            'label'   => 'Show the teacher section',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'about',
+        ],
+        'show_about_inclass' => [
+            'label'   => 'Show the "In class" section',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'about',
+        ],
+        'show_about_branches' => [
+            'label'   => 'Show the branch list',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'about',
+            'help'    => 'Only ever shown when branches have actually been added, so this cannot produce an empty list.',
+        ],
+        'show_about_inquiry' => [
+            'label'   => 'Show the "Would you like your child to join?" panel at the end',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'about',
+        ],
         'about_in_class_text' => [
             'label'   => '"In class" paragraph',
             'default' => 'Each grade has its own weekly class at the branch. Students who miss a lesson can catch up from the recording and notes, and the class register lets parents know about an absence.',
@@ -846,6 +871,19 @@ final class SiteContentService
         ],
 
         // -- Contact page ------------------------------------------------------
+        'show_contact_online' => [
+            'label'   => 'Show the "Find us online" section',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'contact',
+        ],
+        'show_contact_form' => [
+            'label'   => 'Show the "Send a message" form',
+            'default' => '1',
+            'type'    => self::TYPE_TOGGLE,
+            'group'   => 'contact',
+            'help'    => 'Turn this off if the office would rather families phoned or used WhatsApp.',
+        ],
         'contact_intro_text' => [
             'label'   => 'Intro line (under the heading)',
             'default' => 'Call the branch nearest to you, or send a message and the office will reply.',

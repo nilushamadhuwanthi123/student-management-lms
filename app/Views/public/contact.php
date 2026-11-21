@@ -57,6 +57,7 @@ $email    = trim(PublicSite::content('contact_email'));
 $email    = $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null;
 ?>
 <?php if ($waNumber !== null || $siteUrl !== null || $fbUrl !== null || $email !== null): ?>
+<?php if (\App\Services\PublicSite::isOn('show_contact_online')): ?>
 <section class="ts-section">
     <div class="ts-wrap">
         <h2><?= te('Find us online') ?></h2>
@@ -80,7 +81,9 @@ $email    = $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) ? $email 
     </div>
 </section>
 <?php endif; ?>
+<?php endif; ?>
 
+<?php if (\App\Services\PublicSite::isOn('show_contact_form')): ?>
 <section class="ts-section ts-section--alt">
     <div class="ts-wrap" style="max-width:760px;">
         <h2><?= te('Send a message') ?></h2>
@@ -99,4 +102,5 @@ $email    = $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) ? $email 
         </form>
     </div>
 </section>
+<?php endif; ?>
 <noscript><style>.ts-reveal { opacity: 1; transform: none; }</style></noscript>

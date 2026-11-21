@@ -20,6 +20,7 @@ require __DIR__ . '/_site.php';
 </section>
 
 <?php if ($teacher): ?>
+<?php if (\App\Services\PublicSite::isOn('show_about_teacher')): ?>
 <section class="ts-section">
     <div class="ts-wrap ts-teacher ts-reveal">
         <?php
@@ -46,7 +47,9 @@ require __DIR__ . '/_site.php';
         </div>
     </div>
 </section>
+<?php endif; ?>
 
+<?php if (\App\Services\PublicSite::isOn('show_about_inclass')): ?>
 <section class="ts-section ts-section--alt">
     <div class="ts-wrap ts-teacher ts-reveal" style="grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);">
         <div>
@@ -60,6 +63,7 @@ require __DIR__ . '/_site.php';
     </div>
 </section>
 <?php endif; ?>
+<?php endif; ?>
 
 <?php $extraText = PublicSite::content('about_extra_text'); if (trim($extraText) !== ''): ?>
 <section class="ts-section">
@@ -70,6 +74,7 @@ require __DIR__ . '/_site.php';
 <?php endif; ?>
 
 <?php if ($branches !== []): ?>
+<?php if (\App\Services\PublicSite::isOn('show_about_branches')): ?>
 <section class="ts-section">
     <div class="ts-wrap">
         <div class="ts-kicker"><?= te('Branches') ?></div>
@@ -101,7 +106,9 @@ require __DIR__ . '/_site.php';
     </div>
 </section>
 <?php endif; ?>
+<?php endif; ?>
 
+<?php if (\App\Services\PublicSite::isOn('show_about_inquiry')): ?>
 <section class="ts-section" style="padding-top:0;">
     <div class="ts-wrap">
         <div class="ts-cta ts-reveal">
@@ -110,4 +117,5 @@ require __DIR__ . '/_site.php';
         </div>
     </div>
 </section>
+<?php endif; ?>
 <noscript><style>.ts-reveal { opacity: 1; transform: none; }</style></noscript>
