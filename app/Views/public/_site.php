@@ -41,10 +41,10 @@ if (!function_exists('site_days')) {
 .ts-card { background: var(--surface, #fff); border: 1px solid var(--border, #E2E8F0); border-radius: 16px; padding: 1.15rem 1.2rem; min-width: 0; }
 .ts-card h3 { margin: 0 0 .35rem; font-size: 1.05rem; color: var(--text, var(--ts-nav-bg)); }
 .ts-muted { color: var(--text-muted, #64748B); font-size: .9rem; }
-.ts-badge { display: inline-block; font-size: .72rem; font-weight: 700; padding: .15rem .55rem; border-radius: 999px; background: color-mix(in srgb, var(--primary) 18%, #fff); color: var(--primary); margin-right: .3rem; }
+.ts-badge { display: inline-block; font-size: .72rem; font-weight: 700; padding: .15rem .55rem; border-radius: 999px; background: rgba(var(--primary-rgb), .18); color: var(--primary); margin-right: .3rem; }
 .ts-badge--online { background: #FEF3C7; color: #92400E; }
 .ts-badge--grade { background: var(--primary); color: #fff; }
-.ts-icon { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--primary) 18%, #fff); color: var(--primary); font-size: 1.25rem; margin-bottom: .7rem; }
+.ts-icon { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: rgba(var(--primary-rgb), .18); color: var(--primary); font-size: 1.25rem; margin-bottom: .7rem; }
 .ts-faq details { background: var(--surface, #fff); border: 1px solid var(--border, #E2E8F0); border-radius: 12px; padding: .85rem 1rem; margin-bottom: .6rem; }
 .ts-faq summary { font-weight: 700; cursor: pointer; }
 .ts-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: .85rem; }
@@ -54,7 +54,7 @@ if (!function_exists('site_days')) {
 /* ---- v3: teacher-centred design ---------------------------------- */
 .public-layout, .public-layout input, .public-layout select, .public-layout textarea, .public-layout button { font-family: 'Inter', 'Noto Sans Sinhala', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
 :lang(si) .ts-hero h1, :lang(si) .ts-section h2 { line-height: 1.35; letter-spacing: 0; }
-.ts-hero { position: relative; overflow: hidden; padding: 6.8rem 0 4.2rem; background: radial-gradient(1200px 600px at 85% 20%, rgba(250,204,21,.18), transparent 60%), radial-gradient(900px 500px at 0% 100%, color-mix(in srgb, var(--secondary) 45%, transparent), transparent 60%), linear-gradient(135deg, var(--ts-nav-bg) 0%, var(--primary) 55%, var(--primary) 100%); }
+.ts-hero { position: relative; overflow: hidden; padding: 6.8rem 0 4.2rem; background: radial-gradient(1200px 600px at 85% 20%, rgba(250,204,21,.18), transparent 60%), radial-gradient(900px 500px at 0% 100%, rgba(var(--secondary-rgb), .45), transparent 60%), linear-gradient(135deg, var(--ts-nav-bg) 0%, var(--primary) 55%, var(--primary) 100%); }
 .ts-hero::after { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .09; background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 22px 22px; }
 .ts-hero > .ts-wrap { position: relative; z-index: 1; }
 .ts-hero-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 2.5rem; align-items: center; }
@@ -67,7 +67,7 @@ if (!function_exists('site_days')) {
 .ts-honor { display: inline-block; vertical-align: middle; font-family: 'Inter', sans-serif; font-size: .38em; font-weight: 700; letter-spacing: .04em; color: var(--ts-nav-bg) !important; background: #FACC15; border-radius: 6px; padding: .3em .6em; margin-left: .4em; box-shadow: 0 6px 16px -8px rgba(0,0,0,.4); }
 .ts-honor--dark { font-size: .72em; background: #FACC15; box-shadow: none; }
 .ts-photo__ring { position: absolute; inset: -22px; width: calc(100% + 44px); height: calc(100% + 44px); color: rgba(255,255,255,.55); animation: tsSpin 22s linear infinite; pointer-events: none; }
-.ts-hero h1 .ts-honour { display: block; font-size: .55em; font-weight: 600; color: color-mix(in srgb, var(--primary) 18%, #fff); margin-top: .35rem; }
+.ts-hero h1 .ts-honour { display: block; font-size: .55em; font-weight: 600; color: rgba(var(--primary-rgb), .18); margin-top: .35rem; }
 .ts-photo { position: relative; justify-self: center; width: min(100%, 420px); }
 .ts-photo::before { content: ''; position: absolute; inset: -10px; border-radius: 32px; background: linear-gradient(135deg, #FACC15, var(--secondary)); opacity: .35; filter: blur(26px); z-index: -1; }
 
@@ -79,7 +79,7 @@ if (!function_exists('site_days')) {
 .ts-posters__grid--one { grid-template-columns: minmax(0, 460px); justify-content: center; }
 .ts-poster { display: block; text-decoration: none; color: inherit; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 18px 40px -22px rgba(2,6,23,.45); border: 1px solid rgba(15,23,42,.07); transition: transform .25s ease, box-shadow .25s ease; }
 a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-shadow: 0 26px 54px -24px rgba(2,6,23,.55); }
-.ts-poster img { display: block; width: 100%; height: auto; background: color-mix(in srgb, var(--primary) 8%, #fff); }
+.ts-poster img { display: block; width: 100%; height: auto; background: rgba(var(--primary-rgb), .08); }
 .ts-poster__cap { display: block; padding: .8rem 1rem; font-size: .92rem; font-weight: 600; line-height: 1.35; color: var(--ts-nav-bg); }
 @media (prefers-reduced-motion: reduce) { a.ts-poster:hover, a.ts-poster:focus-visible { transform: none; } }
 
@@ -103,7 +103,7 @@ a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-
   border-color: rgba(96, 165, 250, .9); transition: opacity .25s ease, width .18s ease, height .18s ease, margin .18s ease, border-color .18s ease; }
 @media (prefers-reduced-motion: reduce) { .ts-cur, .ts-cur-dot { display: none; } }
 @keyframes tsSpin { to { transform: rotate(360deg); } }
-.ts-photo__frame { border-radius: 28px; overflow: hidden; aspect-ratio: 4 / 5; box-shadow: 0 30px 60px -20px rgba(2,6,23,.55), 0 0 0 6px rgba(255,255,255,.12); background: color-mix(in srgb, var(--primary) 18%, #fff); }
+.ts-photo__frame { border-radius: 28px; overflow: hidden; aspect-ratio: 4 / 5; box-shadow: 0 30px 60px -20px rgba(2,6,23,.55), 0 0 0 6px rgba(255,255,255,.12); background: rgba(var(--primary-rgb), .18); }
 .ts-photo__frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; }
 .ts-photo__tag { position: absolute; left: -14px; bottom: 26px; background: #fff; color: var(--ts-nav-bg) !important; border-radius: 16px; padding: .7rem .95rem; box-shadow: 0 18px 40px -16px rgba(2,6,23,.45); display: flex; gap: .65rem; align-items: center; max-width: 85%; }
 .ts-photo__tag strong { display: block; font-size: .98rem; color: var(--ts-nav-bg); }
@@ -114,12 +114,12 @@ a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-
 .ts-stats { margin-top: -2.2rem; position: relative; z-index: 2; }
 .ts-stats__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: .9rem; background: var(--surface, #fff); border: 1px solid var(--border, #E2E8F0); border-radius: 20px; padding: 1.1rem; box-shadow: 0 20px 45px -28px rgba(15,23,42,.35); }
 .ts-stat { display: flex; gap: .75rem; align-items: center; padding: .4rem .5rem; min-width: 0; }
-.ts-stat__icon { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 14px; display: grid; place-items: center; background: color-mix(in srgb, var(--primary) 8%, #fff); color: var(--primary); }
+.ts-stat__icon { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 14px; display: grid; place-items: center; background: rgba(var(--primary-rgb), .08); color: var(--primary); }
 .ts-stat__value { font-size: 1.35rem; font-weight: 800; color: var(--text, var(--ts-nav-bg)); line-height: 1.1; }
 .ts-stat__label { font-size: .82rem; color: var(--text-muted, #64748B); }
 .ts-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-.ts-card:hover { transform: translateY(-3px); box-shadow: 0 18px 38px -24px rgba(15,23,42,.35); border-color: color-mix(in srgb, var(--primary) 28%, #fff); }
-.ts-icon { background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 8%, #fff), color-mix(in srgb, var(--primary) 18%, #fff)); }
+.ts-card:hover { transform: translateY(-3px); box-shadow: 0 18px 38px -24px rgba(15,23,42,.35); border-color: rgba(var(--primary-rgb), .28); }
+.ts-icon { background: linear-gradient(135deg, rgba(var(--primary-rgb), .08), rgba(var(--primary-rgb), .18)); }
 .ts-icon svg { width: 22px; height: 22px; }
 .ts-teacher { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 2.5rem; align-items: center; }
 @media (max-width: 880px) { .ts-teacher { grid-template-columns: 1fr; } }
@@ -138,7 +138,7 @@ a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-
    instead of the photo/placeholder filling it. Pinning width keeps the
    box always full-width and lets height be the only dimension the
    ratio and the clamp are allowed to adjust. */
-.ts-branch-media { width: 100%; aspect-ratio: 16 / 7; max-height: 230px; overflow: hidden; background: color-mix(in srgb, var(--primary) 8%, #fff); }
+.ts-branch-media { width: 100%; aspect-ratio: 16 / 7; max-height: 230px; overflow: hidden; background: rgba(var(--primary-rgb), .08); }
 .ts-branch-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
 @media (max-width: 880px) { .ts-branch-media { aspect-ratio: 16 / 8; max-height: 200px; } }
 @media (max-width: 480px) { .ts-branch-media { aspect-ratio: 16 / 9; max-height: 180px; } }
@@ -206,7 +206,7 @@ a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-
 .ts-title-bar { width: 56px; height: 5px; border-radius: 5px; background: linear-gradient(90deg, #FACC15, var(--primary)); margin: .2rem 0 1rem; }
 .ts-card .ts-icon { transition: transform .25s ease; }
 .ts-card:hover .ts-icon { transform: scale(1.08) rotate(-4deg); }
-.ts-icon--c1 { background: linear-gradient(135deg,color-mix(in srgb, var(--primary) 18%, #fff),color-mix(in srgb, var(--primary) 28%, #fff)); color: var(--primary); }
+.ts-icon--c1 { background: linear-gradient(135deg,rgba(var(--primary-rgb), .18),rgba(var(--primary-rgb), .28)); color: var(--primary); }
 .ts-icon--c2 { background: linear-gradient(135deg,#EDE9FE,#DDD6FE); color: #6D28D9; }
 .ts-icon--c3 { background: linear-gradient(135deg,#FCE7F3,#FBCFE8); color: #BE185D; }
 .ts-icon--c4 { background: linear-gradient(135deg,#FFEDD5,#FED7AA); color: #C2410C; }
@@ -237,10 +237,10 @@ a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-
 .ts-branch__actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .3rem; }
 /* faq */
 .ts-faq details { transition: box-shadow .2s ease, border-color .2s ease; }
-.ts-faq details[open] { border-color: color-mix(in srgb, var(--primary) 28%, #fff); box-shadow: 0 14px 30px -22px rgba(15,23,42,.4); }
+.ts-faq details[open] { border-color: rgba(var(--primary-rgb), .28); box-shadow: 0 14px 30px -22px rgba(15,23,42,.4); }
 .ts-faq summary { list-style: none; display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
 .ts-faq summary::-webkit-details-marker { display: none; }
-.ts-faq summary::after { content: '+'; flex: 0 0 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--primary) 8%, #fff); color: var(--primary); font-weight: 800; transition: transform .2s ease; }
+.ts-faq summary::after { content: '+'; flex: 0 0 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: rgba(var(--primary-rgb), .08); color: var(--primary); font-weight: 800; transition: transform .2s ease; }
 .ts-faq details[open] summary::after { content: '\2212'; background: var(--primary); color: #fff; }
 /* inquiry */
 .ts-join { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 0; border-radius: 26px; overflow: hidden; box-shadow: 0 30px 60px -36px rgba(15,23,42,.45); background: var(--surface, #fff); }
@@ -333,7 +333,7 @@ a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-
 
 /* ---- hero background slideshow (photos behind the blue) -------------- */
 .ts-hero-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
-.ts-hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, color-mix(in srgb, var(--ts-nav-bg) 93%, transparent) 0%, color-mix(in srgb, var(--primary) 80%, transparent) 40%, color-mix(in srgb, var(--primary) 52%, transparent) 70%, color-mix(in srgb, var(--secondary) 42%, transparent) 100%); }
+.ts-hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, rgba(var(--ts-nav-rgb), .93) 0%, rgba(var(--primary-rgb), .80) 40%, rgba(var(--primary-rgb), .52) 70%, rgba(var(--secondary-rgb), .42) 100%); }
 .ts-bg-slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.12); filter: saturate(1.1); transition: opacity 1.6s ease, transform 7s ease-out; }
 .ts-bg-slide.is-on { opacity: 1; transform: scale(1.02); }
 .ts-hero > .ts-float, .ts-hero > .ts-wave { z-index: 1; }
@@ -342,7 +342,7 @@ a.ts-poster:hover, a.ts-poster:focus-visible { transform: translateY(-4px); box-
 .ts-bg-dots { position: absolute; left: 0; right: 0; bottom: 82px; z-index: 2; display: flex; justify-content: center; gap: .45rem; }
 .ts-bg-dots button { width: 9px; height: 9px; border-radius: 999px; border: 0; padding: 0; cursor: pointer; background: rgba(255,255,255,.5); transition: width .3s ease, background .3s ease; }
 .ts-bg-dots button[aria-current="true"] { width: 26px; background: #FACC15; }
-@media (max-width: 880px) { .ts-hero-bg::after { background: linear-gradient(180deg, color-mix(in srgb, var(--ts-nav-bg) 90%, transparent) 0%, color-mix(in srgb, var(--primary) 84%, transparent) 60%, color-mix(in srgb, var(--primary) 80%, transparent) 100%); } .ts-bg-dots { bottom: 76px; } }
+@media (max-width: 880px) { .ts-hero-bg::after { background: linear-gradient(180deg, rgba(var(--ts-nav-rgb), .90) 0%, rgba(var(--primary-rgb), .84) 60%, rgba(var(--primary-rgb), .80) 100%); } .ts-bg-dots { bottom: 76px; } }
 @media (prefers-reduced-motion: reduce) { .ts-bg-slide { transition: none; transform: none; } }
 </style>
 <script>

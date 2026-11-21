@@ -211,8 +211,11 @@ final class SiteAdDesign
 /* Spotlight: centred, glowing. For something big. */
 .ad-design--spotlight { flex-direction:column; align-items:center; text-align:center;
     padding:1.6rem 1.3rem; border-radius:18px;
-    box-shadow:0 0 0 1px color-mix(in srgb, var(--ad-accent) 45%, transparent),
-               0 18px 44px -18px var(--ad-accent); }
+    /* No color-mix(): it needs a 2023 browser, and an older phone drops
+       the whole declaration -- here that is only a lost glow, but the
+       same function lit the hero overlay, so it is gone from the site
+       entirely rather than left in one corner to be forgotten. */
+    box-shadow:0 0 0 1px var(--ad-accent), 0 18px 44px -18px var(--ad-accent); }
 .ad-design--spotlight .ad-design__words { justify-items:center; }
 .ad-design--spotlight .ad-design__headline { font-size:1.3rem; }
 

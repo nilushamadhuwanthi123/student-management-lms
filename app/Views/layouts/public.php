@@ -21,6 +21,27 @@
     $__acc = $__p::color('theme_accent');
     $__rad = (int) $__p::num('theme_radius');
     $__tint = (int) $__p::num('hero_tint_percent');
+    // The same colours as "r, g, b" triplets.
+    //
+    // The overlays and tints below need the theme colour at part
+    // opacity. color-mix() does that in one line, but it needs a 2023
+    // browser, and a phone older than that drops the whole declaration:
+    // the hero overlay disappears and white heading text lands on a
+    // bright photo, unreadable. rgba(var(--x-rgb), .5) works in every
+    // browser that understands CSS variables at all, which is every
+    // browser this site already required.
+    $__rgb = static function (string $hex): string {
+        $hex = ltrim(trim($hex), '#');
+        if (strlen($hex) !== 6 || preg_match('/^[0-9A-Fa-f]{6}$/', $hex) !== 1) {
+            return '29, 78, 216';   // the shipped primary, so a bad value still paints something
+        }
+        return hexdec(substr($hex, 0, 2)) . ', ' . hexdec(substr($hex, 2, 2)) . ', ' . hexdec(substr($hex, 4, 2));
+    };
+    $__priRgb = $__rgb($__pri);
+    $__secRgb = $__rgb($__sec);
+    $__nbgRgb = $__rgb($__nbg);
+    $__accRgb = $__rgb($__acc);
+
     $__fontKey = \App\Services\SiteContentService::FONTS[$__p::content('theme_font')] ?? null;
     $__fontBody = $__fontKey[1] ?? "'Inter', system-ui, sans-serif";
     $__fontHead = $__fontKey[2] ?? "'Playfair Display', Georgia, serif";
@@ -170,6 +191,10 @@
             --ts-radius: <?= $__rad ?>px;
             --ts-font-body: <?= $__fontBody ?>;
             --ts-font-head: <?= $__fontHead ?>;
+            --primary-rgb: <?= $__priRgb ?>;
+            --secondary-rgb: <?= $__secRgb ?>;
+            --ts-nav-rgb: <?= $__nbgRgb ?>;
+            --ts-accent-rgb: <?= $__accRgb ?>;
         }
         body { background: var(--bg); font-family: var(--ts-font-body); }
         .nav-fb { display: inline-flex; align-items: center; gap: .4rem; }
@@ -203,7 +228,7 @@
            the page is scrolled; at the very top it stays transparent so
            the background photo reads through it. */
         .navbar--liquid-glass.scrolled {
-            background: color-mix(in srgb, var(--ts-nav-bg) 86%, transparent);
+            background: rgba(var(--ts-nav-rgb), .86);
         }
         .navbar--liquid-glass.scrolled .navbar__links a,
         .navbar--liquid-glass.scrolled .navbar__brand {
