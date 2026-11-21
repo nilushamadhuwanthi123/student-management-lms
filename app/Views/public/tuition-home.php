@@ -114,7 +114,33 @@ if ($heroMediaRows !== []) {
     <svg class="ts-wave" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40c240 30 480 30 720 10s480-30 720 0v20H0z"/></svg>
     <div class="ts-wrap ts-hero-grid">
         <div>
-            <?php $adEvents = \App\Services\PublicSite::homeAds(6); ?>
+            <?php
+            $adEvents = \App\Services\PublicSite::homeAds(6);
+
+            // An ad the office designed here is a block with its own
+            // colours and a button; the rotating strip is one line of
+            // text. Putting a designed ad through the strip would throw
+            // the design away, so they are drawn separately, above it.
+            $adDesigned = [];
+            foreach ($adEvents as $k => $adItem) {
+                if (($adItem['design'] ?? '') !== '') {
+                    $adDesigned[] = $adItem['design'];
+                    unset($adEvents[$k]);
+                }
+            }
+            $adEvents = array_values($adEvents);
+            ?>
+
+            <?php if ($adDesigned !== [] && \App\Services\PublicSite::isOn('show_seminar_banner')): ?>
+                <style><?= \App\Services\SiteAdDesign::css() ?></style>
+                <div class="ts-ad-designed" aria-label="<?= te('Announcements') ?>">
+                    <?php foreach ($adDesigned as $adHtml): ?>
+                        <?= $adHtml ?>
+                    <?php endforeach; ?>
+                </div>
+                <style>.ts-ad-designed { display:grid; gap:.6rem; margin-bottom:.9rem; }</style>
+            <?php endif; ?>
+
             <?php if ($adEvents !== []): ?>
             <?php if (\App\Services\PublicSite::isOn('show_seminar_banner')): ?>
             <div class="ts-ad" id="ts-ad" aria-label="<?= te('Announcements') ?>">

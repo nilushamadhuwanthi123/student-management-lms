@@ -962,6 +962,16 @@ class SettingsController extends BaseController
                 'is_active'     => $_POST['is_active'] ?? '',
                 'show_as_popup' => $_POST['show_as_popup'] ?? '',
                 'sort_order'    => $_POST['sort_order'] ?? 0,
+                // The in-system designer. Cleaned and validated in
+                // SiteAdService::designFrom(); an empty template there
+                // means this ad is an uploaded picture instead.
+                'design_template' => $_POST['design_template'] ?? '',
+                'headline'        => $_POST['headline'] ?? '',
+                'subtext'         => $_POST['subtext'] ?? '',
+                'button_text'     => $_POST['button_text'] ?? '',
+                'bg_color'        => $_POST['bg_color'] ?? '',
+                'text_color'      => $_POST['text_color'] ?? '',
+                'accent_color'    => $_POST['accent_color'] ?? '',
             ], $userId);
 
             if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
@@ -1002,6 +1012,16 @@ class SettingsController extends BaseController
                 'is_active'     => $_POST['is_active'] ?? '',
                 'show_as_popup' => $_POST['show_as_popup'] ?? '',
                 'sort_order'    => $_POST['sort_order'] ?? 0,
+                // The in-system designer. Cleaned and validated in
+                // SiteAdService::designFrom(); an empty template there
+                // means this ad is an uploaded picture instead.
+                'design_template' => $_POST['design_template'] ?? '',
+                'headline'        => $_POST['headline'] ?? '',
+                'subtext'         => $_POST['subtext'] ?? '',
+                'button_text'     => $_POST['button_text'] ?? '',
+                'bg_color'        => $_POST['bg_color'] ?? '',
+                'text_color'      => $_POST['text_color'] ?? '',
+                'accent_color'    => $_POST['accent_color'] ?? '',
             ], $userId);
 
             if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {

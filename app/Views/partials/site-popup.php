@@ -28,6 +28,9 @@ $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'
 .sp-item img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
 .sp-item__body { padding: .7rem .8rem .85rem; }
 .sp-item__title { font-weight: 700; font-size: .92rem; color: #0F172A; line-height: 1.35; }
+.sp-item--design { background: none; border: none; padding: 0; }
+.sp-item--design:hover { transform: none; box-shadow: none; }
+<?= \App\Services\SiteAdDesign::css() ?>
 </style>
 <div class="sp-overlay" id="spOverlay" role="dialog" aria-modal="true" aria-label="<?= te('Announcements') ?>">
     <div class="sp-card">
@@ -35,10 +38,17 @@ $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'
         <div class="sp-grid">
             <?php foreach ($__popups as $p): ?>
                 <?php $tag = $p['href'] !== null ? 'a' : 'div'; ?>
+                <?php if (($p['design'] ?? '') !== ''): ?>
+                    <?php /* Designed here: it already carries its own words,
+                             colours and button, so it is shown as it is
+                             rather than wrapped in the picture card. */ ?>
+                    <div class="sp-item sp-item--design"><?= $p['design'] ?></div>
+                <?php else: ?>
                 <<?= $tag ?> class="sp-item"<?= $p['href'] !== null ? ' href="' . $e($p['href']) . '" target="_blank" rel="noopener noreferrer"' : '' ?>>
                     <?php if ($p['image'] !== ''): ?><img src="<?= $e($p['image']) ?>" alt="" loading="lazy" onerror="this.remove();"><?php endif; ?>
                     <div class="sp-item__body"><div class="sp-item__title"><?= $e($p['title']) ?></div></div>
                 </<?= $tag ?>>
+                <?php endif; ?>
             <?php endforeach; ?>
         </div>
     </div>

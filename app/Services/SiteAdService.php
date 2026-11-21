@@ -73,6 +73,44 @@ final class SiteAdService
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+
+    /**
+     * The design columns, cleaned, from a submitted form.
+     *
+     * An empty template means "this ad is a picture, not a design", and
+     * every design column is then stored as NULL rather than left half
+     * filled -- so switching an ad back to an upload cannot leave a
+     * stale headline that suddenly reappears months later.
+     *
+     * @return array{template: ?string, headline: ?string, subtext: ?string, button: ?string, bg: ?string, text: ?string, accent: ?string}
+     */
+    private static function designFrom(array $in): array
+    {
+        $template = trim((string) ($in['design_template'] ?? ''));
+
+        if (!SiteAdDesign::isTemplate($template)) {
+            return ['template' => null, 'headline' => null, 'subtext' => null,
+                    'button' => null, 'bg' => null, 'text' => null, 'accent' => null];
+        }
+
+        [$bgD, $textD, $accentD] = SiteAdDesign::DEFAULT_COLORS;
+
+        $trim = static function ($v, int $max): ?string {
+            $v = trim((string) $v);
+            return $v === '' ? null : mb_substr($v, 0, $max);
+        };
+
+        return [
+            'template' => $template,
+            'headline' => $trim($in['headline'] ?? '', 160),
+            'subtext'  => $trim($in['subtext'] ?? '', 400),
+            'button'   => $trim($in['button_text'] ?? '', 60),
+            'bg'       => SiteAdDesign::color($in['bg_color'] ?? null, $bgD),
+            'text'     => SiteAdDesign::color($in['text_color'] ?? null, $textD),
+            'accent'   => SiteAdDesign::color($in['accent_color'] ?? null, $accentD),
+        ];
+    }
+
     /** @throws \InvalidArgumentException on bad input */
     public function create(array $in, int $userId): int
     {
@@ -83,9 +121,15 @@ final class SiteAdService
         $linkUrl = self::validLink((string) ($in['link_url'] ?? ''));
         [$startsOn, $endsOn] = self::validDates($in['starts_on'] ?? null, $in['ends_on'] ?? null);
 
+        $d = self::designFrom($in);
+
         $this->db->prepare(
-            'INSERT INTO site_ads (title, link_url, starts_on, ends_on, is_active, show_as_popup, sort_order, created_by, created_at, updated_at)
-             VALUES (:title, :link, :starts, :ends, :active, :popup, :sort, :by, NOW(), NOW())'
+            'INSERT INTO site_ads (title, link_url, starts_on, ends_on, is_active, show_as_popup, sort_order,
+                                   design_template, headline, subtext, button_text, bg_color, text_color, accent_color,
+                                   created_by, created_at, updated_at)
+             VALUES (:title, :link, :starts, :ends, :active, :popup, :sort,
+                     :tpl, :headline, :subtext, :button, :bg, :text, :accent,
+                     :by, NOW(), NOW())'
         )->execute([
             ':title'  => mb_substr($title, 0, 160),
             ':link'   => $linkUrl,
@@ -94,6 +138,13 @@ final class SiteAdService
             ':active' => !empty($in['is_active']) ? 1 : 0,
             ':popup'  => !empty($in['show_as_popup']) ? 1 : 0,
             ':sort'   => (int) ($in['sort_order'] ?? 0),
+            ':tpl'      => $d['template'],
+            ':headline' => $d['headline'],
+            ':subtext'  => $d['subtext'],
+            ':button'   => $d['button'],
+            ':bg'       => $d['bg'],
+            ':text'     => $d['text'],
+            ':accent'   => $d['accent'],
             ':by'     => $userId,
         ]);
 
@@ -113,9 +164,14 @@ final class SiteAdService
         $linkUrl = self::validLink((string) ($in['link_url'] ?? ''));
         [$startsOn, $endsOn] = self::validDates($in['starts_on'] ?? null, $in['ends_on'] ?? null);
 
+        $d = self::designFrom($in);
+
         $this->db->prepare(
             'UPDATE site_ads SET title = :title, link_url = :link, starts_on = :starts, ends_on = :ends,
-                    is_active = :active, show_as_popup = :popup, sort_order = :sort, updated_at = NOW()
+                    is_active = :active, show_as_popup = :popup, sort_order = :sort,
+                    design_template = :tpl, headline = :headline, subtext = :subtext,
+                    button_text = :button, bg_color = :bg, text_color = :text, accent_color = :accent,
+                    updated_at = NOW()
               WHERE id = :id'
         )->execute([
             ':title'  => mb_substr($title, 0, 160),
@@ -125,6 +181,13 @@ final class SiteAdService
             ':active' => !empty($in['is_active']) ? 1 : 0,
             ':popup'  => !empty($in['show_as_popup']) ? 1 : 0,
             ':sort'   => (int) ($in['sort_order'] ?? 0),
+            ':tpl'      => $d['template'],
+            ':headline' => $d['headline'],
+            ':subtext'  => $d['subtext'],
+            ':button'   => $d['button'],
+            ':bg'       => $d['bg'],
+            ':text'     => $d['text'],
+            ':accent'   => $d['accent'],
             ':id'     => $id,
         ]);
     }

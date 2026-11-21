@@ -267,11 +267,16 @@ final class PublicSite
             if (!empty($ad['image_path']) && preg_match('#^/uploads/site-ads/[A-Za-z0-9_]+\.(jpg|png|webp)$#', (string) $ad['image_path'])) {
                 $thumb = BASE_URL . $ad['image_path'];
             }
+            $href = !empty($ad['link_url']) ? (string) $ad['link_url'] : '#ts-ad';
             $items[] = [
                 'title'    => (string) $ad['title'],
-                'subtitle' => '',
+                'subtitle' => (string) ($ad['subtext'] ?? ''),
                 'thumb'    => $thumb,
-                'href'     => !empty($ad['link_url']) ? (string) $ad['link_url'] : '#ts-ad',
+                'href'     => $href,
+                // An ad designed here is drawn rather than shown as a
+                // picture. Rendered by the same method the editor's
+                // preview uses, so the two cannot disagree.
+                'design'   => \App\Services\SiteAdDesign::render($ad, $href, true),
             ];
         }
 
@@ -308,10 +313,12 @@ final class PublicSite
                     $image = BASE_URL . $ad['image_path'];
                 }
                 $link = trim((string) ($ad['link_url'] ?? ''));
+                $href = preg_match('#^https?://#i', $link) === 1 ? $link : null;
                 $out[] = [
-                    'title' => (string) $ad['title'],
-                    'image' => $image,
-                    'href'  => preg_match('#^https?://#i', $link) === 1 ? $link : null,
+                    'title'  => (string) $ad['title'],
+                    'image'  => $image,
+                    'href'   => $href,
+                    'design' => \App\Services\SiteAdDesign::render($ad, $href),
                 ];
             }
         } catch (\Throwable $e) {
