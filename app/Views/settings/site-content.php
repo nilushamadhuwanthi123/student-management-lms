@@ -93,6 +93,37 @@ $stored = static function (array $values, string $key, string $lang): string {
                             </button>
                         <?php endforeach; ?>
                     </div>
+                    <?php /* The styles used to fill in boxes further down the
+                             page, where nothing visible moved -- so clicking
+                             one looked like it had done nothing at all, and
+                             the admin screen does not follow the site theme
+                             either, so saving looked like it had done nothing
+                             as well. This shows the public site's nav bar,
+                             heading and buttons at the top, updating the
+                             instant anything changes. */ ?>
+                    <div class="sc-live" id="scLive" aria-hidden="true">
+                        <div class="sc-live__head">
+                            <strong><?= te('How the site will look') ?></strong>
+                            <span class="sc-live__state" id="scLiveState"><?= te('This is what is saved now.') ?></span>
+                        </div>
+                        <div class="sc-live__frame">
+                            <div class="sc-live__nav">
+                                <span class="sc-live__brand"></span>
+                                <span class="sc-live__links"><i></i><i></i><i></i></span>
+                                <span class="sc-live__navbtn"></span>
+                            </div>
+                            <div class="sc-live__page">
+                                <span class="sc-live__h1"></span>
+                                <span class="sc-live__p"></span>
+                                <span class="sc-live__p sc-live__p--short"></span>
+                                <span class="sc-live__btns">
+                                    <span class="sc-live__btn"></span>
+                                    <span class="sc-live__btn sc-live__btn--alt"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
                     <p class="sc-themes__foot"><?= te('A style only fills in the boxes below -- you can still change any single colour afterwards.') ?></p>
                     <p class="sc-themes__foot sc-themes__actions">
                         <button type="submit" class="btn btn--sm btn--secondary"
@@ -410,6 +441,28 @@ $stored = static function (array $values, string $key, string $lang): string {
 <style>
     .sc-help { margin: .35rem 0 0; font-size: .82rem; color: #64748B; }
 
+    .sc-live { margin-top: .9rem; background: #fff; border: 1px solid #E2E8F0; border-radius: 12px;
+               padding: .75rem .85rem .85rem;
+               --p:#1D4ED8; --s:#2563EB; --bg:#F4F7FC; --nav:#15307E; --navtext:#FFF; --accent:#FACC15; --r:14px; }
+    .sc-live__head { display: flex; align-items: baseline; justify-content: space-between; gap: .6rem;
+                     flex-wrap: wrap; margin-bottom: .55rem; }
+    .sc-live__head strong { font-size: .84rem; }
+    .sc-live__state { font-size: .74rem; font-weight: 700; color: #64748B; }
+    .sc-live__state.is-dirty { color: #9A3412; }
+    .sc-live__frame { border-radius: 10px; overflow: hidden; border: 1px solid #E2E8F0; }
+    .sc-live__nav { display: flex; align-items: center; gap: .5rem; padding: .5rem .7rem; background: var(--nav); }
+    .sc-live__brand { width: 58px; height: 9px; border-radius: 3px; background: var(--navtext); opacity: .95; }
+    .sc-live__links { display: flex; gap: .35rem; margin-left: auto; }
+    .sc-live__links i { width: 26px; height: 6px; border-radius: 3px; background: var(--navtext); opacity: .6; }
+    .sc-live__navbtn { width: 46px; height: 15px; border-radius: var(--r); background: var(--accent); }
+    .sc-live__page { background: var(--bg); padding: .85rem .9rem 1rem; display: grid; gap: .4rem; }
+    .sc-live__h1 { width: 68%; height: 13px; border-radius: 4px; background: var(--p); }
+    .sc-live__p { width: 92%; height: 7px; border-radius: 3px; background: var(--s); opacity: .42; }
+    .sc-live__p--short { width: 64%; }
+    .sc-live__btns { display: flex; gap: .4rem; margin-top: .35rem; }
+    .sc-live__btn { width: 62px; height: 20px; border-radius: var(--r); background: var(--p); }
+    .sc-live__btn--alt { width: 44px; background: var(--accent); }
+
     .sc-themes { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 1.2rem; }
     .sc-themes__lead { display: grid; gap: .15rem; margin-bottom: .85rem; }
     .sc-themes__lead span { font-size: .84rem; color: #64748B; }
@@ -525,6 +578,7 @@ $stored = static function (array $values, string $key, string $lang): string {
             var pick = wrap.querySelector('.sc-color__pick');
             if (hex) { hex.value = to.toUpperCase(); }
             if (pick) { pick.value = to; }
+            liveDraw();
         });
     });
 
@@ -536,11 +590,84 @@ $stored = static function (array $values, string $key, string $lang): string {
         hex.value = value.toUpperCase();
         var pick = document.querySelector('[data-color-for="field_' + key + '_<?= $e($baseLang) ?>"]');
         if (pick) { pick.value = value; }
+        liveDraw();
     }
 
     function setField(key, value) {
         var el = document.getElementById('field_' + key + '_<?= $e($baseLang) ?>');
-        if (el) { el.value = value; }
+        // Setting .value in code fires no event, so the drawing has to
+        // be told by hand or it silently falls behind the form.
+        if (el) { el.value = value; liveDraw(); }
+    }
+
+    // The small site drawing at the top of this group. Without it a
+    // style click only changed boxes below the fold and a save only
+    // changed the public site, so both looked like they had done
+    // nothing from this screen.
+    var live = document.getElementById('scLive');
+    var liveState = document.getElementById('scLiveState');
+    var liveSaved = {};
+    var liveMap = {
+        '--p':       'theme_primary',
+        '--s':       'theme_secondary',
+        '--bg':      'theme_page_bg',
+        '--nav':     'theme_nav_bg',
+        '--navtext': 'theme_nav_text',
+        '--accent':  'theme_accent'
+    };
+
+    function liveRead(key) {
+        var el = document.getElementById('field_' + key + '_<?= $e($baseLang) ?>');
+        return el ? String(el.value || '').trim() : '';
+    }
+
+    function liveDraw() {
+        if (!live) { return; }
+        for (var varName in liveMap) {
+            var v = liveRead(liveMap[varName]);
+            if (/^#[0-9A-Fa-f]{6}$/.test(v)) { live.style.setProperty(varName, v); }
+        }
+        var r = parseInt(liveRead('theme_radius'), 10);
+        if (!isNaN(r)) { live.style.setProperty('--r', r + 'px'); }
+
+        if (!liveState) { return; }
+        var changed = false;
+        for (var k in liveSaved) {
+            if (liveRead(k) !== liveSaved[k]) { changed = true; break; }
+        }
+        liveState.classList.toggle('is-dirty', changed);
+        liveState.textContent = changed
+            ? <?= json_encode(t('Not saved yet -- press Save changes to put this on the site.'), JSON_UNESCAPED_UNICODE) ?>
+            : <?= json_encode(t('This is what is saved now.'), JSON_UNESCAPED_UNICODE) ?>;
+    }
+
+    if (live) {
+        // What was on the form when the page loaded is what is saved, so
+        // "not saved yet" can only mean something has actually changed.
+        ['theme_primary', 'theme_secondary', 'theme_page_bg', 'theme_nav_bg',
+         'theme_nav_text', 'theme_accent', 'theme_radius'].forEach(function (k) {
+            liveSaved[k] = liveRead(k);
+        });
+        // Show which of the ten styles the saved colours actually are,
+        // so the screen says where the site stands before anything is
+        // touched. None matching is normal -- colours can be edited one
+        // at a time -- and then nothing is marked.
+        document.querySelectorAll('.sc-theme').forEach(function (card) {
+            if (card.getAttribute('data-primary') === liveSaved['theme_primary']
+             && card.getAttribute('data-nav') === liveSaved['theme_nav_bg']
+             && card.getAttribute('data-accent') === liveSaved['theme_accent']) {
+                card.classList.add('is-picked');
+            }
+        });
+
+        liveDraw();
+
+        // Any route into those fields redraws it: the hex boxes, the
+        // colour pickers, the number fields, a palette, a style.
+        document.querySelectorAll('input, select').forEach(function (el) {
+            el.addEventListener('input', liveDraw);
+            el.addEventListener('change', liveDraw);
+        });
     }
 
     // A style only fills the boxes in; the public site changes when the
@@ -559,7 +686,7 @@ $stored = static function (array $values, string $key, string $lang): string {
 
             document.querySelectorAll('.sc-theme').forEach(function (o) { o.classList.remove('is-picked'); });
             card.classList.add('is-picked');
-            card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            liveDraw();
         });
     });
 
@@ -572,6 +699,7 @@ $stored = static function (array $values, string $key, string $lang): string {
 
             document.querySelectorAll('.sc-swatch').forEach(function (o) { o.classList.remove('is-picked'); });
             sw.classList.add('is-picked');
+            liveDraw();
         });
     });
 })();
