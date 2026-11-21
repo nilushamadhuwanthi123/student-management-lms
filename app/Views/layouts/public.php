@@ -46,71 +46,6 @@
             padding: 0 !important;
         }
     </style>
-    <style id="tsTheme">
-        :root {
-            --primary: <?= $__pri ?>;
-            --primary-hover: <?= $__pri ?>;
-            --secondary: <?= $__sec ?>;
-            --bg: <?= $__pbg ?>;
-            --ts-nav-bg: <?= $__nbg ?>;
-            --ts-nav-text: <?= $__ntx ?>;
-            --ts-float-speed: <?= (int) $__p::num('hero_float_speed') ?>s;
-            --ts-accent: <?= $__acc ?>;
-            --ts-radius: <?= $__rad ?>px;
-            --ts-font-body: <?= $__fontBody ?>;
-            --ts-font-head: <?= $__fontHead ?>;
-        }
-        body { background: var(--bg); font-family: var(--ts-font-body); }
-        .nav-fb { display: inline-flex; align-items: center; gap: .4rem; }
-        .nav-fb svg { flex: none; }
-
-        <?php if (\App\Services\PublicSite::content('nav_style') === 'solid'): ?>
-        /* Solid bar: the chosen colour from the first scroll pixel, so
-           the menu never sits see-through over a busy photo. The glass
-           rules below it are overridden rather than removed, because
-           they also carry the layout and the scrolled transition. */
-        .navbar--liquid-glass,
-        .navbar--liquid-glass.scrolled {
-            background: var(--ts-nav-bg) !important;
-            -webkit-backdrop-filter: none !important;
-            backdrop-filter: none !important;
-            border-bottom: 1px solid rgba(0, 0, 0, .14) !important;
-        }
-        .navbar--liquid-glass .navbar__links a,
-        .navbar--liquid-glass.scrolled .navbar__links a,
-        .navbar--liquid-glass .navbar__brand,
-        .navbar--liquid-glass.scrolled .navbar__brand {
-            color: var(--ts-nav-text) !important;
-        }
-        .navbar--liquid-glass .navbar__links a.active,
-        .navbar--liquid-glass.scrolled .navbar__links a.active {
-            color: var(--ts-accent) !important;
-        }
-        .navbar--liquid-glass .navbar__toggle { color: var(--ts-nav-text) !important; }
-        <?php else: ?>
-        /* See-through bar: the chosen colour is what it frosts to once
-           the page is scrolled; at the very top it stays transparent so
-           the background photo reads through it. */
-        .navbar--liquid-glass.scrolled {
-            background: color-mix(in srgb, var(--ts-nav-bg) 86%, transparent);
-        }
-        .navbar--liquid-glass.scrolled .navbar__links a,
-        .navbar--liquid-glass.scrolled .navbar__brand {
-            color: var(--ts-nav-text);
-        }
-        <?php endif; ?>
-        h1, h2, h3, .ts-name { font-family: var(--ts-font-head); }
-
-        /* Corner roundness, from "Corner roundness" in the CMS. */
-        .ts-btn, .btn, .card, .ts-card, .sc-card { border-radius: var(--ts-radius); }
-
-        /* The yellow highlight the theme picks. */
-        .ts-btn--yellow { background: var(--ts-accent); }
-
-        /* How strongly the colour sits over the background photo.
-           0% leaves the photo bare; the shipped look is 100%. */
-        .ts-hero-bg::after { opacity: <?= max(0, min(100, $__tint)) / 100 ?>; }
-    </style>
 
     <?php
     $__ogTitle = $pageTitle ?? (\App\Services\PublicSite::teacherName() ?? t('Science classes'));
@@ -214,6 +149,79 @@
 
     <!-- Base Design System -->
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=<?= @filemtime(BASE_PATH . '/public/assets/css/style.css') ?: 1 ?>">
+
+    <?php /* After style.css on purpose. Both this and the stylesheet
+             set --primary, --secondary and --bg on :root, at the same
+             specificity, so whichever comes last wins. With this block
+             first, the stylesheet quietly overrode the chosen colours:
+             --ts-nav-bg and the rest took effect, because nothing else
+             defines those, so the menu bar changed and the buttons and
+             page did not -- a style that looked half applied. */ ?>
+    <style id="tsTheme">
+        :root {
+            --primary: <?= $__pri ?>;
+            --primary-hover: <?= $__pri ?>;
+            --secondary: <?= $__sec ?>;
+            --bg: <?= $__pbg ?>;
+            --ts-nav-bg: <?= $__nbg ?>;
+            --ts-nav-text: <?= $__ntx ?>;
+            --ts-float-speed: <?= (int) $__p::num('hero_float_speed') ?>s;
+            --ts-accent: <?= $__acc ?>;
+            --ts-radius: <?= $__rad ?>px;
+            --ts-font-body: <?= $__fontBody ?>;
+            --ts-font-head: <?= $__fontHead ?>;
+        }
+        body { background: var(--bg); font-family: var(--ts-font-body); }
+        .nav-fb { display: inline-flex; align-items: center; gap: .4rem; }
+        .nav-fb svg { flex: none; }
+
+        <?php if (\App\Services\PublicSite::content('nav_style') === 'solid'): ?>
+        /* Solid bar: the chosen colour from the first scroll pixel, so
+           the menu never sits see-through over a busy photo. The glass
+           rules below it are overridden rather than removed, because
+           they also carry the layout and the scrolled transition. */
+        .navbar--liquid-glass,
+        .navbar--liquid-glass.scrolled {
+            background: var(--ts-nav-bg) !important;
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+            border-bottom: 1px solid rgba(0, 0, 0, .14) !important;
+        }
+        .navbar--liquid-glass .navbar__links a,
+        .navbar--liquid-glass.scrolled .navbar__links a,
+        .navbar--liquid-glass .navbar__brand,
+        .navbar--liquid-glass.scrolled .navbar__brand {
+            color: var(--ts-nav-text) !important;
+        }
+        .navbar--liquid-glass .navbar__links a.active,
+        .navbar--liquid-glass.scrolled .navbar__links a.active {
+            color: var(--ts-accent) !important;
+        }
+        .navbar--liquid-glass .navbar__toggle { color: var(--ts-nav-text) !important; }
+        <?php else: ?>
+        /* See-through bar: the chosen colour is what it frosts to once
+           the page is scrolled; at the very top it stays transparent so
+           the background photo reads through it. */
+        .navbar--liquid-glass.scrolled {
+            background: color-mix(in srgb, var(--ts-nav-bg) 86%, transparent);
+        }
+        .navbar--liquid-glass.scrolled .navbar__links a,
+        .navbar--liquid-glass.scrolled .navbar__brand {
+            color: var(--ts-nav-text);
+        }
+        <?php endif; ?>
+        h1, h2, h3, .ts-name { font-family: var(--ts-font-head); }
+
+        /* Corner roundness, from "Corner roundness" in the CMS. */
+        .ts-btn, .btn, .card, .ts-card, .sc-card { border-radius: var(--ts-radius); }
+
+        /* The yellow highlight the theme picks. */
+        .ts-btn--yellow { background: var(--ts-accent); }
+
+        /* How strongly the colour sits over the background photo.
+           0% leaves the photo bare; the shipped look is 100%. */
+        .ts-hero-bg::after { opacity: <?= max(0, min(100, $__tint)) / 100 ?>; }
+    </style>
 
     <!-- Premium Public Overrides -->
     <style>
