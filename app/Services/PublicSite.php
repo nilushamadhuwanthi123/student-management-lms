@@ -491,7 +491,16 @@ final class PublicSite
             return '';
         }
 
-        if ($preview !== null && array_key_exists($key, $preview)) {
+        // A blank box on the editing form means "I have not written my
+        // own wording here", not "show nothing". Saving treats it that
+        // way -- get() falls back to the field's default -- so the
+        // preview has to as well, or every field the office has never
+        // filled in comes up empty and the preview looks broken: hero
+        // buttons with no words on them, headings that vanish. Only a
+        // value that is actually there overrides.
+        if ($preview !== null
+            && array_key_exists($key, $preview)
+            && trim($preview[$key]) !== '') {
             return $preview[$key];
         }
 

@@ -102,6 +102,22 @@ foreach ($files as $file) {
         }
     }
 
+    // TEMPLATES and COLORWAYS are positional: 'key' => ['Name', 'Note'].
+    // Nothing above matches those either, and they are the labels on the
+    // ad designer's own buttons.
+    if (str_ends_with($rel, 'SiteAdDesign.php')
+        && preg_match_all("/=>\s*\[\s*'((?:[^'\\\\]|\\\\.)*)'\s*,\s*'((?:[^'\\\\]|\\\\.)*)'/", $src, $mT, PREG_SET_ORDER)) {
+        foreach ($mT as $set) {
+            foreach ([$set[1], $set[2]] as $raw) {
+                $sTxt = str_replace(["\\'", '\\\\'], ["'", '\\'], $raw);
+                if ($sTxt !== '' && preg_match('/[A-Za-z]/', $sTxt)
+                    && preg_match('/^#[0-9A-Fa-f]{6}$/', $sTxt) !== 1) {
+                    $wanted[$sTxt]['ad designer'] = true;
+                }
+            }
+        }
+    }
+
     // GROUPS is written as 'key' => 'Heading', which none of the
     // patterns above matches, so it is read from its own block.
     if (str_ends_with($rel, 'SiteContentService.php')

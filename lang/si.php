@@ -2964,4 +2964,23 @@ return [
     'milliseconds (1000 = 1 second)' => 'මිලිතත්පර (1000 = තත්පර 1)',
     'px (0 = square corners)' => 'px (0 = හතරැස් කොන්)',
     'seconds' => 'තත්පර',
+
+    // ---- Ad designer: look names and their one-line hints --------------
+    'A boxed notice with a coloured edge.' => 'වර්ණවත් දාරයක් සහිත කොටු කළ දැනුම්දීමක්.',
+    'A heading, a sentence and a button.' => 'ශීර්ෂයක්, වාක්‍යයක් සහ බොත්තමක්.',
+    'A torn-edge look, for an event or a seminar.' => 'ඉරුණු දාර පෙනුමක්, අවස්ථාවක් හෝ සම්මන්ත්‍රණයක් සඳහා.',
+    'Banner' => 'පටිය',
+    'Centred, with a soft glow. For something big.' => 'මැදට, මෘදු දීප්තියක් සමඟ. ලොකු දෙයක් සඳහා.',
+    'Forest' => 'වනාන්තර',
+    'Ink' => 'තීන්ත',
+    'Notice card' => 'දැනුම්දීම් කාඩ්පත',
+    'One line across the page. Quietest option.' => 'පිටුව හරහා එක් පේළියක්. නිහඬම විකල්පය.',
+    'Plain strip' => 'සරල පටිය',
+    'Royal blue' => 'රාජකීය නිල්',
+    'Side by side' => 'එක පැත්තකට',
+    'Soft mint' => 'මෘදු මින්ට්',
+    'Soft sky' => 'මෘදු අහස',
+    'Spotlight' => 'කේන්ද්‍රගත',
+    'Ticket' => 'ටිකට්පත',
+    'Words on the left, the button on the right.' => 'වම් පැත්තේ වචන, දකුණු පැත්තේ බොත්තම.',
 ];
