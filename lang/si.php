@@ -2526,4 +2526,37 @@ return [
     'Set Password & Continue' => 'මුරපදය සකස් කර ඉදිරියට යන්න',
     'question' => 'ප්‍රශ්නය',
     'message' => 'පණිවිඩය',
+
+    // ---- Site Builder, preview and the fee reminder --------------------
+    // Added after a Sinhala-medium visitor found these still in English.
+    'Site Builder'        => 'වෙබ් අඩවි සකසනය',
+    'Design & content'    => 'මෝස්තරය සහ අන්තර්ගතය',
+    'Wording & languages' => 'වචන සහ භාෂා',
+    'Background photos'   => 'පසුබිම් ඡායාරූප',
+    'Translations'        => 'පරිවර්තන',
+    'View the site'       => 'වෙබ් අඩවිය බලන්න',
+    'Other files'         => 'වෙනත් ලිපිගොනු',
+    '{n} files'           => 'ලිපිගොනු {n}',
+    'Our Facebook page'   => 'අපගේ Facebook පිටුව',
+    'WhatsApp Client'     => 'WhatsApp සේවාදායකය',
+    'WA Client Config'    => 'WhatsApp සේවාදායක සැකසුම',
+    'Confirm'             => 'තහවුරු කරන්න',
+    'Confirm Password'    => 'මුරපදය තහවුරු කරන්න',
+    'Please provide a reason...' => 'කරුණාකර හේතුවක් සඳහන් කරන්න...',
+    'and'                 => 'සහ',
+
+    'Finish and go back to the editor' => 'අවසන් කර සංස්කාරකයට ආපසු යන්න',
+    'this is how the site would look. Nothing has been saved yet, and visitors still see the live version.'
+        => 'වෙබ් අඩවිය පෙනෙන්නේ මෙලෙසයි. තවම කිසිවක් සුරකින ලද්දේ නැත, අමුත්තන්ට තවමත් පෙනෙන්නේ සජීවී අනුවාදයයි.',
+
+    "One month's class fee has not been paid yet" => 'එක් මසක පන්ති ගාස්තුව තවම ගෙවා නැත',
+    '{n} months of class fees have not been paid yet' => 'මාස {n} ක පන්ති ගාස්තු තවම ගෙවා නැත',
+    'Please settle this at the branch office. Classes, attendance and the portal are not affected -- this is a reminder, not a block.'
+        => 'කරුණාකර මෙය ශාඛා කාර්යාලයේ ගෙවා අවසන් කරන්න. පන්ති, පැමිණීම සහ ද්වාරය මෙයින් බලපෑමකට ලක් නොවේ -- මෙය මතක් කිරීමක් පමණි, වැළැක්වීමක් නොවේ.',
+
+    'Explore our classes' => 'අපගේ පන්ති ගවේෂණය කරන්න',
+    'Every branch, grade, day and time -- pick a branch and see its full class list.'
+        => 'සෑම ශාඛාවක්, ශ්‍රේණියක්, දිනයක් සහ වේලාවක් -- ශාඛාවක් තෝරා එහි සම්පූර්ණ පන්ති ලැයිස්තුව බලන්න.',
+    'Fill the enrol form (pick a branch and class, upload your bank deposit slip) and the branch office approves it -- or send an inquiry below and the office will call you back. Either way you get a student ID and password for the portal.'
+        => 'ලියාපදිංචි පෝරමය සම්පූර්ණ කරන්න (ශාඛාවක් සහ පන්තියක් තෝරා, බැංකු තැන්පතු පත්‍රිකාව උඩුගත කරන්න), ශාඛා කාර්යාලය එය අනුමත කරයි -- නැතහොත් පහතින් විමසීමක් එවන්න, කාර්යාලයෙන් ඔබට ආපසු කතා කරනු ලැබේ. කුමන ක්‍රමයෙන් වුවද ඔබට ද්වාරය සඳහා සිසු අංකයක් සහ මුරපදයක් ලැබේ.',
 ];
