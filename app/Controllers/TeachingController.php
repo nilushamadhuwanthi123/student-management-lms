@@ -20,15 +20,7 @@ class TeachingController extends BaseController
 {
     public function index(): void
     {
-        // The teacher's own workspace, and only hers.
-        //
-        // requireTeacher() is deliberately NOT used here: it lets in
-        // every staff role, and it still guards material, quizzes and
-        // recordings, which the office does need to reach from a class
-        // page. This screen is different -- it is the teacher's desk,
-        // with her classes, her marking pile and her students' results
-        // on it. The owner's view of the same facts is Reports.
-        AuthMiddleware::requireRole([AuthMiddleware::ROLE_TEACHER]);
+        AuthMiddleware::requireTeacher();
 
         $role = (string) session_get('user_role');
         $userId = (int) session_get('user_id');
