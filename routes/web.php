@@ -275,6 +275,7 @@ $router->post('/classes/{id}/update-room', ['App\Controllers\ClassController', '
     $router->get('/past-papers/{id}/file/{which}', ['App\Controllers\PastPaperController', 'file']);
     $router->get('/my/papers', ['App\Controllers\PastPaperController', 'mine']);
     $router->get('/classes/{classId}/learning-gaps', ['App\Controllers\LearningGapController', 'show']);
+    $router->get('/classes/{classId}/progress', ['App\Controllers\ClassProgressController', 'show']);
 
     // ---- LMS: class material ----
     // Nested under the class because material has no meaning apart from

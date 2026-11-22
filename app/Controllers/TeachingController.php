@@ -75,6 +75,11 @@ class TeachingController extends BaseController
             $byBranch[$class['institute_name'] ?? 'Unassigned'][] = $class;
         }
 
+        // The two charts. Scoped to exactly the classes already listed
+        // above, so a chart can never widen what this teacher can see.
+        $charts = new \App\Services\TeachingChartService($this->db);
+        $classIds = array_map(static fn (array $c): int => (int) $c['id'], $classes);
+
         $this->view('teaching/index', [
             'pageTitle'  => 'Teaching',
             'activePage' => 'teaching',
@@ -89,6 +94,8 @@ class TeachingController extends BaseController
                 'marking'   => array_sum(array_column($classes, 'awaiting_marking')),
                 'unpaid'    => array_sum(array_column($classes, 'unpaid_this_month')),
             ],
+            'participation' => $charts->participation($classIds, $month),
+            'marksByGrade'  => $charts->marksByGrade($classIds, $month),
         ]);
     }
 
