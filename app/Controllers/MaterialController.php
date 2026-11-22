@@ -76,11 +76,21 @@ class MaterialController extends BaseController
         $class = $this->requireClass($classId);
         $this->requireClassAccess($class);
 
+        // The kind is chosen on the previous screen, so the form can be
+        // about one job instead of four. An unknown or absent value
+        // leaves the old behaviour -- the full form with a Type picker --
+        // so an old bookmark still works.
+        $kind = (string) ($_GET['type'] ?? '');
+        if (!array_key_exists($kind, ClassMaterial::TYPE_LABELS)) {
+            $kind = '';
+        }
+
         $this->view('materials/create', [
             'pageTitle' => 'Post material',
             'class'     => $class,
             'month'     => ContentAccessService::normaliseMonth($_GET['month'] ?? null),
             'types'     => ClassMaterial::TYPE_LABELS,
+            'kind'      => $kind,
         ]);
     }
 

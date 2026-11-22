@@ -35,8 +35,35 @@ $typeIcon = [
     </div>
     <div class="page-header__actions">
         <a href="<?= BASE_URL ?>/classes" class="btn btn--ghost">&larr; <?= te('Classes') ?></a>
-        <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials/create?month=<?= urlencode($month) ?>"
-           class="btn btn--primary">+ <?= te('Post material') ?></a>
+    </div>
+</div>
+
+<?php
+/*
+ * One "Post material" button asked the teacher to decode a Type
+ * dropdown before she could start, and then showed her a link box and
+ * an upload box together with a paragraph explaining which to use.
+ * Four jobs behind one door. They are four doors now, each saying what
+ * it is for, and each opens the form already set to that kind.
+ */
+$mkUrl = BASE_URL . '/classes/' . (int) $class['id'] . '/materials/create?month=' . urlencode($month);
+$postKinds = [
+    ['recording', '&#127909;', t('Lesson recording'),  t('The Zoom recording of a class you taught.')],
+    ['reading',   '&#128196;', t('Notes or a paper'),  t('A PDF or a photo: tutes, notes, a past paper.')],
+    ['video',     '&#128250;', t('Lab or lesson video'), t('An experiment you filmed, or any other video.')],
+    ['link',      '&#128279;', t('A link'),            t('Anything already on the web that they should read or watch.')],
+];
+?>
+<div class="mk-pick">
+    <div class="mk-pick__lead"><?= te('What are you posting?') ?></div>
+    <div class="mk-pick__grid">
+        <?php foreach ($postKinds as [$kind, $icon, $label, $hint]): ?>
+            <a class="mk-card" href="<?= $mkUrl ?>&amp;type=<?= $kind ?>">
+                <span class="mk-card__icon" aria-hidden="true"><?= $icon ?></span>
+                <span class="mk-card__label"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="mk-card__hint"><?= htmlspecialchars($hint, ENT_QUOTES, 'UTF-8') ?></span>
+            </a>
+        <?php endforeach; ?>
     </div>
 </div>
 
@@ -85,8 +112,7 @@ $typeIcon = [
             <p class="text-sm text-muted" style="margin:0 0 1.25rem;">
                 <?= te('Post the lesson recording, the notes and any video you want the class to have.') ?>
             </p>
-            <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials/create?month=<?= urlencode($month) ?>"
-               class="btn btn--primary"><?= te('Post the first item') ?></a>
+            <p class="text-sm text-muted" style="margin:0;"><?= te('Pick one of the four above to start.') ?></p>
         </div>
     <?php else: ?>
         <div class="table-wrap">
@@ -158,3 +184,17 @@ $typeIcon = [
         </div>
     <?php endif; ?>
 </div>
+
+<style>
+    .mk-pick { margin-bottom:1.5rem; }
+    .mk-pick__lead { font-size:.72rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+                     color:#94A3B8; margin-bottom:.5rem; }
+    .mk-pick__grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); gap:.7rem; }
+    .mk-card { display:grid; gap:.2rem; padding:.85rem .9rem; text-decoration:none; color:inherit;
+               background:var(--card-bg,#fff); border:1px solid var(--border-color,#E2E8F0);
+               border-radius:12px; transition:border-color .15s ease, transform .15s ease; }
+    .mk-card:hover { border-color:var(--primary,#1D4ED8); transform:translateY(-2px); }
+    .mk-card__icon { font-size:1.4rem; line-height:1; }
+    .mk-card__label { font-weight:700; font-size:.92rem; }
+    .mk-card__hint { font-size:.76rem; color:#64748B; line-height:1.45; }
+</style>
