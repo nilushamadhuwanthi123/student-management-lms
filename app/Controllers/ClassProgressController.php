@@ -27,7 +27,9 @@ class ClassProgressController extends BaseController
 {
     public function show(string $classId): void
     {
-        AuthMiddleware::requireTeacher();
+        // Teacher only, like the teaching dashboard it is reached from.
+        // A child's progress is a teaching judgement, not an office one.
+        AuthMiddleware::requireRole([AuthMiddleware::ROLE_TEACHER]);
 
         $classId = (int) $classId;
         $scope = BranchScope::current();

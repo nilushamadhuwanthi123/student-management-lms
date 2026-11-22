@@ -519,12 +519,24 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
             </a>
             <?php endif; ?>
 
-            <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff', 'teacher'])): ?>
+            <?php /* Teaching is the teacher's own desk: her classes, her
+                     marking pile, her students' results. The office reaches
+                     material and quizzes from a class page, and the owner
+                     sees the same facts in Reports, so neither needs this
+                     link -- and the route itself now refuses them. */ ?>
+            <?php if ($userRole === 'teacher'): ?>
             <!-- Teaching: material and quizzes, both per class -->
             <a href="<?= BASE_URL ?>/teaching" class="sidebar__link <?= $activePage === 'teaching' ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
                 <?= te('Teaching') ?>
             </a>
+            <?php endif; ?>
+
+            <?php /* Topics and Past papers were nested inside the Teaching
+                     block. Narrowing Teaching to the teacher would have
+                     taken both away from the office as a side effect --
+                     they are not teaching-desk items, they are shared
+                     reference. Closed above so their own rule applies. */ ?>
             <?php if (in_array($userRole, ['super_admin', 'admin', 'teacher'], true)): ?>
             <a href="<?= BASE_URL ?>/topics" class="sidebar__link <?= $isHere('/topics') ? 'active' : '' ?>">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
@@ -571,7 +583,6 @@ $featureOn = static fn (string $key): bool => $featureVisibility[$key] ?? true;
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 <?= te('Enrolment Requests') ?>
             </a>
-            <?php endif; ?>
             <?php endif; ?>
 
             <?php if (in_array($userRole, ['super_admin', 'admin', 'coordinator', 'staff'])): ?>
