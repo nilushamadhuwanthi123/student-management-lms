@@ -17,11 +17,24 @@ $totalStudents = $totalStudents ?? 0;
 
 <div class="page-header">
     <h1 class="page-header__title"><?= te('Student Management') ?></h1>
+    <?php
+    /*
+     * Same as the class list: a teacher was shown "Register New Student"
+     * and an Edit button on every row, and each one bounced her to the
+     * dashboard with a permission error. Registering and editing students
+     * is the office's job; she reads the list. Matches the roles the
+     * routes enforce.
+     */
+    $canManageStudents = in_array((string) session_get('user_role'),
+        ['super_admin', 'admin', 'coordinator', 'staff'], true);
+    ?>
     <div class="page-header__actions">
+        <?php if ($canManageStudents): ?>
         <a href="<?= BASE_URL ?>/students/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             <?= te('Register New Student') ?>
         </a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -142,12 +155,14 @@ $totalStudents = $totalStudents ?? 0;
                                 <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>" class="btn btn--ghost btn--sm" data-tooltip="<?= te('View') ?>">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </a>
+                                <?php if ($canManageStudents): ?>
                                 <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/edit" class="btn btn--ghost btn--sm" data-tooltip="<?= te('Edit') ?>">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </a>
                                 <button type="button" class="btn btn--ghost btn--sm" data-tooltip="<?= te('Delete') ?>" onclick="confirmAction('<?= te("Are you sure you want to initiate deletion for this student?") ?>', function(){ window.location.href='<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/delete'; })">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                                 </button>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>
@@ -158,8 +173,12 @@ $totalStudents = $totalStudents ?? 0;
                         <div class="empty-state">
                             <div class="empty-state__icon">&#128100;</div>
                             <div class="empty-state__title"><?= te('No students found') ?></div>
-                            <div class="empty-state__text"><?= te('Try adjusting your filters or register a new student.') ?></div>
+                            <div class="empty-state__text"><?= $canManageStudents
+                                ? te('Try adjusting your filters or register a new student.')
+                                : te('Try adjusting your filters.') ?></div>
+                            <?php if ($canManageStudents): ?>
                             <a href="<?= BASE_URL ?>/students/create" class="btn btn--primary btn--sm"><?= te('Register New Student') ?></a>
+                            <?php endif; ?>
                         </div>
                     </td>
                 </tr>

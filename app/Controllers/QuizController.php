@@ -441,16 +441,17 @@ class QuizController extends BaseController
 
     private function requireClassAccess(array $class): void
     {
-        $role = (string) session_get('user_role');
-
-        // Super admin: every class. Branch admins and coordinators: the
-        // classes of their own branch, not every branch's.
-        if (in_array($role, ['super_admin', 'admin', 'coordinator'], true)
-            && \App\Services\BranchScope::current()->allowsClass((int) ($class['id'] ?? 0))) {
-            return;
-        }
-
-        if ((int) ($class['teacher_id'] ?? 0) === (int) session_get('user_id')) {
+        // One rule for every role, and BranchScope already holds it:
+        // global roles see every class, office roles see their own
+        // branch's, and a teacher sees the classes they are attached to
+        // -- whether through classes.teacher_id or through user_classes.
+        //
+        // The old check here read classes.teacher_id alone, so a teacher
+        // assigned to a class through user_classes was shown the class in
+        // their list and then bounced off its material, recordings and
+        // quizzes with "that is not one of your classes". Staff, whom the
+        // route lets in, were refused the same way.
+        if (\App\Services\BranchScope::current()->allowsClass((int) ($class['id'] ?? 0))) {
             return;
         }
 

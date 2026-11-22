@@ -441,8 +441,12 @@ class AssignmentController extends BaseController
     private function mayEdit(array $class): bool
     {
         $role = (string) session_get('user_role');
+        // A teacher attached through user_classes teaches the class just
+        // as much as one named in classes.teacher_id, so ask BranchScope
+        // rather than reading that one column.
         return in_array($role, ['super_admin', 'admin'], true)
-            || ($role === 'teacher' && (int) $class['teacher_id'] === (int) session_get('user_id'));
+            || ($role === 'teacher'
+                && \App\Services\BranchScope::current()->allowsClass((int) ($class['id'] ?? 0)));
     }
 
     /** @return array<string, mixed> */

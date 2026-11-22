@@ -39,3 +39,8 @@ storage/uploads/materials/*
 # Database dumps: data snapshots, not source -- may contain student/parent PII
 storage/backups/*.sql
 database/backup_before_030.sql
+
+# Local scratch and database exports -- never part of the deployable app.
+_to_delete/
+_commit_msg.txt
+student_lms_export.sql

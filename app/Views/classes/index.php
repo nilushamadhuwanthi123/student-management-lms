@@ -16,15 +16,31 @@ $filters    = $filters ?? [];
         <h1 class="page-header__title"><?= te('Class Management') ?></h1>
         <p class="text-sm text-muted"><?= te('Manage academic classes, assigned teachers, weekly schedules, and revenue splits') ?></p>
     </div>
+    <?php
+    /*
+     * A teacher could see "Create Class", "Hall Arrangement" and an Edit
+     * button on every row, and every one of them threw her back to the
+     * dashboard with "You do not have permission". The routes were right
+     * to refuse her; the page was wrong to offer. A button that refuses
+     * you is worse than no button -- it reads as the system being broken
+     * rather than as a job that is not yours.
+     *
+     * These match the roles the routes already enforce.
+     */
+    $canManageClasses = in_array((string) session_get('user_role'),
+        ['super_admin', 'admin', 'coordinator'], true);
+    ?>
     <div class="page-header__actions">
+        <?php if ($canManageClasses): ?>
         <a href="<?= BASE_URL ?>/classes/rooms" class="btn btn--secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             <?= te('Hall Arrangement') ?>
         </a>
         <a href="<?= BASE_URL ?>/classes/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            + <?= te('Create Class') ?>
+            <?= te('Create Class') ?>
         </a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -201,6 +217,21 @@ $filters    = $filters ?? [];
                             <!-- 13. ACTIONS (Edit, Activate/Deactivate, Delete) -->
                             <td style="text-align:right;">
                                 <div class="d-flex gap-1 justify-end items-center">
+                                    <?php /*
+                                     * Every role that can see the list can
+                                     * teach into the class, so the way in
+                                     * to material and quizzes belongs on
+                                     * the row. Without it a teacher, whose
+                                     * manage buttons are hidden below, had
+                                     * nothing on this page to click at all.
+                                     */ ?>
+                                    <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/quizzes" class="btn btn--ghost btn--xs" title="<?= te('Quizzes set for this class') ?>">
+                                        <?= te('Quizzes') ?>
+                                    </a>
+                                    <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/materials" class="btn btn--ghost btn--xs" title="<?= te('Material posted to this class') ?>">
+                                        <?= te('Material') ?>
+                                    </a>
+                                    <?php if ($canManageClasses): ?>
                                     <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/edit" class="btn btn--ghost btn--xs" title="<?= te('Edit Class') ?>">
                                         <?= te('Edit') ?>
                                     </a>
@@ -218,6 +249,7 @@ $filters    = $filters ?? [];
                                             <?= te('Delete') ?>
                                         </button>
                                     </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -228,7 +260,9 @@ $filters    = $filters ?? [];
                             <div class="empty-state">
                                 <div class="empty-state__icon">&#128218;</div>
                                 <div class="empty-state__title"><?= te('No classes found') ?></div>
-                                <div class="empty-state__text"><?= te('Click "+ Create Class" to schedule your first tuition course.') ?></div>
+                                <div class="empty-state__text"><?= $canManageClasses
+                                    ? te('Click "Create Class" to schedule your first tuition course.')
+                                    : te('No classes have been set up for you yet. The office creates them.') ?></div>
                             </div>
                         </td>
                     </tr>

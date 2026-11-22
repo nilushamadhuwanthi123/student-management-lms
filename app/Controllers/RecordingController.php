@@ -301,14 +301,9 @@ class RecordingController extends BaseController
     /** A teacher manages their own classes; coordinators and above see their branch or every branch. */
     private function requireClassAccess(array $class): void
     {
-        $role = (string) session_get('user_role');
-
-        if (in_array($role, ['super_admin', 'admin', 'coordinator'], true)
-            && BranchScope::current()->allowsClass((int) ($class['id'] ?? 0))) {
-            return;
-        }
-
-        if ((int) ($class['teacher_id'] ?? 0) === (int) session_get('user_id')) {
+        // One rule for every role -- see MaterialController for why the
+        // teacher_id-only check that used to live here was wrong.
+        if (BranchScope::current()->allowsClass((int) ($class['id'] ?? 0))) {
             return;
         }
 

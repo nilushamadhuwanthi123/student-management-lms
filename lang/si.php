@@ -3047,4 +3047,22 @@ return [
     'e.g. Acids and Bases -- tute 3' => 'උදා: අම්ල සහ භෂ්ම -- ටියුට් 3',
     'e.g. Testing for starch -- lab demonstration' => 'උදා: පිෂ්ඨය පරීක්ෂා කිරීම -- විද්‍යාගාර නිරූපණය',
     'e.g. The water cycle -- short explainer' => 'උදා: ජල චක්‍රය -- කෙටි පැහැදිලි කිරීමක්',
+
+    // Quiz flow: the three steps, and what each quiz is waiting on.
+    'Set the paper' => 'ප්‍රශ්න පත්‍රය සකසන්න',
+    'Add the questions' => 'ප්‍රශ්න එකතු කිරීම',
+    'Publish it' => 'ප්‍රකාශයට පත් කරන්න',
+    'Until it is published the class cannot see it.' => 'ප්‍රකාශයට පත් කරන තුරු පන්තියට එය නොපෙනේ.',
+    'Add questions' => 'ප්‍රශ්න එකතු කරන්න',
+    'No questions yet -- the class cannot sit this.' => 'තවම ප්‍රශ්න නැත -- පන්තියට මෙයට පෙනී සිටිය නොහැක.',
+
+    // Read-only views for roles that cannot manage classes or students.
+    'View only' => 'බැලීම පමණි',
+    'No classes have been set up for you yet. The office creates them.' => 'තවම ඔබ වෙනුවෙන් පන්ති සකස් කර නැත. ඒවා සකස් කරන්නේ කාර්යාලයයි.',
+    'Click "Create Class" to schedule your first tuition course.' => 'ඔබේ පළමු පන්තිය සකස් කිරීමට "Create Class" ක්ලික් කරන්න.',
+    'Try adjusting your filters.' => 'ඔබේ පෙරහන් වෙනස් කර බලන්න.',
+
+    // Row links into a class from the class list.
+    'Quizzes set for this class' => 'මෙම පන්තියට දී ඇති ප්‍රශ්න පත්‍ර',
+    'Material posted to this class' => 'මෙම පන්තියට දමා ඇති ඉගෙනුම් ද්‍රව්‍ය',
 ];
