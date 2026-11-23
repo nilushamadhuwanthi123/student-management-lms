@@ -21,6 +21,10 @@
 
   /* Brand â€” blue primary, yellow accent, white surfaces */
   --primary:         #1D4ED8;
+  /* The same blue as channels, for rgba() tints. color-mix() would be
+     tidier but drops the whole declaration on older phones, which is
+     how a hero overlay once vanished and left white text on white. */
+  --primary-rgb:     29, 78, 216;
   --primary-hover:   #1A3FAF;
   --primary-light:   rgba(29,78,216,0.08);
   --primary-deep:    #15307E;
@@ -165,6 +169,7 @@ html[data-sidebar="collapsed"] .sidebar-collapse-btn svg { transform: rotate(180
   /* On dark the blue has to lift off the background, so the lighter
      tints lead and the deep navy is only a surface. */
   --primary:         #7AA8FF;
+  --primary-rgb:     122, 168, 255;
   --primary-hover:   #9CC0FF;
   --primary-light:   rgba(122,168,255,0.14);
   --primary-deep:    #1C2940;

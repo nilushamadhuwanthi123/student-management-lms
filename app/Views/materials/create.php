@@ -274,9 +274,9 @@ $k = $kinds[$kind] ?? null;
 
 <style>
     .gs-share { display:flex; gap:.6rem; align-items:flex-start; cursor:pointer;
-                border:1px solid var(--border-color,#E2E8F0); border-radius:10px;
+                border:1px solid var(--border); border-radius:10px;
                 padding:.7rem .85rem; }
-    .gs-share:hover { border-color:var(--primary,#1D4ED8); }
+    .gs-share:hover { border-color:var(--primary); }
     .gs-share input { margin-top:.2rem; }
     .gs-share span span { display:block; }
 </style>

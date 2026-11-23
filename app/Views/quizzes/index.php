@@ -151,12 +151,12 @@ $quizzes = $quizzes ?? [];
 
 <style>
     .qz-steps { display:flex; align-items:center; gap:.55rem; flex-wrap:wrap;
-                background:var(--card-bg,#fff); border:1px solid var(--border-color,#E2E8F0);
+                background:var(--surface); border:1px solid var(--border);
                 border-radius:12px; padding:.7rem .9rem; margin-bottom:1rem; font-size:.84rem; }
     .qz-step { display:inline-flex; align-items:center; gap:.4rem; font-weight:600; }
-    .qz-step i { width:20px; height:20px; border-radius:50%; background:var(--primary,#1D4ED8); color:#fff;
+    .qz-step i { width:20px; height:20px; border-radius:50%; background:var(--primary); color:#fff;
                  font-style:normal; font-size:.72rem; font-weight:800;
                  display:inline-flex; align-items:center; justify-content:center; }
-    .qz-arrow { color:#94A3B8; }
-    .qz-note { margin-left:auto; font-size:.76rem; color:#64748B; }
+    .qz-arrow { color:var(--text-muted); }
+    .qz-note { margin-left:auto; font-size:.76rem; color:var(--text-secondary); }
 </style>

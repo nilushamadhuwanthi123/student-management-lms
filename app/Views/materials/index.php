@@ -203,25 +203,25 @@ $postKinds = [
 <style>
     .mk-pick { margin-bottom:1.5rem; }
     .mk-pick__lead { font-size:.72rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
-                     color:#94A3B8; margin-bottom:.5rem; }
+                     color:var(--text-muted); margin-bottom:.5rem; }
     .mk-pick__grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); gap:.7rem; }
     .mk-card { display:flex; flex-direction:column; gap:.45rem; padding:.95rem 1rem 1rem;
                text-decoration:none; color:inherit; cursor:pointer;
-               background:var(--card-bg,#fff); border:2px solid var(--border-color,#E2E8F0);
+               background:var(--surface); border:2px solid var(--border);
                border-radius:14px; transition:border-color .15s ease, transform .15s ease,
                box-shadow .15s ease; }
     .mk-card:hover, .mk-card:focus-visible {
-               border-color:var(--primary,#1D4ED8); transform:translateY(-2px);
-               box-shadow:0 6px 18px rgba(var(--primary-rgb,29,78,216), .16); }
+               border-color:var(--primary); transform:translateY(-2px);
+               box-shadow:0 6px 18px rgba(var(--primary-rgb), .16); }
     .mk-card__top { display:flex; align-items:center; gap:.6rem; }
     .mk-card__icon { font-size:1.15rem; line-height:1; width:34px; height:34px; flex:none;
                      display:inline-flex; align-items:center; justify-content:center;
-                     border-radius:9px; background:rgba(var(--primary-rgb,29,78,216), .12); }
+                     border-radius:9px; background:rgba(var(--primary-rgb), .12); }
     .mk-card__label { font-weight:700; font-size:.95rem; }
-    .mk-card__hint { font-size:.78rem; color:#64748B; line-height:1.45; flex:1 1 auto; }
+    .mk-card__hint { font-size:.78rem; color:var(--text-secondary); line-height:1.45; flex:1 1 auto; }
     /* The button itself, so the card cannot be mistaken for a picture. */
     .mk-card__go { align-self:flex-start; font-size:.8rem; font-weight:700;
-                   color:#fff; background:var(--primary,#1D4ED8);
+                   color:#fff; background:var(--primary);
                    padding:.4rem .75rem; border-radius:999px; }
     .mk-card:hover .mk-card__go { filter:brightness(1.08); }
 </style>
