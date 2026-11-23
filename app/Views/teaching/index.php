@@ -323,12 +323,24 @@ $ce = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8
                         </div>
                     </div>
 
-                    <div class="tt-card__foot">
-                        <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/learning-gaps"
-                           class="tt-link"><?= te('Learning gaps') ?> &rarr;</a>
-                        <a href="<?= BASE_URL ?>/notices/create?class_id=<?= (int) $c['id'] ?>"
-                           class="tt-link"><?= te('Send a notice') ?> &rarr;</a>
-                    </div>
+                    <?php /*
+                     * Front-desk staff see this card -- they answer the
+                     * phone about these classes -- but neither of these
+                     * two is theirs, and both routes turn them away. A
+                     * link that bounces is worse than no link.
+                     */ ?>
+                    <?php if (can('gaps.view') || can('notices.post')): ?>
+                        <div class="tt-card__foot">
+                            <?php if (can('gaps.view')): ?>
+                                <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/learning-gaps"
+                                   class="tt-link"><?= te('Learning gaps') ?> &rarr;</a>
+                            <?php endif; ?>
+                            <?php if (can('notices.post')): ?>
+                                <a href="<?= BASE_URL ?>/notices/create?class_id=<?= (int) $c['id'] ?>"
+                                   class="tt-link"><?= te('Send a notice') ?> &rarr;</a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         </div>

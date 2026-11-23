@@ -45,6 +45,11 @@ const PERMISSION_MAP = [
     'topics.manage'       => ['super_admin', 'admin', 'teacher'],
     // The enrolment funnel: coordinator and up, not front-desk staff.
     'enrolment.review'    => ['super_admin', 'admin', 'coordinator'],
+    // Two links that live on the class card. Front-desk staff can see
+    // the card -- they answer the phone about these classes -- but
+    // neither of these is theirs, and both routes refuse them.
+    'gaps.view'           => ['super_admin', 'admin', 'coordinator', 'teacher'],
+    'notices.post'        => ['super_admin', 'admin', 'coordinator', 'teacher'],
 ];
 
 /**
