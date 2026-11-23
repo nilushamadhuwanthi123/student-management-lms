@@ -15,12 +15,15 @@ $cid = (int) $class['id'];
     </div>
     <div class="page-header__actions">
         <a href="<?= BASE_URL ?>/classes/<?= $cid ?>/quizzes" class="btn btn--ghost"><?= te('Quizzes') ?></a>
+        <?php if (can('assignments.view')): ?>
         <a href="<?= BASE_URL ?>/classes/<?= $cid ?>/assignments" class="btn btn--ghost"><?= te('Homework') ?></a>
+        <?php endif; ?>
     </div>
 </div>
 
 <?php if (!$hasTopics): ?>
-    <div class="alert alert--info"><?= te('No topics for this grade yet, so everything shows as "not tagged".') ?> <a href="<?= BASE_URL ?>/topics"><?= te('Add the units') ?></a></div>
+    <div class="alert alert--info"><?= te('No topics for this grade yet, so everything shows as "not tagged".') ?>
+        <?php if (can('topics.manage')): ?><a href="<?= BASE_URL ?>/topics"><?= te('Add the units') ?></a><?php endif; ?></div>
 <?php endif; ?>
 
 <section class="card mb-3" aria-labelledby="by-topic"><div class="card__body" style="overflow-x:auto;">

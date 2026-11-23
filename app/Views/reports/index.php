@@ -42,7 +42,8 @@
         </div>
     </div>
 
-    <!-- 3. User Reports -->
+    <!-- 3. User Reports: staff directory, so admins only -->
+    <?php if (can('reports.users')): ?>
     <div class="card" style="border-top:4px solid #2563EB; display:flex; flex-direction:column; justify-content:space-between;">
         <div>
             <div style="font-size:2rem; margin-bottom:0.5rem;">&#128101;</div>
@@ -56,7 +57,10 @@
         </div>
     </div>
 
-    <!-- 4. Payment Summary Reports -->
+    <?php endif; ?>
+
+    <!-- 4. Payment Summary Reports: the takings, so admins only -->
+    <?php if (can('reports.money')): ?>
     <div class="card" style="border-top:4px solid #1D4ED8; display:flex; flex-direction:column; justify-content:space-between;">
         <div>
             <div style="font-size:2rem; margin-bottom:0.5rem;">&#128176;</div>
@@ -69,6 +73,8 @@
             </a>
         </div>
     </div>
+
+    <?php endif; ?>
 
     <!-- 5. Student Status Reports -->
     <div class="card" style="border-top:4px solid var(--danger); display:flex; flex-direction:column; justify-content:space-between;">

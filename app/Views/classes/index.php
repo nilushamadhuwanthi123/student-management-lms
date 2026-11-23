@@ -27,8 +27,8 @@ $filters    = $filters ?? [];
      *
      * These match the roles the routes already enforce.
      */
-    $canManageClasses = in_array((string) session_get('user_role'),
-        ['super_admin', 'admin', 'coordinator'], true);
+    // config/permissions.php holds the one copy of this rule.
+    $canManageClasses = can('classes.manage');
     ?>
     <div class="page-header__actions">
         <?php if ($canManageClasses): ?>

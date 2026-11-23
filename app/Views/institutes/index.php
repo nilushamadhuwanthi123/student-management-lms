@@ -17,10 +17,12 @@ $search       = $search ?? '';
         <p class="text-sm text-muted"><?= te('Manage affiliated branch campuses, locations, and assigned coordinators') ?></p>
     </div>
     <div class="page-header__actions">
+        <?php if (can('institutes.create')): ?>
         <a href="<?= BASE_URL ?>/institutes/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             <?= te('Register Institute') ?>
         </a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -102,9 +104,15 @@ $search       = $search ?? '';
                             </td>
                             <td style="text-align:right;">
                                 <div class="d-flex gap-1 justify-end items-center">
+                                    <?php if (!can('institutes.edit')): ?>
+                                        <span class="text-xs text-muted"><?= te('View only') ?></span>
+                                    <?php endif; ?>
+                                    <?php if (can('institutes.edit')): ?>
                                     <a href="<?= BASE_URL ?>/institutes/<?= (int) $inst['id'] ?>/edit" class="btn btn--ghost btn--xs" title="<?= te('Edit Institute') ?>">
                                         <?= te('Edit') ?>
                                     </a>
+                                    <?php endif; ?>
+                                    <?php if (can('institutes.create')): /* same bar as registering one */ ?>
 
                                     <form method="POST" action="<?= BASE_URL ?>/institutes/<?= (int) $inst['id'] ?>/toggle-status" style="margin:0;">
                                         <?php if (function_exists('csrfField')): ?><?= csrfField() ?><?php endif; ?>
@@ -119,6 +127,7 @@ $search       = $search ?? '';
                                             <?= te('Delete') ?>
                                         </button>
                                     </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -129,7 +138,9 @@ $search       = $search ?? '';
                             <div class="empty-state">
                                 <div class="empty-state__icon">&#127979;</div>
                                 <div class="empty-state__title"><?= te('No institutes found') ?></div>
-                                <div class="empty-state__text"><?= te('Click "+ Register Institute" to add your first branch campus.') ?></div>
+                                <div class="empty-state__text"><?= can('institutes.create')
+                                    ? te('Click "+ Register Institute" to add your first branch campus.')
+                                    : te('No branches have been registered yet.') ?></div>
                             </div>
                         </td>
                     </tr>

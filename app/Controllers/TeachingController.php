@@ -24,7 +24,7 @@ class TeachingController extends BaseController
 
         $role = (string) session_get('user_role');
         $userId = (int) session_get('user_id');
-        $month = ContentAccessService::normaliseMonth($_GET['month'] ?? null);
+        $month = ContentAccessService::monthFromRequest($_GET['month'] ?? null);
 
         // A teacher sees her own classes; coordinators and above see all.
         // Written as one query with a conditional clause rather than two

@@ -14,7 +14,11 @@ $num = static fn ($v): string => rtrim(rtrim(number_format((float) $v, 2), '0'),
     <div class="page-header__actions">
         <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/materials" class="btn btn--ghost"><?= te('Material') ?></a>
         <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/quizzes" class="btn btn--ghost"><?= te('Quizzes') ?></a>
+        <?php /* A coordinator may read the homework but not set it, and
+                 the route says so -- so the button is not drawn for one. */ ?>
+        <?php if (can('assignments.set')): ?>
         <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/assignments/create" class="btn btn--primary">+ <?= te('Set an assignment') ?></a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -23,8 +27,12 @@ $num = static fn ($v): string => rtrim(rtrim(number_format((float) $v, 2), '0'),
         <div style="padding:3rem 1.5rem; text-align:center;">
             <div style="font-size:2.5rem;">&#128218;</div>
             <h4 style="margin:.75rem 0 .35rem;"><?= te('No assignments yet') ?></h4>
-            <p class="text-sm text-muted" style="margin:0 0 1.25rem;"><?= te('Set homework with a due date. Students hand it in here and you mark it with feedback.') ?></p>
+            <p class="text-sm text-muted" style="margin:0 0 1.25rem;"><?= can('assignments.set')
+                ? te('Set homework with a due date. Students hand it in here and you mark it with feedback.')
+                : te('No homework has been set for this class yet. The class teacher sets it.') ?></p>
+            <?php if (can('assignments.set')): ?>
             <a href="<?= BASE_URL ?>/classes/<?= (int) $class['id'] ?>/assignments/create" class="btn btn--primary"><?= te('Set the first assignment') ?></a>
+            <?php endif; ?>
         </div>
     <?php else: ?>
         <div class="table-wrap">

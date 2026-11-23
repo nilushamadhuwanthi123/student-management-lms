@@ -67,6 +67,24 @@ class ContentAccessService
     }
 
     /**
+     * The same, for a month that came off the URL.
+     *
+     * normaliseMonth() throws on nonsense, which is right when the
+     * value comes from our own code: it is a programming mistake worth
+     * hearing about. It is wrong for ?month= in the address bar, where
+     * anyone can type anything and the answer should be a page, not a
+     * 500. Nonsense falls back to the current month.
+     */
+    public static function monthFromRequest(?string $monthYear = null): string
+    {
+        try {
+            return self::normaliseMonth($monthYear);
+        } catch (\InvalidArgumentException) {
+            return date('Y-m-01');
+        }
+    }
+
+    /**
      * Is this student's fee settled for this class in this month?
      */
     public function hasPaidFor(int $studentId, int $classId, ?string $monthYear = null): bool

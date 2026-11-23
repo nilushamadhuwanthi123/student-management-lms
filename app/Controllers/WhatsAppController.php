@@ -40,7 +40,7 @@ class WhatsAppController extends BaseController
     {
         AuthMiddleware::requireStaff();
 
-        $month = ContentAccessService::normaliseMonth($_GET['month'] ?? null);
+        $month = ContentAccessService::monthFromRequest($_GET['month'] ?? null);
         $classId = ($_GET['class_id'] ?? '') !== '' ? (int) $_GET['class_id'] : null;
         $instituteId = ($_GET['institute_id'] ?? '') !== '' ? (int) $_GET['institute_id'] : null;
         $templateKey = $_GET['template'] ?? 'fee_reminder';

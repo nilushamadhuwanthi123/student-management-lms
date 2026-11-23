@@ -175,7 +175,19 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                 <?php endif; ?>
             </div>
 
+            <?php
+            /*
+             * The routes behind Edit, Deactivate, Reactivate and Delete
+             * all refuse a teacher, so showing a teacher those buttons
+             * only sends her to the dashboard with a flash she will not
+             * catch. Same list the routes themselves enforce.
+             */
+            $canManageStudent = can('students.manage');
+            ?>
             <div class="s360-profile__actions">
+                <?php if (!$canManageStudent): ?>
+                    <span class="text-sm text-muted"><?= te('View only -- the office edits student records.') ?></span>
+                <?php else: ?>
                 <a href="<?= BASE_URL ?>/students/<?= (int) $student['id'] ?>/edit" class="btn btn--secondary btn--sm"><?= te('Edit') ?></a>
                 <?php if ($status === 'active'): ?>
                     <button type="button" class="btn btn--ghost btn--sm" onclick="openModal('deactivateModal')"><?= te('Deactivate') ?></button>
@@ -193,6 +205,7 @@ $e = fn(?string $v) => htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8');
                     </form>
                 <?php endif; ?>
                 <button type="button" class="btn btn--danger btn--sm" onclick="openModal('deleteModal')"><?= te('Delete') ?></button>
+                <?php endif; ?>
             </div>
         </div>
 

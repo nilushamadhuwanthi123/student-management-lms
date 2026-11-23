@@ -81,8 +81,11 @@ class Notification extends BaseModel
         }
 
         if (!empty($filters['search'])) {
-            $where[] = '(n.title LIKE :search OR n.body LIKE :search)';
-            $params[':search'] = '%' . trim($filters['search']) . '%';
+            // One placeholder per use -- see ClassModel::getGridList.
+            $where[] = '(n.title LIKE :search1 OR n.body LIKE :search2)';
+            $needle = '%' . trim($filters['search']) . '%';
+            $params[':search1'] = $needle;
+            $params[':search2'] = $needle;
         }
 
         $whereClause = implode(' AND ', $where);

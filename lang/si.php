@@ -3065,4 +3065,9 @@ return [
     // Row links into a class from the class list.
     'Quizzes set for this class' => 'මෙම පන්තියට දී ඇති ප්‍රශ්න පත්‍ර',
     'Material posted to this class' => 'මෙම පන්තියට දමා ඇති ඉගෙනුම් ද්‍රව්‍ය',
+
+    // Read-only views for roles the routes already refuse.
+    'No branches have been registered yet.' => 'තවම ශාඛා ලියාපදිංචි කර නැත.',
+    'No homework has been set for this class yet. The class teacher sets it.' => 'තවම මෙම පන්තියට ගෙදර වැඩ දී නැත. ඒවා දෙන්නේ පන්තියේ ගුරුතුමියයි.',
+    'View only -- the office edits student records.' => 'බැලීම පමණි -- සිසු තොරතුරු වෙනස් කරන්නේ කාර්යාලයයි.',
 ];

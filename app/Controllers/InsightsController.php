@@ -29,7 +29,7 @@ class InsightsController extends BaseController
         // branch coordinator's, so this sits above the coordinator line.
         AuthMiddleware::requireAdmin();
 
-        $month = ContentAccessService::normaliseMonth($_GET['month'] ?? null);
+        $month = ContentAccessService::monthFromRequest($_GET['month'] ?? null);
 
         $this->view('reports/insights', [
             'pageTitle'   => 'Branch insights',

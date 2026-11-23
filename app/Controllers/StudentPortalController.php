@@ -45,7 +45,7 @@ class StudentPortalController extends BaseController
     public function classes(): void
     {
         $studentId = $this->requireStudent();
-        $month = ContentAccessService::normaliseMonth($_GET['month'] ?? null);
+        $month = ContentAccessService::monthFromRequest($_GET['month'] ?? null);
 
         $sql = "SELECT c.id, c.class_name, c.subject, c.grade, c.medium, c.room,
                        c.schedule_days, c.start_time, c.end_time, c.monthly_fee,
@@ -99,7 +99,7 @@ class StudentPortalController extends BaseController
     {
         $studentId = $this->requireStudent();
         $classId = (int) $classId;
-        $month = ContentAccessService::normaliseMonth($_GET['month'] ?? null);
+        $month = ContentAccessService::monthFromRequest($_GET['month'] ?? null);
 
         $class = $this->requireEnrolledClass($studentId, $classId);
         $gate = $this->access->gateStatus($studentId, $classId, $month);

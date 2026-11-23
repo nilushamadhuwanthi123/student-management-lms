@@ -25,8 +25,8 @@ $totalStudents = $totalStudents ?? 0;
      * is the office's job; she reads the list. Matches the roles the
      * routes enforce.
      */
-    $canManageStudents = in_array((string) session_get('user_role'),
-        ['super_admin', 'admin', 'coordinator', 'staff'], true);
+    // config/permissions.php holds the one copy of this rule.
+    $canManageStudents = can('students.manage');
     ?>
     <div class="page-header__actions">
         <?php if ($canManageStudents): ?>

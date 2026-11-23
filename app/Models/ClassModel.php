@@ -28,8 +28,16 @@ class ClassModel extends BaseModel
         $where = [];
 
         if (!empty($filters['search'])) {
-            $where[] = "(c.class_name LIKE :search OR c.subject LIKE :search OR c.grade LIKE :search OR t.full_name LIKE :search OR i.name LIKE :search)";
-            $params[':search'] = '%' . trim($filters['search']) . '%';
+            // One placeholder per use: with native prepares (see
+            // config/database.php) one name reused across five
+            // conditions is rejected, and searching 500s.
+            $where[] = "(c.class_name LIKE :search1 OR c.subject LIKE :search2"
+                . " OR c.grade LIKE :search3 OR t.full_name LIKE :search4"
+                . " OR i.name LIKE :search5)";
+            $needle = '%' . trim($filters['search']) . '%';
+            foreach (['search1', 'search2', 'search3', 'search4', 'search5'] as $ph) {
+                $params[':' . $ph] = $needle;
+            }
         }
 
         if (!empty($filters['institute_id'])) {

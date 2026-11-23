@@ -52,7 +52,7 @@ class MaterialController extends BaseController
         $class = $this->requireClass($classId);
         $this->requireClassAccess($class);
 
-        $month = ContentAccessService::normaliseMonth($_GET['month'] ?? null);
+        $month = ContentAccessService::monthFromRequest($_GET['month'] ?? null);
 
         $this->view('materials/index', [
             'pageTitle' => 'Class material',
@@ -88,7 +88,7 @@ class MaterialController extends BaseController
         $this->view('materials/create', [
             'pageTitle' => 'Post material',
             'class'     => $class,
-            'month'     => ContentAccessService::normaliseMonth($_GET['month'] ?? null),
+            'month'     => ContentAccessService::monthFromRequest($_GET['month'] ?? null),
             'types'     => ClassMaterial::TYPE_LABELS,
             'kind'      => $kind,
         ]);

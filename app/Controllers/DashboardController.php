@@ -61,6 +61,12 @@ class DashboardController extends BaseController
      * linked to the page where it is dealt with. Only items the role can act
      * on are listed, and every count is limited to the viewer's branches.
      *
+     * Every item added here must be a page THIS role may open. An item
+     * whose page refuses the role is worse than no item: the count looks
+     * like work waiting, and the click lands on the dashboard again.
+     * tests/role_crawl.php checks this by walking the dashboard as each
+     * role in turn.
+     *
      * @return list<array{label: string, count: int, url: string, tone: string}>
      */
     private function workQueue(string $role, int $userId): array
@@ -91,15 +97,20 @@ class DashboardController extends BaseController
                 'count' => $count("SELECT COUNT(*) FROM payment_slips ps JOIN payments p ON p.id = ps.payment_id WHERE ps.status = 'pending'{$inP}")];
         }
 
-        $items[] = ['label' => t('New enrolment inquiries'), 'url' => '/inquiries', 'tone' => 'primary',
-            'count' => $scope->isGlobal()
-                ? $count("SELECT COUNT(*) FROM contact_messages WHERE status = 'new'")
-                : $count("SELECT COUNT(*) FROM contact_messages WHERE status = 'new' AND kind = 'enrollment'{$inInst}")];
+        // Both of these pages refuse anyone below coordinator, so listing
+        // them for staff put a count on the dashboard that bounced off
+        // its own page when clicked.
+        if (in_array($role, ['super_admin', 'admin', 'coordinator'], true)) {
+            $items[] = ['label' => t('New enrolment inquiries'), 'url' => '/inquiries', 'tone' => 'primary',
+                'count' => $scope->isGlobal()
+                    ? $count("SELECT COUNT(*) FROM contact_messages WHERE status = 'new'")
+                    : $count("SELECT COUNT(*) FROM contact_messages WHERE status = 'new' AND kind = 'enrollment'{$inInst}")];
 
-        $items[] = ['label' => t('Enrolment requests awaiting review'), 'url' => '/enrollment-requests', 'tone' => 'primary',
-            'count' => $scope->isGlobal()
-                ? $count("SELECT COUNT(*) FROM enrollment_requests WHERE status = 'pending'")
-                : $count("SELECT COUNT(*) FROM enrollment_requests WHERE status = 'pending'{$inInst}")];
+            $items[] = ['label' => t('Enrolment requests awaiting review'), 'url' => '/enrollment-requests', 'tone' => 'primary',
+                'count' => $scope->isGlobal()
+                    ? $count("SELECT COUNT(*) FROM enrollment_requests WHERE status = 'pending'")
+                    : $count("SELECT COUNT(*) FROM enrollment_requests WHERE status = 'pending'{$inInst}")];
+        }
 
         $openHelp = "status IN ('open','in_progress')";
         if ($scope->isGlobal()) {

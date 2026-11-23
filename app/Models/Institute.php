@@ -150,8 +150,13 @@ class Institute extends BaseModel
         $where = '';
 
         if ($search !== '') {
-            $where = "WHERE i.name LIKE :search OR i.location LIKE :search OR u.full_name LIKE :search";
-            $params[':search'] = '%' . trim($search) . '%';
+            // One placeholder per use -- see ClassModel::getGridList.
+            $where = "WHERE i.name LIKE :search1 OR i.location LIKE :search2"
+                . " OR u.full_name LIKE :search3";
+            $needle = '%' . trim($search) . '%';
+            foreach (['search1', 'search2', 'search3'] as $ph) {
+                $params[':' . $ph] = $needle;
+            }
         }
 
         $sql = "SELECT 

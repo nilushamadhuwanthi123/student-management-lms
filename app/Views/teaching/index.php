@@ -271,8 +271,10 @@ $ce = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8
                                class="btn btn--ghost btn--sm tt-btn"><?= te('Material & videos') ?></a>
                             <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/quizzes"
                                class="btn btn--ghost btn--sm tt-btn"><?= te('Quizzes') ?></a>
+                            <?php if (can('assignments.view')): ?>
                             <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/assignments"
                                class="btn btn--ghost btn--sm tt-btn"><?= te('Homework') ?></a>
+                            <?php endif; ?>
                             <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/recordings"
                                class="btn btn--ghost btn--sm tt-btn"><?= te('Recordings') ?></a>
                         </div>

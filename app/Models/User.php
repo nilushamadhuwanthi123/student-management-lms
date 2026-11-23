@@ -222,8 +222,13 @@ class User extends BaseModel
         $where = ["u.role IN ('super_admin', 'admin', 'coordinator', 'staff', 'teacher')"];
 
         if (!empty($filters['search'])) {
-            $where[] = "(u.full_name LIKE :search OR u.email LIKE :search OR u.user_id_display LIKE :search OR u.phone1 LIKE :search)";
-            $params[':search'] = '%' . trim($filters['search']) . '%';
+            // One placeholder per use -- see ClassModel::getGridList.
+            $where[] = "(u.full_name LIKE :search1 OR u.email LIKE :search2"
+                . " OR u.user_id_display LIKE :search3 OR u.phone1 LIKE :search4)";
+            $needle = '%' . trim($filters['search']) . '%';
+            foreach (['search1', 'search2', 'search3', 'search4'] as $ph) {
+                $params[':' . $ph] = $needle;
+            }
         }
 
         if (!empty($filters['role'])) {
@@ -370,9 +375,12 @@ class User extends BaseModel
         $where  = [];
 
         if ($term !== '') {
-            $where[] = "(u.full_name LIKE :term OR u.email LIKE :term
-                         OR u.user_id_display LIKE :term OR u.phone1 LIKE :term)";
-            $params[':term'] = "%{$term}%";
+            // One placeholder per use -- see ClassModel::getGridList.
+            $where[] = "(u.full_name LIKE :term1 OR u.email LIKE :term2"
+                . " OR u.user_id_display LIKE :term3 OR u.phone1 LIKE :term4)";
+            foreach (['term1', 'term2', 'term3', 'term4'] as $ph) {
+                $params[':' . $ph] = "%{$term}%";
+            }
         }
 
         if (!empty($filters['role'])) {

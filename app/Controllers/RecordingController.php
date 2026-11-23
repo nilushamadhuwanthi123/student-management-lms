@@ -66,7 +66,7 @@ class RecordingController extends BaseController
             'pageTitle'  => 'Add a recording',
             'activePage' => 'teaching',
             'class'      => $class,
-            'month'      => ContentAccessService::normaliseMonth($_GET['month'] ?? null),
+            'month'      => ContentAccessService::monthFromRequest($_GET['month'] ?? null),
         ]);
     }
 

@@ -32,7 +32,7 @@ class ParentPortalController extends BaseController
 
         $progress = new ProgressService();
         $access = new ContentAccessService();
-        $month = ContentAccessService::normaliseMonth($_GET['month'] ?? null);
+        $month = ContentAccessService::monthFromRequest($_GET['month'] ?? null);
 
         $stmt = $this->db->prepare(
             "SELECT c.id, c.class_name, c.grade, c.monthly_fee,
