@@ -119,6 +119,18 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
                             </div>
                         <?php endif; ?>
 
+                        <?php if (!empty($q['explanation'])): ?>
+                            <div class="text-sm" style="margin-top:.6rem; padding:.5rem .65rem;
+                                        background:var(--surface-sunken); border-radius:var(--radius-sm);
+                                        color:var(--text-secondary);">
+                                <?= htmlspecialchars($q['explanation'], ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="text-sm text-muted" style="margin-top:.6rem;">
+                                <?= te('No marking note -- a student who gets this wrong will only learn that they were wrong.') ?>
+                            </div>
+                        <?php endif; ?>
+
                         <div style="margin-top:.75rem; text-align:right;">
                             <form method="POST"
                                   action="<?= BASE_URL ?>/classes/<?= $classId ?>/quizzes/<?= $quizId ?>/questions/<?= (int) $q['id'] ?>/delete"
@@ -213,9 +225,25 @@ $letters = ['a' => 'A', 'b' => 'B', 'c' => 'C', 'd' => 'D'];
                     </div>
                 </div>
 
+                <?php /*
+                 * The marking note. A one-line input labelled
+                 * "Explanation" read like an optional afterthought and
+                 * was left empty, so a student who got the question
+                 * wrong learned only that they were wrong. A box with
+                 * room to write in, and a line saying who reads it and
+                 * when, is the difference between a quiz that scores
+                 * and one that teaches.
+                 */ ?>
                 <div class="form-group">
-                    <label class="form-label" for="explanation"><?= te('Explanation (shown after closing)') ?></label>
-                    <input type="text" id="explanation" name="explanation" class="form-control" maxlength="500">
+                    <label class="form-label" for="explanation">
+                        <?= te('Marking note -- why that is the answer') ?>
+                    </label>
+                    <textarea id="explanation" name="explanation" class="form-control" rows="2"
+                              maxlength="500"
+                              placeholder="<?= te('e.g. Plants take in carbon dioxide and give out oxygen.') ?>"></textarea>
+                    <small class="text-muted">
+                        <?= te('The student sees this beside the right answer once the quiz closes. Worth writing for the questions the class usually gets wrong.') ?>
+                    </small>
                 </div>
             </div>
 

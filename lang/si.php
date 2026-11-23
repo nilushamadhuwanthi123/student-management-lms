@@ -3088,4 +3088,10 @@ return [
     // The "what are you posting" chooser.
     'What are you posting? Choose one' => 'ඔබ දාන්නේ මොකක්ද? එකක් තෝරන්න',
     'Add this' => 'මේක දාන්න',
+
+    // The marking note on a quiz question.
+    'Marking note -- why that is the answer' => 'ලකුණු දීමේ සටහන -- ඒක උත්තරය වෙන්නේ ඇයි',
+    'e.g. Plants take in carbon dioxide and give out oxygen.' => 'උදා: ශාක කාබන් ඩයොක්සයිඩ් ගෙන ඔක්සිජන් පිට කරයි.',
+    'The student sees this beside the right answer once the quiz closes. Worth writing for the questions the class usually gets wrong.' => 'ප්‍රශ්න පත්‍රය වැසුණාට පස්සේ හරි උත්තරය ළඟ ළමයාට මේක පේනවා. පන්තිය බොහෝවිට වැරදි කරන ප්‍රශ්නවලට ලියන එක වටිනවා.',
+    'No marking note -- a student who gets this wrong will only learn that they were wrong.' => 'ලකුණු දීමේ සටහනක් නැහැ -- මේක වැරදුණු ළමයාට දැනගන්න ලැබෙන්නේ වැරදුණු බව විතරයි.',
 ];
