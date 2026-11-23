@@ -3070,4 +3070,14 @@ return [
     'No branches have been registered yet.' => 'තවම ශාඛා ලියාපදිංචි කර නැත.',
     'No homework has been set for this class yet. The class teacher sets it.' => 'තවම මෙම පන්තියට ගෙදර වැඩ දී නැත. ඒවා දෙන්නේ පන්තියේ ගුරුතුමියයි.',
     'View only -- the office edits student records.' => 'බැලීම පමණි -- සිසු තොරතුරු වෙනස් කරන්නේ කාර්යාලයයි.',
+
+    // Sending one recording or one posting to a whole grade.
+    'Who is it for' => 'මේක කාටද',
+    'Send it to every {grade} class as well' => '{grade} හැම පන්තියකටම මේක යවන්න',
+    '{n} more classes' => 'තවත් පන්ති {n}ක්',
+    'Leave it unticked and only this class gets it.' => 'ලකුණු නොකළොත් මේක ලැබෙන්නේ මේ පන්තියට පමණයි.',
+    'Shared with the whole grade' => 'මුළු ශ්‍රේණියටම දී ඇත',
+    'Recording added to {n} {grade} classes.' => '{grade} පන්ති {n}කට පටිගත කිරීම එකතු කළා.',
+    'Posted to {n} {grade} classes.' => '{grade} පන්ති {n}කට දැම්මා.',
+    'Posted to {class}.' => '{class} පන්තියට දැම්මා.',
 ];

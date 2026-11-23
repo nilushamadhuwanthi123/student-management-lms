@@ -66,6 +66,38 @@ $month = $month ?? date('Y-m-01');
                           placeholder="<?= te('What is in it, and what the class should do with it.') ?>"></textarea>
             </div>
 
+            <?php
+            $siblings = $siblings ?? [];
+            $grade    = trim((string) ($grade ?? ''));
+            ?>
+            <?php if ($siblings !== [] && $grade !== ''): ?>
+                <?php /*
+                 * A lab demonstration is filmed once and belongs to the
+                 * grade, not to whichever class happens to be open. One
+                 * tick posts it to all of them instead of the teacher
+                 * adding it again four times.
+                 */ ?>
+                <div class="form-group">
+                    <label class="form-label"><?= te('Who is it for') ?></label>
+                    <label class="gs-share">
+                        <input type="checkbox" name="share_grade" value="1">
+                        <span>
+                            <strong><?= te('Send it to every {grade} class as well', ['grade' => $grade]) ?></strong>
+                            <span class="text-sm text-muted">
+                                <?= te('{n} more classes', ['n' => count($siblings)]) ?>:
+                                <?= htmlspecialchars(implode(', ', array_map(
+                                    static fn (array $c): string => $c['class_name'],
+                                    $siblings
+                                )), ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                        </span>
+                    </label>
+                    <p class="text-sm text-muted" style="margin:.4rem 0 0;">
+                        <?= te('Leave it unticked and only this class gets it.') ?>
+                    </p>
+                </div>
+            <?php endif; ?>
+
             <div class="form-group">
                 <label class="form-label" for="status"><?= te('Visibility') ?></label>
                 <select id="status" name="status" class="form-control">
@@ -81,3 +113,12 @@ $month = $month ?? date('Y-m-01');
         </div>
     </form>
 </div>
+
+<style>
+    .gs-share { display:flex; gap:.6rem; align-items:flex-start; cursor:pointer;
+                border:1px solid var(--border-color,#E2E8F0); border-radius:10px;
+                padding:.7rem .85rem; }
+    .gs-share:hover { border-color:var(--primary,#1D4ED8); }
+    .gs-share input { margin-top:.2rem; }
+    .gs-share span span { display:block; }
+</style>

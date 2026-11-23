@@ -18,6 +18,9 @@ class ClassMaterial extends BaseModel
 
     protected array $fillable = [
         'class_id',
+        // Set when one posting went to a whole grade: every row of that
+        // share carries the same stamp. NULL for an ordinary posting.
+        'shared_batch',
         'title',
         'material_type',
         'description',

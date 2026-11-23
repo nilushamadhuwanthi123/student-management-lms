@@ -62,6 +62,17 @@ $e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'
                             <?php if (!empty($r['description'])): ?>
                                 <div class="text-sm text-muted" style="max-width:46ch;"><?= $e($r['description']) ?></div>
                             <?php endif; ?>
+                            <?php if (!empty($r['shared_batch'])): ?>
+                                <?php /*
+                                 * Say that this one was posted to the
+                                 * whole grade, so the teacher does not
+                                 * add it again to the next class and
+                                 * end up with two of everything.
+                                 */ ?>
+                                <div class="text-sm" style="color:var(--primary); font-weight:600; margin-top:.25rem;">
+                                    <?= te('Shared with the whole grade') ?>
+                                </div>
+                            <?php endif; ?>
                         </td>
                         <td class="text-sm">
                             <?= !empty($r['topic_title']) ? $e(lang_current() === 'si' && !empty($r['topic_title_si']) ? $r['topic_title_si'] : $r['topic_title']) : '&mdash;' ?>

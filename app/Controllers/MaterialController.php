@@ -85,12 +85,18 @@ class MaterialController extends BaseController
             $kind = '';
         }
 
+        $share = new \App\Services\GradeShareService($this->db);
+
         $this->view('materials/create', [
             'pageTitle' => 'Post material',
             'class'     => $class,
             'month'     => ContentAccessService::monthFromRequest($_GET['month'] ?? null),
             'types'     => ClassMaterial::TYPE_LABELS,
             'kind'      => $kind,
+            // The same grade-wide offer the recording form makes: a
+            // lab video or a revision sheet is usually for the grade.
+            'grade'     => $share->gradeOf($classId),
+            'siblings'  => $share->siblings($classId),
         ]);
     }
 
@@ -163,37 +169,73 @@ class MaterialController extends BaseController
             ? ContentAccessService::normaliseMonth($data['month_year'])
             : ContentAccessService::normaliseMonth();
 
-        $materialId = $this->materials->create([
-            'class_id'        => $classId,
-            'title'           => $data['title'],
-            'material_type'   => $data['material_type'],
-            'description'     => $data['description'] !== '' ? $data['description'] : null,
-            'file_path'       => $filePath,
-            'original_name'   => $originalName,
-            'file_size_bytes' => $fileSize,
-            'external_url'    => $hasUrl ? $data['external_url'] : null,
-            'lesson_date'     => $data['lesson_date'] !== '' ? $data['lesson_date'] : null,
-            'duration_minutes' => ($_POST['duration_minutes'] ?? '') !== ''
+        // Which classes this goes to. A grade-wide share writes one row
+        // per class, so nothing about how a class reads its material
+        // changes; the rows carry one batch stamp -- see
+        // GradeShareService.
+        $share = new \App\Services\GradeShareService($this->db);
+        $targets = [$classId];
+        $batch = null;
+
+        if ($share->requested($_POST)) {
+            $siblings = $share->siblings($classId);
+            if ($siblings !== []) {
+                $batch = $share->newBatch();
+                foreach ($siblings as $sibling) {
+                    $targets[] = $sibling['id'];
+                }
+            }
+        }
+
+        $materialId = 0;
+        $announcedTotal = 0;
+
+        foreach ($targets as $targetId) {
+            $newId = (int) $this->materials->create([
+                'class_id'        => $targetId,
+                'shared_batch'    => $batch,
+                'title'           => $data['title'],
+                'material_type'   => $data['material_type'],
+                'description'     => $data['description'] !== '' ? $data['description'] : null,
+                'file_path'       => $filePath,
+                'original_name'   => $originalName,
+                'file_size_bytes' => $fileSize,
+                'external_url'    => $hasUrl ? $data['external_url'] : null,
+                'lesson_date'     => $data['lesson_date'] !== '' ? $data['lesson_date'] : null,
+                'duration_minutes' => ($_POST['duration_minutes'] ?? '') !== ''
                 ? (int) $_POST['duration_minutes'] : null,
-            'month_year'      => $month,
-            'sort_order'      => (int) ($_POST['sort_order'] ?? 0),
-            'status'          => ($_POST['status'] ?? 'published') === 'draft' ? 'draft' : 'published',
-            'uploaded_by'     => (int) session_get('user_id'),
-        ]);
+                'month_year'      => $month,
+                'sort_order'      => (int) ($_POST['sort_order'] ?? 0),
+                'status'          => ($_POST['status'] ?? 'published') === 'draft' ? 'draft' : 'published',
+                'uploaded_by'     => (int) session_get('user_id'),
+            ]);
 
-        (new \App\Services\TopicService($this->db))->tag('class_materials', (int) $materialId, (int) $classId, $_POST['topic_id'] ?? null);
+            if ($targetId === $classId) {
+                $materialId = $newId;
+            }
 
-        // Tell the class it is there. Uploading something nobody hears
-        // about is the failure this whole module exists to prevent.
-        // Drafts announce nothing -- AnnouncementService checks the
-        // status itself, so a draft saved on Friday wakes no one.
-        $announced = (new \App\Services\AnnouncementService())->materialPublished($materialId);
+            (new \App\Services\TopicService($this->db))->tag('class_materials', $newId, $targetId, $_POST['topic_id'] ?? null);
+
+            // Tell the class it is there. Uploading something nobody
+            // hears about is the failure this whole module exists to
+            // prevent. Drafts announce nothing -- AnnouncementService
+            // checks the status itself, so a draft saved on Friday
+            // wakes no one.
+            $announcedTotal += (new \App\Services\AnnouncementService())->materialPublished($newId)['sent'];
+        }
+
+        $where = count($targets) > 1
+            ? t('Posted to {n} {grade} classes.', [
+                'n'     => count($targets),
+                'grade' => (string) $share->gradeOf($classId),
+            ])
+            : t('Posted to {class}.', ['class' => (string) $class['class_name']]);
 
         $this->flash(
             'success',
-            'Posted to ' . $this->e($class['class_name']) . '.'
-            . ($announced['sent'] > 0
-                ? " {$announced['sent']} students and guardians have been notified."
+            $where
+            . ($announcedTotal > 0
+                ? ' ' . t('{n} students and guardians have been notified.', ['n' => $announcedTotal])
                 : '')
         );
         $this->redirect("/classes/{$classId}/materials?month=" . urlencode($month));

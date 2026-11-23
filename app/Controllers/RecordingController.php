@@ -62,11 +62,18 @@ class RecordingController extends BaseController
         $class = $this->requireClass($classId);
         $this->requireClassAccess($class);
 
+        $share = new \App\Services\GradeShareService($this->db);
+
         $this->view('recordings/create', [
             'pageTitle'  => 'Add a recording',
             'activePage' => 'teaching',
             'class'      => $class,
             'month'      => ContentAccessService::monthFromRequest($_GET['month'] ?? null),
+            // A lab video is usually meant for the grade, not the one
+            // class, so the form offers the other classes of that grade
+            // this person may post to.
+            'grade'      => $share->gradeOf($classId),
+            'siblings'   => $share->siblings($classId),
         ]);
     }
 
@@ -110,35 +117,72 @@ class RecordingController extends BaseController
             ? ContentAccessService::normaliseMonth($data['month_year'])
             : ContentAccessService::normaliseMonth();
 
+        // Which classes this recording is for. A grade-wide share still
+        // writes one row per class, so every "what can this class see"
+        // query stays exactly as it was; the rows carry one batch stamp
+        // so they can be recognised afterwards as a single share.
+        $share = new \App\Services\GradeShareService($this->db);
+        $targets = [$classId];
+        $batch = null;
+
+        if ($share->requested($_POST)) {
+            $siblings = $share->siblings($classId);
+            if ($siblings !== []) {
+                $batch = $share->newBatch();
+                foreach ($siblings as $sibling) {
+                    $targets[] = $sibling['id'];
+                }
+            }
+        }
+
         $stmt = $this->db->prepare(
             "INSERT INTO recordings
-                (class_id, title, description, video_url, thumbnail_url, recording_date, month_year, sort_order, status, created_by)
+                (class_id, shared_batch, title, description, video_url, thumbnail_url, recording_date, month_year, sort_order, status, created_by)
              VALUES
-                (:class_id, :title, :description, :video_url, :thumbnail_url, :recording_date, :month_year, :sort_order, :status, :created_by)"
+                (:class_id, :shared_batch, :title, :description, :video_url, :thumbnail_url, :recording_date, :month_year, :sort_order, :status, :created_by)"
         );
-        $stmt->execute([
-            ':class_id'       => $classId,
-            ':title'          => $data['title'],
-            ':description'    => $data['description'] !== '' ? $data['description'] : null,
-            ':video_url'      => $data['video_url'],
-            ':thumbnail_url'  => $data['thumbnail_url'] !== '' ? $data['thumbnail_url'] : null,
-            ':recording_date' => $data['recording_date'] !== '' ? $data['recording_date'] : null,
-            ':month_year'     => $month,
-            ':sort_order'     => (int) ($_POST['sort_order'] ?? 0),
-            ':status'         => ($_POST['status'] ?? 'published') === 'draft' ? 'draft' : 'published',
-            ':created_by'     => (int) session_get('user_id'),
-        ]);
-        $recordingId = (int) $this->db->lastInsertId();
 
-        (new TopicService($this->db))->tag('recordings', $recordingId, $classId, $_POST['topic_id'] ?? null);
+        $recordingId = 0;
+        $announcedTotal = 0;
 
-        $announced = (new AnnouncementService())->recordingPublished($recordingId);
+        foreach ($targets as $targetId) {
+            $stmt->execute([
+                ':class_id'       => $targetId,
+                ':shared_batch'   => $batch,
+                ':title'          => $data['title'],
+                ':description'    => $data['description'] !== '' ? $data['description'] : null,
+                ':video_url'      => $data['video_url'],
+                ':thumbnail_url'  => $data['thumbnail_url'] !== '' ? $data['thumbnail_url'] : null,
+                ':recording_date' => $data['recording_date'] !== '' ? $data['recording_date'] : null,
+                ':month_year'     => $month,
+                ':sort_order'     => (int) ($_POST['sort_order'] ?? 0),
+                ':status'         => ($_POST['status'] ?? 'published') === 'draft' ? 'draft' : 'published',
+                ':created_by'     => (int) session_get('user_id'),
+            ]);
+
+            $newId = (int) $this->db->lastInsertId();
+            if ($targetId === $classId) {
+                $recordingId = $newId;
+            }
+
+            // Tagged and announced per class, because the topic and the
+            // families to tell are the class's own.
+            (new TopicService($this->db))->tag('recordings', $newId, $targetId, $_POST['topic_id'] ?? null);
+            $announcedTotal += (new AnnouncementService())->recordingPublished($newId)['sent'];
+        }
+
+        $where = count($targets) > 1
+            ? t('Recording added to {n} {grade} classes.', [
+                'n'     => count($targets),
+                'grade' => (string) $share->gradeOf($classId),
+            ])
+            : t('Recording added to {class}.', ['class' => $class['class_name']]);
 
         $this->flash(
             'success',
-            t('Recording added to {class}.', ['class' => $class['class_name']])
-            . ($announced['sent'] > 0
-                ? ' ' . t('{n} students and guardians have been notified.', ['n' => $announced['sent']])
+            $where
+            . ($announcedTotal > 0
+                ? ' ' . t('{n} students and guardians have been notified.', ['n' => $announcedTotal])
                 : '')
         );
         $this->redirect("/classes/{$classId}/recordings");

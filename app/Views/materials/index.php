@@ -143,6 +143,12 @@ $postKinds = [
                             <?php if (!empty($m['duration_minutes'])): ?>
                                 <div class="text-sm text-muted"><?= (int) $m['duration_minutes'] ?> min</div>
                             <?php endif; ?>
+                            <?php if (!empty($m['shared_batch'])): ?>
+                                <?php /* Posted to the whole grade -- see recordings/index.php. */ ?>
+                                <div class="text-sm" style="color:var(--primary); font-weight:600; margin-top:.25rem;">
+                                    <?= te('Shared with the whole grade') ?>
+                                </div>
+                            <?php endif; ?>
                         </td>
                         <td class="text-sm"><?= htmlspecialchars($types[$m['material_type']] ?? $m['material_type'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td class="text-sm">
