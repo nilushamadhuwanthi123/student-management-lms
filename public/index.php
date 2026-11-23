@@ -58,6 +58,9 @@ $pdo = Database::connect();
 require_once BASE_PATH . '/config/session.php';
 require_once BASE_PATH . '/config/csrf.php';
 require_once BASE_PATH . '/config/lang.php';
+// One map of which roles may open which page; views ask can() before
+// drawing a control, so no role is shown a link its route refuses.
+require_once BASE_PATH . '/config/permissions.php';
 require_once BASE_PATH . '/config/security.php';
 
 // ──────────────────────────────────────────────────────────

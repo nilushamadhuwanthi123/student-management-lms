@@ -44,3 +44,5 @@ database/backup_before_030.sql
 _to_delete/
 _commit_msg.txt
 student_lms_export.sql
+_crawl.txt
+_crawl.err
