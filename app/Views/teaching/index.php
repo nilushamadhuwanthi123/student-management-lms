@@ -217,85 +217,117 @@ $ce = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8
             <?php foreach ($classes as $c):
                 $days = !empty($c['schedule_days']) ? (json_decode($c['schedule_days'], true) ?: []) : [];
             ?>
-                <div class="card" style="display:flex; flex-direction:column;">
-                    <div class="card__body" style="flex:1;">
-                        <div style="display:flex; justify-content:space-between; gap:.75rem; align-items:flex-start;">
-                            <div>
-                                <h4 style="margin:0 0 .2rem; font-size:1rem;">
+                <?php
+                // The grade is already the first words of the class
+                // name ("Grade 10 Science - Galle"), so showing it
+                // again as a chip would just repeat it. The branch is
+                // the part worth lifting out: it is what tells her
+                // which city this card belongs to.
+                $branch = (string) ($c['institute_name'] ?? '');
+                $time = '';
+                if (!empty($c['start_time'])) {
+                    $time = date('g:i a', strtotime((string) $c['start_time']));
+                }
+
+                $postLinks = [
+                    [
+                        'href'  => BASE_URL . '/classes/' . (int) $c['id'] . '/materials?month=' . urlencode($month),
+                        'label' => t('Material & videos'),
+                        'icon'  => '<path d="M4 5h16v14H4z"/><path d="M4 9h16"/><path d="M9 9v10"/>',
+                        'show'  => true,
+                    ],
+                    [
+                        'href'  => BASE_URL . '/classes/' . (int) $c['id'] . '/quizzes',
+                        'label' => t('Quizzes'),
+                        'icon'  => '<path d="M9 11l2 2 4-4"/><rect x="4" y="4" width="16" height="16" rx="2"/>',
+                        'show'  => true,
+                    ],
+                    [
+                        'href'  => BASE_URL . '/classes/' . (int) $c['id'] . '/assignments',
+                        'label' => t('Homework'),
+                        'icon'  => '<path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13h7"/><path d="M9 17h5"/>',
+                        'show'  => can('assignments.view'),
+                    ],
+                    [
+                        'href'  => BASE_URL . '/classes/' . (int) $c['id'] . '/recordings',
+                        'label' => t('Recordings'),
+                        'icon'  => '<circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z"/>',
+                        'show'  => true,
+                    ],
+                ];
+                ?>
+                <div class="card tt-card">
+                    <div class="tt-card__body">
+                        <div class="tt-card__head">
+                            <div class="tt-card__id">
+                                <h4 class="tt-card__name">
                                     <?= htmlspecialchars($c['class_name'], ENT_QUOTES, 'UTF-8') ?>
                                 </h4>
-                                <div class="text-sm text-muted">
+                                <div class="tt-card__meta">
                                     <?= (int) $c['students'] ?> <?= te('students') ?>
                                     <?php if ($days !== []): ?>
                                         &middot; <?= htmlspecialchars(implode(', ', $days), ENT_QUOTES, 'UTF-8') ?>
                                     <?php endif; ?>
+                                    <?php if ($time !== ''): ?>
+                                        &middot; <?= htmlspecialchars($time, ENT_QUOTES, 'UTF-8') ?>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <?php if ((int) $c['awaiting_marking'] > 0): ?>
-                                <span class="badge" style="background:var(--warning-light); color:var(--warning); white-space:nowrap;">
+                                <span class="tt-flag tt-flag--warn">
                                     <?= (int) $c['awaiting_marking'] ?> <?= te('to mark') ?>
                                 </span>
                             <?php endif; ?>
                         </div>
 
-                        <div style="display:flex; gap:1.25rem; margin-top:.9rem;">
-                            <div>
-                                <div style="font-size:1.2rem; font-weight:700; color:var(--primary);">
-                                    <?= (int) $c['materials_this_month'] ?>
-                                </div>
-                                <div class="text-sm text-muted"><?= te('material') ?></div>
-                            </div>
-                            <div>
-                                <div style="font-size:1.2rem; font-weight:700; color:var(--primary);">
-                                    <?= (int) $c['quizzes_this_month'] ?>
-                                </div>
-                                <div class="text-sm text-muted"><?= te('quizzes') ?></div>
-                            </div>
+                        <?php /*
+                         * The month in one line rather than three big
+                         * numbers. On a card that is mostly zeros, big
+                         * numbers shout about nothing.
+                         */ ?>
+                        <div class="tt-stats">
+                            <span><strong><?= (int) $c['materials_this_month'] ?></strong> <?= te('material') ?></span>
+                            <span><strong><?= (int) $c['quizzes_this_month'] ?></strong> <?= te('quizzes') ?></span>
                             <?php if ((int) $c['unpaid_this_month'] > 0): ?>
-                                <div>
-                                    <div style="font-size:1.2rem; font-weight:700; color:var(--warning);">
-                                        <?= (int) $c['unpaid_this_month'] ?>
-                                    </div>
-                                    <div class="text-sm text-muted"><?= te('unpaid') ?></div>
-                                </div>
+                                <span class="tt-stats__warn">
+                                    <strong><?= (int) $c['unpaid_this_month'] ?></strong> <?= te('unpaid') ?>
+                                </span>
                             <?php endif; ?>
+                        </div>
+
+                        <div class="tt-main">
+                            <a href="<?= BASE_URL ?>/attendance/register?class_id=<?= (int) $c['id'] ?>"
+                               class="btn btn--primary btn--sm tt-main__btn"><?= te('Mark the register') ?></a>
+                            <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/progress"
+                               class="btn btn--secondary btn--sm tt-main__btn"><?= te('Class progress') ?></a>
+                        </div>
+
+                        <?php /*
+                         * These four were plain words in a row and read
+                         * as a sentence rather than as the buttons they
+                         * are. As tiles with an icon apiece they are
+                         * unmistakable, and they stay in the order the
+                         * week runs.
+                         */ ?>
+                        <div class="tt-label"><?= te('Post to this class') ?></div>
+                        <div class="tt-grid">
+                            <?php foreach ($postLinks as $link): ?>
+                                <?php if (!$link['show']) { continue; } ?>
+                                <a href="<?= $link['href'] ?>" class="tt-tile">
+                                    <svg class="tt-tile__icon" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true"><?= $link['icon'] ?></svg>
+                                    <span><?= htmlspecialchars($link['label'], ENT_QUOTES, 'UTF-8') ?></span>
+                                </a>
+                            <?php endforeach; ?>
                         </div>
                     </div>
 
-                    <?php /* Six buttons of equal weight made every class look
-                             like a menu with no first choice. They are grouped
-                             now: the two things done in the lesson itself, then
-                             the three that are posted to the class, then the
-                             two that are about the students rather than the
-                             material. Same links, in the order the day runs. */ ?>
-                    <div class="card__footer tt-actions">
-                        <div class="tt-row">
-                            <a href="<?= BASE_URL ?>/attendance/register?class_id=<?= (int) $c['id'] ?>"
-                               class="btn btn--primary btn--sm tt-btn"><?= te('Mark the register') ?></a>
-                            <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/progress"
-                               class="btn btn--secondary btn--sm tt-btn"><?= te('Class progress') ?></a>
-                        </div>
-
-                        <div class="tt-label"><?= te('Post to this class') ?></div>
-                        <div class="tt-row">
-                            <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/materials?month=<?= urlencode($month) ?>"
-                               class="btn btn--ghost btn--sm tt-btn"><?= te('Material & videos') ?></a>
-                            <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/quizzes"
-                               class="btn btn--ghost btn--sm tt-btn"><?= te('Quizzes') ?></a>
-                            <?php if (can('assignments.view')): ?>
-                            <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/assignments"
-                               class="btn btn--ghost btn--sm tt-btn"><?= te('Homework') ?></a>
-                            <?php endif; ?>
-                            <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/recordings"
-                               class="btn btn--ghost btn--sm tt-btn"><?= te('Recordings') ?></a>
-                        </div>
-
-                        <div class="tt-row tt-row--quiet">
-                            <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/learning-gaps"
-                               class="tt-link"><?= te('Learning gaps') ?> &rarr;</a>
-                            <a href="<?= BASE_URL ?>/notices/create?class_id=<?= (int) $c['id'] ?>"
-                               class="tt-link"><?= te('Send a notice') ?> &rarr;</a>
-                        </div>
+                    <div class="tt-card__foot">
+                        <a href="<?= BASE_URL ?>/classes/<?= (int) $c['id'] ?>/learning-gaps"
+                           class="tt-link"><?= te('Learning gaps') ?> &rarr;</a>
+                        <a href="<?= BASE_URL ?>/notices/create?class_id=<?= (int) $c['id'] ?>"
+                           class="tt-link"><?= te('Send a notice') ?> &rarr;</a>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -304,12 +336,50 @@ $ce = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8
 <?php endif; ?>
 
 <style>
-    .tt-actions { display:grid; gap:.5rem; }
-    .tt-row { display:flex; gap:.5rem; flex-wrap:wrap; }
-    .tt-btn { flex:1 1 44%; min-width:120px; }
-    .tt-label { font-size:.68rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
-                color:#94A3B8; margin-top:.25rem; }
-    .tt-row--quiet { gap:.9rem; margin-top:.15rem; }
+    /* The class card. Three bands, in the order the day runs: who and
+       when, what to do in the lesson, what to post afterwards. */
+    /* Layout only: the colours come from .card, so the card follows
+       the light and dark themes instead of hard-coding white. */
+    .tt-card { display:flex; flex-direction:column; overflow:hidden;
+               transition:box-shadow .15s ease, border-color .15s ease; }
+    .tt-card:hover { border-color:rgba(var(--primary-rgb,29,78,216), .45);
+                     box-shadow:0 8px 22px rgba(15,23,42,.10); }
+    .tt-card__body { padding:1.05rem 1.1rem .95rem; flex:1; }
+
+    .tt-card__head { display:flex; justify-content:space-between; gap:.7rem; align-items:flex-start; }
+    .tt-card__name { margin:0 0 .25rem; font-size:1rem; line-height:1.35; }
+    .tt-card__meta { font-size:.79rem; color:var(--text-muted,#64748B); }
+    .tt-flag { font-size:.7rem; font-weight:700; white-space:nowrap; padding:.22rem .5rem;
+               border-radius:999px; }
+    .tt-flag--warn { background:var(--warning-light,#FEF3C7); color:var(--warning,#B45309); }
+
+    .tt-stats { display:flex; flex-wrap:wrap; gap:.25rem .9rem; margin:.75rem 0 .9rem;
+                font-size:.78rem; color:var(--text-muted,#64748B); }
+    .tt-stats strong { font-size:.9rem; color:var(--primary,#1D4ED8); margin-right:.15rem; }
+    .tt-stats__warn strong { color:var(--warning,#B45309); }
+
+    .tt-main { display:flex; gap:.5rem; flex-wrap:wrap; }
+    .tt-main__btn { flex:1 1 44%; min-width:124px; }
+
+    .tt-label { font-size:.66rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+                color:var(--text-muted,#94A3B8); opacity:.85; margin:1rem 0 .45rem; }
+
+    /* Two by two, so four things read as four buttons and not as a
+       sentence. */
+    .tt-grid { display:grid; grid-template-columns:1fr 1fr; gap:.45rem; }
+    .tt-tile { display:flex; align-items:center; gap:.45rem; padding:.5rem .6rem;
+               font-size:.79rem; font-weight:600; text-decoration:none; color:inherit;
+               border:1px solid var(--border-color,#E2E8F0); border-radius:9px;
+               transition:background .12s ease, border-color .12s ease, color .12s ease; }
+    .tt-tile:hover, .tt-tile:focus-visible {
+               border-color:var(--primary,#1D4ED8); color:var(--primary,#1D4ED8);
+               background:rgba(var(--primary-rgb,29,78,216), .07); }
+    .tt-tile__icon { flex:none; color:var(--primary,#1D4ED8); }
+
+    .tt-card__foot { display:flex; gap:1rem; flex-wrap:wrap;
+                     padding:.7rem 1.1rem .85rem;
+                     border-top:1px solid var(--border-color,#E2E8F0);
+                     background:rgba(148,163,184,.06); }
     .tt-link { font-size:.78rem; font-weight:600; color:var(--primary,#1D4ED8); text-decoration:none; }
     .tt-link:hover { text-decoration:underline; }
 </style>
