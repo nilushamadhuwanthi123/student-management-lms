@@ -21,7 +21,13 @@ declare(strict_types=1);
 
 /** @var array<string, list<string>> */
 const PERMISSION_MAP = [
-    // Classes: the office creates and schedules them; teachers only teach.
+    // Classes: a teacher may open a class of her own -- she is the one
+    // who knows a new batch is starting -- but editing, deactivating
+    // and deleting stay with the office, because those reach classes
+    // other people depend on. A class a teacher creates is hers: the
+    // controller fixes the teacher to the person creating it rather
+    // than offering the field.
+    'classes.create'      => ['super_admin', 'admin', 'coordinator', 'teacher'],
     'classes.manage'      => ['super_admin', 'admin', 'coordinator'],
     // Student records: the office keeps them. Staff included -- they do
     // the front-desk data entry.

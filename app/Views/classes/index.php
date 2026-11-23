@@ -29,6 +29,9 @@ $filters    = $filters ?? [];
      */
     // config/permissions.php holds the one copy of this rule.
     $canManageClasses = can('classes.manage');
+    // Opening a class is a separate right: a teacher may start one of
+    // her own, but hall arrangement and editing stay with the office.
+    $canCreateClasses = can('classes.create');
     ?>
     <div class="page-header__actions">
         <?php if ($canManageClasses): ?>
@@ -36,6 +39,8 @@ $filters    = $filters ?? [];
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             <?= te('Hall Arrangement') ?>
         </a>
+        <?php endif; ?>
+        <?php if ($canCreateClasses): ?>
         <a href="<?= BASE_URL ?>/classes/create" class="btn btn--primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             <?= te('Create Class') ?>
@@ -260,7 +265,7 @@ $filters    = $filters ?? [];
                             <div class="empty-state">
                                 <div class="empty-state__icon">&#128218;</div>
                                 <div class="empty-state__title"><?= te('No classes found') ?></div>
-                                <div class="empty-state__text"><?= $canManageClasses
+                                <div class="empty-state__text"><?= $canCreateClasses
                                     ? te('Click "Create Class" to schedule your first tuition course.')
                                     : te('No classes have been set up for you yet. The office creates them.') ?></div>
                             </div>

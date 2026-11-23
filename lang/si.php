@@ -3080,4 +3080,12 @@ return [
     'Recording added to {n} {grade} classes.' => '{grade} පන්ති {n}කට පටිගත කිරීම එකතු කළා.',
     'Posted to {n} {grade} classes.' => '{grade} පන්ති {n}කට දැම්මා.',
     'Posted to {class}.' => '{class} පන්තියට දැම්මා.',
+
+    // A teacher opening a class of her own.
+    'This will be your own class.' => 'මේක ඔබේම පන්තියක් වේවි.',
+    'New class' => 'අලුත් පන්තියක්',
+
+    // The "what are you posting" chooser.
+    'What are you posting? Choose one' => 'ඔබ දාන්නේ මොකක්ද? එකක් තෝරන්න',
+    'Add this' => 'මේක දාන්න',
 ];

@@ -22,14 +22,11 @@ class TeachingController extends BaseController
     {
         AuthMiddleware::requireTeacher();
 
-        $role = (string) session_get('user_role');
-        $userId = (int) session_get('user_id');
         $month = ContentAccessService::monthFromRequest($_GET['month'] ?? null);
 
-        // A teacher sees her own classes; coordinators and above see all.
-        // Written as one query with a conditional clause rather than two
-        // near-identical ones, so the shape of the result cannot drift.
-        $seesEverything = in_array($role, ['super_admin', 'admin', 'coordinator'], true);
+        // One query with one scope clause, rather than a branch per
+        // role: the shape of the result cannot drift, and the roles
+        // cannot drift apart from what the routes enforce.
 
         $sql = "SELECT c.id, c.class_name, c.grade, c.subject, c.monthly_fee,
                        c.schedule_days, c.start_time,
@@ -54,13 +51,17 @@ class TeachingController extends BaseController
 
         $params = [':month1' => $month, ':month2' => $month, ':month3' => $month];
 
-        if (!$seesEverything) {
-            $sql .= " AND c.teacher_id = :teacher";
-            $params[':teacher'] = $userId;
-        } else {
-            // Admins and coordinators: their own branch's classes.
-            $sql .= \App\Services\BranchScope::current()->classSql('c.id');
-        }
+        // One rule for everyone, and BranchScope holds it: a teacher
+        // sees the classes she is attached to -- through
+        // classes.teacher_id OR through user_classes -- and an office
+        // role sees its own branch's.
+        //
+        // Reading classes.teacher_id alone, as this did, left a teacher
+        // attached the second way staring at an empty Teaching page:
+        // no classes, no charts, nothing to mark. The content
+        // controllers had the same fault and were fixed in 4170dfd;
+        // this one sits in front of all of them.
+        $sql .= \App\Services\BranchScope::current()->classSql('c.id');
 
         $sql .= " ORDER BY i.name ASC, c.grade ASC, c.class_name ASC";
 

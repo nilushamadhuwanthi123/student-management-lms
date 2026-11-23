@@ -55,13 +55,22 @@ $postKinds = [
 ];
 ?>
 <div class="mk-pick">
-    <div class="mk-pick__lead"><?= te('What are you posting?') ?></div>
+    <div class="mk-pick__lead"><?= te('What are you posting? Choose one') ?></div>
+    <?php /*
+     * These were drawn as quiet cards and read as decoration: the
+     * teacher could not tell they were the buttons. Each one now
+     * carries a coloured icon chip and a button of its own at the
+     * bottom, so what to press is not a guess.
+     */ ?>
     <div class="mk-pick__grid">
         <?php foreach ($postKinds as [$kind, $icon, $label, $hint]): ?>
             <a class="mk-card" href="<?= $mkUrl ?>&amp;type=<?= $kind ?>">
-                <span class="mk-card__icon" aria-hidden="true"><?= $icon ?></span>
-                <span class="mk-card__label"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="mk-card__top">
+                    <span class="mk-card__icon" aria-hidden="true"><?= $icon ?></span>
+                    <span class="mk-card__label"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></span>
+                </span>
                 <span class="mk-card__hint"><?= htmlspecialchars($hint, ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="mk-card__go"><?= te('Add this') ?> &rarr;</span>
             </a>
         <?php endforeach; ?>
     </div>
@@ -196,11 +205,23 @@ $postKinds = [
     .mk-pick__lead { font-size:.72rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
                      color:#94A3B8; margin-bottom:.5rem; }
     .mk-pick__grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); gap:.7rem; }
-    .mk-card { display:grid; gap:.2rem; padding:.85rem .9rem; text-decoration:none; color:inherit;
-               background:var(--card-bg,#fff); border:1px solid var(--border-color,#E2E8F0);
-               border-radius:12px; transition:border-color .15s ease, transform .15s ease; }
-    .mk-card:hover { border-color:var(--primary,#1D4ED8); transform:translateY(-2px); }
-    .mk-card__icon { font-size:1.4rem; line-height:1; }
-    .mk-card__label { font-weight:700; font-size:.92rem; }
-    .mk-card__hint { font-size:.76rem; color:#64748B; line-height:1.45; }
+    .mk-card { display:flex; flex-direction:column; gap:.45rem; padding:.95rem 1rem 1rem;
+               text-decoration:none; color:inherit; cursor:pointer;
+               background:var(--card-bg,#fff); border:2px solid var(--border-color,#E2E8F0);
+               border-radius:14px; transition:border-color .15s ease, transform .15s ease,
+               box-shadow .15s ease; }
+    .mk-card:hover, .mk-card:focus-visible {
+               border-color:var(--primary,#1D4ED8); transform:translateY(-2px);
+               box-shadow:0 6px 18px rgba(var(--primary-rgb,29,78,216), .16); }
+    .mk-card__top { display:flex; align-items:center; gap:.6rem; }
+    .mk-card__icon { font-size:1.15rem; line-height:1; width:34px; height:34px; flex:none;
+                     display:inline-flex; align-items:center; justify-content:center;
+                     border-radius:9px; background:rgba(var(--primary-rgb,29,78,216), .12); }
+    .mk-card__label { font-weight:700; font-size:.95rem; }
+    .mk-card__hint { font-size:.78rem; color:#64748B; line-height:1.45; flex:1 1 auto; }
+    /* The button itself, so the card cannot be mistaken for a picture. */
+    .mk-card__go { align-self:flex-start; font-size:.8rem; font-weight:700;
+                   color:#fff; background:var(--primary,#1D4ED8);
+                   padding:.4rem .75rem; border-radius:999px; }
+    .mk-card:hover .mk-card__go { filter:brightness(1.08); }
 </style>

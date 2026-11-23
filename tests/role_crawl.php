@@ -73,6 +73,25 @@ function pickAccounts(PDO $db, ?string $onlyRole): array
         }
     }
 
+    // A teacher can be attached to a class two ways: named in
+    // classes.teacher_id, or listed in user_classes. Code that reads
+    // only the first leaves the second kind staring at an empty
+    // Teaching page -- which is exactly what happened. So crawl one of
+    // each when both exist, not whichever comes first.
+    $st = $db->query(
+        "SELECT u.id, COALESCE(u.credential_version, 1) AS cv
+           FROM users u
+           JOIN user_classes uc ON uc.user_id = u.id
+          WHERE u.role = 'teacher' AND u.status = 'active'
+            AND NOT EXISTS (SELECT 1 FROM classes c WHERE c.teacher_id = u.id)
+          ORDER BY u.id LIMIT 1"
+    );
+    if ($row = $st->fetch(PDO::FETCH_ASSOC)) {
+        $picked['teacher (by user_classes)'] = [
+            'type' => 'user', 'id' => (int) $row['id'], 'role' => 'teacher', 'cv' => (int) $row['cv'],
+        ];
+    }
+
     $st = $db->query(
         "SELECT id, COALESCE(credential_version, 1) AS cv
            FROM students

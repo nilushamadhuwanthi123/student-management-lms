@@ -239,10 +239,12 @@ class ClassController extends BaseController
     public function create(): void
     {
         AuthMiddleware::requireAuth();
+        // Teachers included: see 'classes.create' in config/permissions.php.
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
             AuthMiddleware::ROLE_COORDINATOR,
+            AuthMiddleware::ROLE_TEACHER,
         ]);
 
         $institutes = $this->instituteModel->getActiveInstitutes();
@@ -267,10 +269,12 @@ class ClassController extends BaseController
     public function store(): void
     {
         AuthMiddleware::requireAuth();
+        // Teachers included: see 'classes.create' in config/permissions.php.
         AuthMiddleware::requireRole([
             AuthMiddleware::ROLE_SUPER_ADMIN,
             AuthMiddleware::ROLE_ADMIN,
             AuthMiddleware::ROLE_COORDINATOR,
+            AuthMiddleware::ROLE_TEACHER,
         ]);
         verifyCsrfToken();
 
@@ -282,6 +286,13 @@ class ClassController extends BaseController
         $room        = trim($_POST['room'] ?? '');
         $teacherId   = !empty($_POST['teacher_id']) ? (int) $_POST['teacher_id'] : null;
         $staffId     = !empty($_POST['staff_id']) ? (int) $_POST['staff_id'] : null;
+
+        // A teacher opens a class of her own. The form does not offer
+        // her the Teacher field, and this makes sure a posted one
+        // cannot hand the class to somebody else either.
+        if ((string) session_get('user_role') === AuthMiddleware::ROLE_TEACHER) {
+            $teacherId = (int) session_get('user_id');
+        }
         $scheduleDays= $_POST['schedule_days'] ?? [];
         $startTime   = trim($_POST['start_time'] ?? '') ?: null;
         $endTime     = trim($_POST['end_time'] ?? '') ?: null;

@@ -34,6 +34,17 @@ $month    = $month ?? date('Y-m-01');
             </select>
             <noscript><button type="submit" class="btn btn--ghost btn--sm"><?= te('Go') ?></button></noscript>
         </form>
+        <?php if (can('classes.create')): ?>
+            <?php /*
+             * Teaching is where she already is when a new batch starts,
+             * so the way to open a class belongs here as well as on the
+             * class list.
+             */ ?>
+            <a href="<?= BASE_URL ?>/classes/create" class="btn btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <?= te('New class') ?>
+            </a>
+        <?php endif; ?>
     </div>
 </div>
 

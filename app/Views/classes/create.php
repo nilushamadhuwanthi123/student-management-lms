@@ -105,17 +105,31 @@ $mediums    = $mediums ?? ['Sinhala', 'English', 'Tamil'];
                 <input type="number" id="capacity" name="capacity" class="form-control" min="0" max="65000" value="">
             </div>
 
-            <!-- Teacher (DDL) -->
+            <!-- Teacher -->
+            <?php /*
+             * A teacher opening her own class is not choosing whose it
+             * is, so she is told rather than asked. The controller sets
+             * the teacher from the session either way, so a posted
+             * value could not move the class anyway.
+             */ ?>
             <div class="form-group">
                 <label class="form-label" for="teacherId"><?= te('Teacher') ?></label>
-                <select id="teacherId" name="teacher_id" class="form-control">
-                    <option value=""><?= te('-- Assign Teacher --') ?></option>
-                    <?php foreach ($teachers as $t): ?>
-                        <option value="<?= (int) $t['id'] ?>">
-                            <?= htmlspecialchars($t['full_name'], ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars($t['user_id_display'] ?? '', ENT_QUOTES, 'UTF-8') ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <?php if ((string) session_get('user_role') === 'teacher'): ?>
+                    <input type="text" id="teacherId" class="form-control" disabled
+                           value="<?= htmlspecialchars((string) session_get('user_name'), ENT_QUOTES, 'UTF-8') ?>">
+                    <p class="text-sm text-muted" style="margin:.35rem 0 0;">
+                        <?= te('This will be your own class.') ?>
+                    </p>
+                <?php else: ?>
+                    <select id="teacherId" name="teacher_id" class="form-control">
+                        <option value=""><?= te('-- Assign Teacher --') ?></option>
+                        <?php foreach ($teachers as $t): ?>
+                            <option value="<?= (int) $t['id'] ?>">
+                                <?= htmlspecialchars($t['full_name'], ENT_QUOTES, 'UTF-8') ?> (<?= htmlspecialchars($t['user_id_display'] ?? '', ENT_QUOTES, 'UTF-8') ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php endif; ?>
             </div>
 
             <!-- Staff Member (DDL) -->
